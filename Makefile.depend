@@ -1,0 +1,3 @@
+diffanal.o: diffanal.c
+	${CC} -c ${CFLAGS} diffanal.c
+
