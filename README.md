@@ -3,22 +3,22 @@
 ## Description
 
 There are mature, easy-to-use, and efficient tools for all steps in a typical
-differential analysis pipeline up to and including alignment (mapping) and
-peak calling.  Tools such as FastQC, cutadapt, BWA, bowtie, samtools, and
-MACS2 make the early stages of an RNA-Seq, ATAC-Seq, or ChIP-Seq analysis
-fairly straightforward.
+differential analysis pipeline up to and including alignment (read mapping)
+and peak calling.  Well-maintained tools such as FastQC, cutadapt, BWA,
+Bowtie2, HISAT2, samtools, and MACS2 make the early stages of an RNA-Seq,
+ATAC-Seq, or ChIP-Seq analysis fairly straightforward.
 
 The differential analysis step itself has until now has presented a major
-hurdle, with few well-developed tools available, and most of them
+hurdle, with few well-developed tools available, and many of them
 requiring fairly sophisticated R scripting for basic use.  Code maintenance
 has also been an issue, with even the most popular tools falling into
 disrepair at times and frequently presenting installation issues due to
 incompatibility with the latest R or other dependencies.
 
-Diffanal aims to provide a simple, fast, differential analysis tool that
+Diffanal aims to provide a fast and simple differential analysis tool that
 just works and does not require any knowledge beyond basic Unix command-line
 skills.  The code is written entirely in C to maximize efficiency and
-portability, and to minimize complexity for the end-user.
+portability, and to provide a simple command-line user interface.
 
 ## Design and Implementation
 
@@ -64,7 +64,7 @@ For an overview of available package managers, see the
 FreeBSD is a highly underrated platform for scientific computing, with over
 1,900 scientific libraries and applications in the FreeBSD ports collection
 (of more than 30,000 total), modern clang compiler, fully-integrated ZFS
-filesystem, and renowned security, performance, and reliability.
+file system, and renowned security, performance, and reliability.
 FreeBSD has a somewhat well-earned reputation for being difficult to set up
 and manage compared to user-friendly systems like [Ubuntu](https://ubuntu.com/).
 However, if you're a little bit Unix-savvy, you can very quickly set up a
