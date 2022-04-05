@@ -95,7 +95,7 @@ CPP         ?= cpp
 AR          ?= ar
 RANLIB      ?= ranlib
 
-INCLUDES    += -isystem ${PREFIX}/lib -isystem ${LOCALBASE}/include
+INCLUDES    += -isystem ${PREFIX}/include -isystem ${LOCALBASE}/include
 CFLAGS      += ${INCLUDES}
 CXXFLAGS    += ${INCLUDES}
 FFLAGS      += ${INCLUDES}
