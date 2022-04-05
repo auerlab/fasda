@@ -99,10 +99,17 @@ int     main(int argc,char *argv[])
 			(BL_SAM_POS(&alignment) + BL_SAM_SEQ_LEN(&alignment)
 			    < BL_GFF_START(&feature)) )
 		{
-		    printf("%s %ld\n", BL_SAM_RNAME(&alignment),
-			    BL_SAM_POS(&alignment));
+		    /*printf("%s %ld\n", BL_SAM_RNAME(&alignment),
+			    BL_SAM_POS(&alignment));*/
 		}
-		getchar();
+		if ( BL_SAM_POS(&alignment) + BL_SAM_SEQ_LEN(&alignment)    
+			    < BL_GFF_START(&feature) )
+		{
+		    printf("condition %d overlap at %lu - %lu\n",
+			c, BL_SAM_POS(&alignment),
+			BL_SAM_POS(&alignment) + BL_SAM_SEQ_LEN(&alignment));
+		    getchar();
+		}
 	    }
 	}
     }
