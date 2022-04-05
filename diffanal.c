@@ -44,7 +44,8 @@ int     main(int argc,char *argv[])
 	condition_files[conditions] = argv[c];
 
 	// FIXME: Create bl_sam_open() to read SAM/BAM/CRAM
-	if ( (condition_streams[conditions] = xt_fopen(condition_files[conditions], "r")) == NULL )
+	if ( (condition_streams[conditions] =
+		xt_fopen(condition_files[conditions], "r")) == NULL )
 	{
 	    fprintf(stderr, ": Could not open %s for read: %s.\n",
 		    condition_files[conditions], strerror(errno));
@@ -66,6 +67,13 @@ int     main(int argc,char *argv[])
 	    
 	    for (c = 0; c < conditions; ++c)
 	    {
+		/*
+		 *  Start simple: Count reads overlapping each position
+		 *  in the gene and compute the average
+		 *  depth = total bases / gene length.
+		 *  Thoroughly test and optimize, then explore more
+		 *  sophisticated depth algorithms.
+		 */
 	    }
 	}
     }
