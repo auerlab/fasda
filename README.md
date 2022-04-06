@@ -1,5 +1,11 @@
 # diffanal
 
+## Status
+
+We're in the early stages of development, working on efficiently calculating
+fold-change for two conditions.  Once this is robust we will move onto
+computing P-values and adding features.
+
 ## Description
 
 There are mature, easy-to-use, and efficient tools for all steps in a typical
