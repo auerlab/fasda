@@ -93,7 +93,7 @@ int     main(int argc,char *argv[])
 	    }
 	    else if ( cmp > 0 )
 	    {
-		fprintf(stderr, "New chrom: %s\n", BL_GFF_SEQID(&feature));
+		//fprintf(stderr, "New chrom: %s\n", BL_GFF_SEQID(&feature));
 		strlcpy(last_feature_chrom, BL_GFF_SEQID(&feature), BL_CHROM_MAX_CHARS + 1);
 	    }
 	    /*
@@ -132,7 +132,7 @@ int     main(int argc,char *argv[])
 		}
 	    }
 	    if ( (coverage[0] != 0.0) || (coverage[1] != 0.0) )
-		printf("%-20s %10.1f %10.1f %10.1f\n",
+		printf("%-20s %10.2f %10.2f %10.2f\n",
 		       BL_GFF_FEATURE_NAME(&feature), coverage[0], coverage[1],
 		       coverage[1] / coverage[0]);
 	}
@@ -255,7 +255,8 @@ int     gff_find_overlapping_alignment(bl_gff_t *feature,
 double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment, FILE *sam_stream)
 
 {
-    unsigned long   overlapping_bases = 0, coverage;
+    int64_t overlapping_bases = 0;
+    double  coverage;
     
     // alignment arg already contains first overlapping read
     // Loop through all reads overlapping the feature
