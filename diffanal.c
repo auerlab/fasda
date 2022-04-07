@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <sys/param.h>      // MIN(), MAX()
 #include <xtend/file.h>
+#include <xtend/string.h>   // strlcpy() on Linux
 #include <biolibc/gff.h>
 #include <biolibc/sam.h>
 #include <biolibc/biostring.h>
