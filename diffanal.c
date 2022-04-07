@@ -48,7 +48,8 @@ int     main(int argc,char *argv[])
 	condition_files[conditions] = argv[c];
 
 	if ( (condition_stream[conditions] =
-		bl_sam_fopen(condition_files[conditions], "r")) == NULL )
+	      bl_sam_fopen(condition_files[conditions], "r",
+	      SAMTOOLS_ARGS)) == NULL )
 	{
 	    fprintf(stderr, ": Could not open %s for read: %s.\n",
 		    condition_files[conditions], strerror(errno));
@@ -77,7 +78,7 @@ int     main(int argc,char *argv[])
     bl_gff_init(&feature);
     bl_sam_init(&alignment);
     strlcpy(last_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
-    printf("%-20s %-10s %-10s %-10s\n", "Gene", "Condition1", "Condition2", "Fold-change");
+    printf("%2s %-20s %-10s %-10s %-10s\n", "Ch", "Gene", "Condition1", "Condition2", "Fold-change");
     while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
     {
 	if ( strcmp(BL_GFF_TYPE(&feature), "gene") == 0 )
@@ -133,9 +134,9 @@ int     main(int argc,char *argv[])
 		}
 	    }
 	    if ( (coverage[0] != 0.0) || (coverage[1] != 0.0) )
-		printf("%-20s %10.2f %10.2f %10.2f\n",
-		       BL_GFF_FEATURE_NAME(&feature), coverage[0], coverage[1],
-		       coverage[1] / coverage[0]);
+		printf("%2s %-20s %10.2f %10.2f %10.2f\n",
+		       BL_GFF_SEQID(&feature), BL_GFF_FEATURE_NAME(&feature),
+		       coverage[0], coverage[1], coverage[1] / coverage[0]);
 	}
     }
     
