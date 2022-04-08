@@ -24,7 +24,8 @@ int     main(int argc,char *argv[])
 
 {
     char        *features_file, *condition_files[MAX_CONDITIONS],
-		last_feature_chrom[BL_CHROM_MAX_CHARS + 1];
+		previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
+		previous_alignment_chrom[MAX_CONDITIONS][BL_CHROM_MAX_CHARS + 1];
     FILE        *feature_stream, *condition_stream[MAX_CONDITIONS];
     bl_gff_t    feature;
     bl_sam_t    alignment;
@@ -57,6 +58,7 @@ int     main(int argc,char *argv[])
 	}
 	
 	bl_sam_skip_header(condition_stream[conditions]);
+	strlcpy(previous_alignment_chrom[conditions], "0", BL_CHROM_MAX_CHARS + 1);
     }
     printf("%d conditions.\n", conditions);
     
@@ -71,60 +73,44 @@ int     main(int argc,char *argv[])
     // FIXME: discard unnecessary fields to improve performance
     bl_gff_init(&feature);
     bl_sam_init(&alignment);
-    strlcpy(last_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
+    strlcpy(previous_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
     printf("%2s %-20s %-10s %-10s %-10s\n", "Ch", "Gene", "Condition1", "Condition2", "Fold-change");
+    
     while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
     {
 	if ( strcmp(BL_GFF_TYPE(&feature), "gene") == 0 )
 	{
-	    coverage[0] = coverage[1] = 0;
-	    cmp = bl_chrom_name_cmp(BL_GFF_SEQID(&feature), last_feature_chrom);
-	    // FIXME: Make bl_chrom_name_cmp() return exactly 1 or -1 for
-	    // adjacent chromosomes?
+	    for (c = 0; c < conditions; ++c)
+		coverage[c] = 0;
+	    cmp = bl_chrom_name_cmp(BL_GFF_SEQID(&feature), previous_feature_chrom);
 	    if ( cmp < 0 )
 	    {
 		fprintf(stderr, "diffanal: Error: GFF3 chromosomes out of order: %s %s\n",
-			last_feature_chrom, BL_GFF_SEQID(&feature));
+			previous_feature_chrom, BL_GFF_SEQID(&feature));
 		return EX_DATAERR;
 	    }
 	    else if ( cmp > 0 )
-	    {
-		//fprintf(stderr, "New chrom: %s\n", BL_GFF_SEQID(&feature));
-		strlcpy(last_feature_chrom, BL_GFF_SEQID(&feature), BL_CHROM_MAX_CHARS + 1);
-	    }
-	    /*
-	    printf("%s %s %" PRId64 " %" PRId64 " %s\n",
-		    BL_GFF_SEQID(&feature), BL_GFF_TYPE(&feature),
-		    BL_GFF_START(&feature), BL_GFF_END(&feature),
-		    BL_GFF_FEATURE_NAME(&feature));
-	    */
-	    
+		strlcpy(previous_feature_chrom, BL_GFF_SEQID(&feature), BL_CHROM_MAX_CHARS + 1);
+
 	    for (c = 0; c < conditions; ++c)
 	    {
 		/*
 		 *  Find first overlapping read for this gene.
 		 */
-		
-		// FIXME: Verify sort order of both genes and alignments
+
 		if ( (bl_gff_find_overlapping_alignment(&feature,
-			condition_stream[c], &alignment) == BL_READ_OK) &&
+			condition_stream[c], previous_alignment_chrom[c],
+			&alignment) == BL_READ_OK) &&
 		     (bl_sam_gff_cmp(&alignment, &feature) == 0) )
 		{
-		    /*
-		    printf("condition %d alignment %s %lu - %lu overlaps feature %s %lu - %lu\n",
-			    c, BL_SAM_RNAME(&alignment), BL_SAM_POS(&alignment),
-			    BL_SAM_POS(&alignment) + BL_SAM_SEQ_LEN(&alignment),
-			    BL_GFF_SEQID(&feature), BL_GFF_START(&feature),
-			    BL_GFF_END(&feature));
-		    */
-		    //getchar();
-		    
 		    /*
 		     *  Now count coverage of all reads overlapping the gene.
 		     *  Buffer reads in case some overlap the next gene as well.
 		     */
 		    
-		    coverage[c] = count_coverage(&feature, &alignment, condition_stream[c]);
+		    coverage[c] = count_coverage(&feature, &alignment,
+					condition_stream[c],
+					previous_alignment_chrom[c]);
 		}
 	    }
 	    if ( (coverage[0] != 0.0) || (coverage[1] != 0.0) )
@@ -150,6 +136,8 @@ int     main(int argc,char *argv[])
  *      -l
  *
  *  Description:
+ *      Should this be part of biolibc?  Not sure if it's generally useful
+ *      enough and sufficiently difficult to just rewrite where needed.
  *  
  *  Arguments:
  *
@@ -168,41 +156,89 @@ int     main(int argc,char *argv[])
  *  2022-04-06  Jason Bacon Begin
  ***************************************************************************/
 
-int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
-				       FILE *stream, bl_sam_t *alignment)
+int     bl_gff_find_overlapping_alignment(
+	    bl_gff_t *feature, FILE *alignment_stream,
+	    char *previous_alignment_chrom,
+	    bl_sam_t *alignment)
 
 {
-    int     status;
-    static char    last_chrom[BL_CHROM_MAX_CHARS + 1] = "0";
+    int     status, cmp;
     
-    while ( ((status = bl_sam_read(alignment, stream, SAM_MASK)) == BL_READ_OK) &&
+    while ( ((status = bl_sam_read(alignment, alignment_stream, SAM_MASK)) == BL_READ_OK) &&
 	    (bl_sam_gff_cmp(alignment, feature) < 0) )
     {
-	if ( bl_chrom_name_cmp(last_chrom, BL_SAM_RNAME(alignment)) != 0 )
+	cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
+	if ( cmp > 0 )
+	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
+	else if ( cmp < 0 )
 	{
-	    //fprintf(stderr, "New alignment chrom: %s\n", BL_SAM_RNAME(alignment));
-	    strlcpy(last_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
+	    fprintf(stderr, "diffanal, %s(): "
+		    "Chromosomes out of order in SAM stream: %s %s\n",
+		    __FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
+	    exit(EX_DATAERR);
 	}
     }
-    /*
-	printf("%s %lu %s %lu\n",
-		BL_SAM_RNAME(alignment), BL_SAM_POS(alignment),
-		BL_GFF_SEQID(feature), BL_GFF_START(feature));
-    */
+
     return status;
 }
 
 
-double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment, FILE *sam_stream)
+/***************************************************************************
+ *  Use auto-c2man to generate a man page from this comment
+ *
+ *  Library:
+ *      #include <>
+ *      -l
+ *
+ *  Description:
+ *      Count coverage of all alignments overlapping the given feature.
+ *      Currently using a simple average depth over all positions without
+ *      regard for paired-end inner distance between the forward and
+ *      reverse reads.  More sophisticated algorithms can be substituted
+ *      as time goes by.
+ *  
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  Examples:
+ *
+ *  Files:
+ *
+ *  Environment
+ *
+ *  See also:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-04-08  Jason Bacon Begin
+ ***************************************************************************/
+
+double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
+		       FILE *sam_stream, char *previous_alignment_chrom)
 
 {
     int64_t overlapping_bases = 0;
     double  coverage;
+    int     cmp;
+    
+    // FIXME: Buffer overlapping alignments so they can also
+    // be checked against the next gene.
     
     // alignment arg already contains first overlapping read
     // Loop through all reads overlapping the feature
     do
     {
+	cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
+	if ( cmp > 0 )
+	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
+	else if ( cmp < 0 )
+	{
+	    fprintf(stderr, "diffanal: %s(): "
+		    "Chromosomes out of order in SAM stream: %s %s\n",
+		    __FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
+	    exit(EX_DATAERR);
+	}
 	overlapping_bases += bl_gff_sam_overlap(feature, alignment);
     }   while ( (bl_sam_read(alignment, sam_stream, SAM_MASK) == BL_READ_OK)
 		&& (bl_sam_gff_cmp(alignment, feature) == 0) );
