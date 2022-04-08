@@ -28,7 +28,7 @@ int     main(int argc,char *argv[])
     FILE        *feature_stream, *condition_stream[MAX_CONDITIONS];
     bl_gff_t    feature;
     bl_sam_t    alignment;
-    int         conditions, c, ch, ch2, cmp;
+    int         conditions, c, cmp;
     double      coverage[MAX_CONDITIONS];
     
     if ( argc < 4 )
@@ -55,14 +55,8 @@ int     main(int argc,char *argv[])
 		    condition_files[conditions], strerror(errno));
 	    return EX_NOINPUT;
 	}
-	// FIXME: Add this function
-	// bl_sam_skip_header(&condition_stream[conditions]);
-	while ( (ch = getc(condition_stream[conditions])) == '@' )
-	{
-	    while ( (ch2 = getc(condition_stream[conditions])) != '\n' )
-		;
-	}
-	ungetc(ch, condition_stream[conditions]);
+	
+	bl_sam_skip_header(condition_stream[conditions]);
     }
     printf("%d conditions.\n", conditions);
     
@@ -112,7 +106,7 @@ int     main(int argc,char *argv[])
 		 */
 		
 		// FIXME: Verify sort order of both genes and alignments
-		if ( (gff_find_overlapping_alignment(&feature,
+		if ( (bl_gff_find_overlapping_alignment(&feature,
 			condition_stream[c], &alignment) == BL_READ_OK) &&
 		     (bl_sam_gff_cmp(&alignment, &feature) == 0) )
 		{
@@ -174,62 +168,7 @@ int     main(int argc,char *argv[])
  *  2022-04-06  Jason Bacon Begin
  ***************************************************************************/
 
-int     bl_sam_gff_cmp(bl_sam_t *alignment, bl_gff_t *feature)
-
-{
-    int     status = bl_chrom_name_cmp(BL_SAM_RNAME(alignment),
-					    BL_GFF_SEQID(feature));
-    
-    if ( status != 0 )
-	// Different chromosomes
-	return status;
-    else if ( BL_SAM_POS(alignment) + BL_SAM_SEQ_LEN(alignment) - 1
-		< BL_GFF_START(feature) )
-	// Alignment ends before the start of feature
-	return -1;
-    else if ( BL_SAM_POS(alignment) > BL_GFF_END(feature) )
-	// Alignment starts after the end of feature
-	return 1;
-    else
-	// Overlap
-	return 0;
-}
-
-
-int     bl_gff_sam_cmp(bl_gff_t *feature, bl_sam_t *alignment)
-
-{
-    return -bl_sam_gff_cmp(alignment, feature);
-}
-
-
-/***************************************************************************
- *  Use auto-c2man to generate a man page from this comment
- *
- *  Library:
- *      #include <>
- *      -l
- *
- *  Description:
- *  
- *  Arguments:
- *
- *  Returns:
- *
- *  Examples:
- *
- *  Files:
- *
- *  Environment
- *
- *  See also:
- *
- *  History: 
- *  Date        Name        Modification
- *  2022-04-06  Jason Bacon Begin
- ***************************************************************************/
-
-int     gff_find_overlapping_alignment(bl_gff_t *feature,
+int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
 				       FILE *stream, bl_sam_t *alignment)
 
 {
@@ -272,47 +211,6 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment, FILE *sam_stream)
     coverage = (double)overlapping_bases /
 		(BL_GFF_END(feature) - BL_GFF_START(feature) + 1);
     return coverage;
-}
-
-
-/***************************************************************************
- *  Use auto-c2man to generate a man page from this comment
- *
- *  Library:
- *      #include <>
- *      -l
- *
- *  Description:
- *      |-----------------------|
- *          |-----------------------------------|
- *  
- *  Arguments:
- *
- *  Returns:
- *
- *  Examples:
- *
- *  Files:
- *
- *  Environment
- *
- *  See also:
- *
- *  History: 
- *  Date        Name        Modification
- *  2022-04-07  Jason Bacon Begin
- ***************************************************************************/
-
-int64_t bl_gff_sam_overlap(bl_gff_t *feature, bl_sam_t *alignment)
-
-{
-    int64_t alignment_end = BL_SAM_POS(alignment) + BL_SAM_SEQ_LEN(alignment),
-	    overlap_start = MAX(BL_GFF_START(feature), BL_SAM_POS(alignment)),
-	    overlap_end = MIN(BL_GFF_END(feature), alignment_end);
-    
-    //fprintf(stderr, "%" PRId64 " %" PRId64 "\n", overlap_start, overlap_end);
-    //fprintf(stderr, "Coverage = %" PRId64 "\n", overlap_end - overlap_start + 1);
-    return overlap_end - overlap_start + 1;
 }
 
 
