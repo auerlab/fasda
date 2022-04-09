@@ -83,18 +83,18 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
     bl_sam_init(&alignment);
     strlcpy(previous_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
     
-    printf("%2s %-20s", "Ch", "Gene");
+    printf("%2s %-15s", "Ch", "Gene");
     for (c = 0; c < conditions; ++c)
     {
 	strlcpy(previous_alignment_chrom[c], "0", BL_CHROM_MAX_CHARS + 1);
-	printf(" %-9s%d", "Condition", c + 1);
+	printf(" %5s%d", "Cond", c + 1);
 	//"FC x vs y");
     }
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
 	    if ( (coverage[c1] != 0.0) || (coverage[c2] != 0.0) )
-		printf("  FC %d vs %d", c1 + 1, c2 + 1);
+		printf("  FC %d-%d", c1 + 1, c2 + 1);
     }
     putchar('\n');
     
@@ -138,19 +138,18 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
 		}
 	    }
 	    
-	    // FIXME: Generalize for more than 2 conditions
-	    printf("%2s %-20s",
+	    printf("%2s %-15s",
 		   BL_GFF_SEQID(&feature), BL_GFF_FEATURE_NAME(&feature));
 	    for (c = 0; c < conditions; ++c)
-		printf(" %10.2f", coverage[c]);
+		printf(" %6.2f", coverage[c]);
 	    for (c1 = 0; c1 < conditions; ++c1)
 	    {
 		for (c2 = c1 + 1; c2 < conditions; ++c2)
 		{
 		    if ( (coverage[c1] != 0.0) || (coverage[c2] != 0.0) )
-			printf(" %10.2f", coverage[c2] / coverage[c1]);
+			printf(" %7.2f", coverage[c2] / coverage[c1]);
 		    else
-			printf(" %10s", "*");
+			printf(" %7s", "*");
 		}
 	    }
 	    putchar('\n');

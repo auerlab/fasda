@@ -1,11 +1,5 @@
 # diffanal
 
-## Status
-
-We're in the early stages of development, working on efficiently calculating
-fold-change for two conditions.  Once this is robust we will move onto
-computing P-values and adding features.
-
 ## Description
 
 There are mature, easy-to-use, and efficient tools for all steps in a typical
@@ -25,6 +19,38 @@ Diffanal aims to provide a fast and simple differential analysis tool that
 just works and does not require any knowledge beyond basic Unix command-line
 skills.  The code is written entirely in C to maximize efficiency and
 portability, and to provide a simple command-line user interface.
+
+## Status
+
+We're in the early stages of development.  So far we are able to efficiently
+calculating fold-change for an arbitrary number of conditions.  Once this code
+is robust we will move onto computing P-values, exploring more sophisticated
+coverage algorithms, and adding other features.
+
+Sample output from Mus musculus data (GRCm39) and kallisto pseudobams.
+
+```
+Ch Gene             Cond1  Cond2  Cond3  FC 1-2  FC 1-3  FC 2-3
+ 1 4933401J01Rik     0.00   0.00   0.00       *       *       *
+ 1 Xkr4              0.03   0.05   0.02    1.54    0.59    0.38
+ 1 Gm37180           0.00   0.00   0.00       *       *       *
+ 1 Gm37363           0.00   0.00   0.00       *       *       *
+ 1 Gm37686           0.00   0.00   0.00       *       *       *
+ 1 Gm37329           0.00   0.00   0.00       *       *       *
+ 1 Gm38148           0.00   0.00   0.00       *       *       *
+ 1 Gm10568           0.00   0.00   0.00       *       *       *
+ 1 Gm38385           0.00   0.00   0.00       *       *       *
+ 1 Rp1               0.02   0.03   0.00    1.21    0.03    0.03
+ 1 Gm37483           0.00   0.00   0.00       *       *       *
+ 1 Sox17             0.00   0.00   0.00       *       *       *
+ 1 Mrpl15           27.06  36.37  22.48    1.34    0.83    0.62
+ 1 Gm37144           0.00   0.00   0.00       *       *       *
+ 1 Lypla1           29.88  30.62  26.90    1.02    0.90    0.88
+ 1 Gm37988           0.07   0.06   0.05    0.90    0.82    0.92
+ 1 Tcea1             0.00   0.00   0.00       *       *       *
+ 1 Gm37277           0.22   0.00   1.10    0.00    5.07     inf
+ 1 Rgs20             2.35   2.97   2.83    1.26    1.20    0.95
+```
 
 ## Design and Implementation
 
