@@ -66,10 +66,8 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
 		previous_alignment_chrom[MAX_CONDITIONS][BL_CHROM_MAX_CHARS + 1];
     bl_gff_t    feature;
     bl_sam_t    alignment;
-    int         c, cmp, c1, c2;
+    int         c, cmp;
     double      coverage[MAX_CONDITIONS];
-    
-    printf("%d conditions.\n", conditions);
     
     /*
      *  Start simple: Count reads overlapping each position
@@ -82,21 +80,9 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
     bl_gff_init(&feature);
     bl_sam_init(&alignment);
     strlcpy(previous_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
-    
-    printf("%2s %-15s", "Ch", "Gene");
     for (c = 0; c < conditions; ++c)
-    {
 	strlcpy(previous_alignment_chrom[c], "0", BL_CHROM_MAX_CHARS + 1);
-	printf(" %5s%d", "Cond", c + 1);
-	//"FC x vs y");
-    }
-    for (c1 = 0; c1 < conditions; ++c1)
-    {
-	for (c2 = c1 + 1; c2 < conditions; ++c2)
-	    if ( (coverage[c1] != 0.0) || (coverage[c2] != 0.0) )
-		printf("  FC %d-%d", c1 + 1, c2 + 1);
-    }
-    putchar('\n');
+    print_header(conditions);
     
     while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
     {
@@ -137,22 +123,7 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
 					previous_alignment_chrom[c]);
 		}
 	    }
-	    
-	    printf("%2s %-15s",
-		   BL_GFF_SEQID(&feature), BL_GFF_FEATURE_NAME(&feature));
-	    for (c = 0; c < conditions; ++c)
-		printf(" %6.2f", coverage[c]);
-	    for (c1 = 0; c1 < conditions; ++c1)
-	    {
-		for (c2 = c1 + 1; c2 < conditions; ++c2)
-		{
-		    if ( (coverage[c1] != 0.0) || (coverage[c2] != 0.0) )
-			printf(" %7.2f", coverage[c2] / coverage[c1]);
-		    else
-			printf(" %7s", "*");
-		}
-	    }
-	    putchar('\n');
+	    print_fold_change(&feature, coverage, conditions);
 	}
     }
     
@@ -285,6 +256,64 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
     coverage = (double)overlapping_bases /
 		(BL_GFF_END(feature) - BL_GFF_START(feature) + 1);
     return coverage;
+}
+
+
+/***************************************************************************
+ *  Description:
+ *      Print header for genes, coverage, and fold-change
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-04-09  Jason Bacon Begin
+ ***************************************************************************/
+
+void    print_header(int conditions)
+
+{
+    int     c1, c2;
+    
+    printf("%2s %-15s", "Ch", "Gene");
+    for (c1 = 0; c1 < conditions; ++c1)
+	printf(" %5s%d", "Cond", c1 + 1);
+    for (c1 = 0; c1 < conditions; ++c1)
+    {
+	for (c2 = c1 + 1; c2 < conditions; ++c2)
+	    printf("  FC %d-%d", c1 + 1, c2 + 1);
+    }
+    putchar('\n');
+}
+
+
+/***************************************************************************
+ *  Description:
+ *      Print coverage and fold-change stats for a given gene
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-04-09  Jason Bacon Begin
+ ***************************************************************************/
+
+void    print_fold_change(bl_gff_t *feature, double coverage[], int conditions)
+
+{
+    int     c1, c2;
+    
+    printf("%2s %-15s",
+	   BL_GFF_SEQID(feature), BL_GFF_FEATURE_NAME(feature));
+    for (c1 = 0; c1 < conditions; ++c1)
+	printf(" %6.2f", coverage[c1]);
+    for (c1 = 0; c1 < conditions; ++c1)
+    {
+	for (c2 = c1 + 1; c2 < conditions; ++c2)
+	{
+	    if ( (coverage[c1] != 0.0) || (coverage[c2] != 0.0) )
+		printf(" %7.2f", coverage[c2] / coverage[c1]);
+	    else
+		printf(" %7s", "*");
+	}
+    }
+    putchar('\n');
 }
 
 
