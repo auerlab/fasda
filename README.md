@@ -23,13 +23,22 @@ portability, and to provide a simple command-line user interface.
 ## Status
 
 We're in the early stages of development.  So far we are able to efficiently
-calculating fold-change for an arbitrary number of conditions.  Once this code
+calculate fold-change for an arbitrary number of conditions using a
+simplistic coverage measurement.  Once this code
 is robust we will move onto computing P-values, exploring more sophisticated
 coverage algorithms, and adding other features.
 
-Sample output from Mus musculus data (GRCm39) and kallisto pseudobams.
+The sample output below is from Mus musculus data (GRCm39) and kallisto
+pseudobams with around 70,000,000 reads each.  This 3-condition differential
+analysis runs in 6 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny). The
+DA for just conditions 1 and 2 runs in 4.5 minutes.
 
 ```
+diffanal mouse-sorted.gff3 \
+    rep1-time1/pseudoalignments.bam \
+    rep1-time2/pseudoalignments.bam \
+    rep1-time3/pseudoalignments.bam
+
 Ch Gene             Cond1  Cond2  Cond3  FC 1-2  FC 1-3  FC 2-3
  1 4933401J01Rik     0.00   0.00   0.00       *       *       *
  1 Xkr4              0.03   0.05   0.02    1.54    0.59    0.38
