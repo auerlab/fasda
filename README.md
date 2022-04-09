@@ -30,8 +30,9 @@ coverage algorithms, and adding other features.
 
 The sample output below is from Mus musculus data (GRCm39) and kallisto
 pseudobams with 70 to 90 million reads each.  This 3-condition differential
-analysis runs in 6 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny). The
-DA for just conditions 1 and 2 runs in 4.5 minutes.
+analysis runs in 6 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) and
+uses less than 2 megabytes (yes, megabytes - not gigabytes) of RAM. The DA
+for just conditions 1 and 2 runs in 4.5 minutes.
 
 ```
 diffanal mouse-sorted.gff3 \
