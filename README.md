@@ -29,15 +29,15 @@ is robust we will move onto computing P-values, exploring more sophisticated
 coverage algorithms, and adding other features.
 
 The sample output below is from Mus musculus data (GRCm39) and kallisto
-pseudobams with around 70,000,000 reads each.  This 3-condition differential
+pseudobams with 70 to 90 million reads each.  This 3-condition differential
 analysis runs in 6 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny). The
 DA for just conditions 1 and 2 runs in 4.5 minutes.
 
 ```
 diffanal mouse-sorted.gff3 \
-    rep1-time1/pseudoalignments.bam \
-    rep1-time2/pseudoalignments.bam \
-    rep1-time3/pseudoalignments.bam
+    time1/pseudoalignments.bam \
+    time2/pseudoalignments.bam \
+    time3/pseudoalignments.bam
 
 Ch Gene             Cond1  Cond2  Cond3  FC 1-2  FC 1-3  FC 2-3
  1 4933401J01Rik     0.00   0.00   0.00       *       *       *
