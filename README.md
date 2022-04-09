@@ -1,4 +1,4 @@
-# diffanal
+# Diffanal
 
 ## Description
 
@@ -77,7 +77,7 @@ https://github.com/outpaddling/Coding-Standards/.
 
 ## Building and installing
 
-diffanal is intended to build cleanly in any POSIX environment on any CPU
+Diffanal is intended to build cleanly in any POSIX environment on any CPU
 architecture.  Please don't hesitate to open an issue if you encounter
 problems on any Unix-like system.
 
@@ -103,7 +103,7 @@ For an overview of available package managers, see the
 ### Installing diffanal on FreeBSD:
 
 FreeBSD is a highly underrated platform for scientific computing, with over
-1,900 scientific libraries and applications in the FreeBSD ports collection
+2,000 scientific libraries and applications in the FreeBSD ports collection
 (of more than 30,000 total), modern clang compiler, fully-integrated ZFS
 file system, and renowned security, performance, and reliability.
 FreeBSD has a somewhat well-earned reputation for being difficult to set up
@@ -163,7 +163,7 @@ available package sets.
 
 Below are cave man install instructions for development purposes, not
 recommended for regular use.
-diffanal depends on [biolibc](https://github.com/auerlab/biolibc).
+Diffanal depends on [biolibc](https://github.com/auerlab/biolibc).
 Install biolibc before attempting to build diffanal.
 
 1. Clone the repository
