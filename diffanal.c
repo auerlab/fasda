@@ -24,7 +24,7 @@ int     main(int argc,char *argv[])
 
 {
     char        *features_file, *condition_files[MAX_CONDITIONS];
-    FILE        *feature_stream, *condition_stream[MAX_CONDITIONS];
+    FILE        *feature_stream, *condition_streams[MAX_CONDITIONS];
     int         conditions, c;
     
     if ( argc < 4 )
@@ -43,7 +43,7 @@ int     main(int argc,char *argv[])
     {
 	condition_files[conditions] = argv[c];
 
-	if ( (condition_stream[conditions] =
+	if ( (condition_streams[conditions] =
 	      bl_sam_fopen(condition_files[conditions], "r",
 	      SAMTOOLS_ARGS)) == NULL )
 	{
@@ -52,24 +52,23 @@ int     main(int argc,char *argv[])
 	    return EX_NOINPUT;
 	}
 	
-	bl_sam_skip_header(condition_stream[conditions]);
+	bl_sam_skip_header(condition_streams[conditions]);
     }
     
-    return diffanal(feature_stream, condition_stream, conditions);
+    return diffanal(feature_stream, condition_streams, conditions);
 }
 
 
-int     diffanal(FILE *feature_stream, FILE *condition_stream[], int conditions)
+int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions)
 
 {
     char        previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
 		previous_alignment_chrom[MAX_CONDITIONS][BL_CHROM_MAX_CHARS + 1];
     bl_gff_t    feature;
     bl_sam_t    alignment;
-    int         c, cmp;
+    int         c, cmp, c1, c2;
     double      coverage[MAX_CONDITIONS];
     
-    // FIXME: Currently only support two conditions
     printf("%d conditions.\n", conditions);
     
     /*
@@ -80,14 +79,24 @@ int     diffanal(FILE *feature_stream, FILE *condition_stream[], int conditions)
      *  sophisticated depth algorithms.
      */
 
-    for (c = 0; c < conditions; ++c)
-	strlcpy(previous_alignment_chrom[c], "0", BL_CHROM_MAX_CHARS + 1);
-
-    // FIXME: discard unnecessary fields to improve performance
     bl_gff_init(&feature);
     bl_sam_init(&alignment);
     strlcpy(previous_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
-    printf("%2s %-20s %-10s %-10s %-10s\n", "Ch", "Gene", "Condition1", "Condition2", "Fold-change");
+    
+    printf("%2s %-20s", "Ch", "Gene");
+    for (c = 0; c < conditions; ++c)
+    {
+	strlcpy(previous_alignment_chrom[c], "0", BL_CHROM_MAX_CHARS + 1);
+	printf(" %-9s%d", "Condition", c + 1);
+	//"FC x vs y");
+    }
+    for (c1 = 0; c1 < conditions; ++c1)
+    {
+	for (c2 = c1 + 1; c2 < conditions; ++c2)
+	    if ( (coverage[c1] != 0.0) || (coverage[c2] != 0.0) )
+		printf("  FC %d vs %d", c1 + 1, c2 + 1);
+    }
+    putchar('\n');
     
     while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
     {
@@ -114,7 +123,7 @@ int     diffanal(FILE *feature_stream, FILE *condition_stream[], int conditions)
 		 */
 
 		if ( (bl_gff_find_overlapping_alignment(&feature,
-			condition_stream[c], previous_alignment_chrom[c],
+			condition_streams[c], previous_alignment_chrom[c],
 			&alignment) == BL_READ_OK) &&
 		     (bl_sam_gff_cmp(&alignment, &feature) == 0) )
 		{
@@ -124,19 +133,32 @@ int     diffanal(FILE *feature_stream, FILE *condition_stream[], int conditions)
 		     */
 		    
 		    coverage[c] = count_coverage(&feature, &alignment,
-					condition_stream[c],
+					condition_streams[c],
 					previous_alignment_chrom[c]);
 		}
 	    }
-	    if ( (coverage[0] != 0.0) || (coverage[1] != 0.0) )
-		printf("%2s %-20s %10.2f %10.2f %10.2f\n",
-		       BL_GFF_SEQID(&feature), BL_GFF_FEATURE_NAME(&feature),
-		       coverage[0], coverage[1], coverage[1] / coverage[0]);
+	    
+	    // FIXME: Generalize for more than 2 conditions
+	    printf("%2s %-20s",
+		   BL_GFF_SEQID(&feature), BL_GFF_FEATURE_NAME(&feature));
+	    for (c = 0; c < conditions; ++c)
+		printf(" %10.2f", coverage[c]);
+	    for (c1 = 0; c1 < conditions; ++c1)
+	    {
+		for (c2 = c1 + 1; c2 < conditions; ++c2)
+		{
+		    if ( (coverage[c1] != 0.0) || (coverage[c2] != 0.0) )
+			printf(" %10.2f", coverage[c2] / coverage[c1]);
+		    else
+			printf(" %10s", "*");
+		}
+	    }
+	    putchar('\n');
 	}
     }
     
     for (c = 2; c < conditions; ++c)
-	bl_sam_fclose(condition_stream[c]);
+	bl_sam_fclose(condition_streams[c]);
     xt_fclose(feature_stream);
     
     return EX_OK;
