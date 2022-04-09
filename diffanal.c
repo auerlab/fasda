@@ -23,14 +23,9 @@
 int     main(int argc,char *argv[])
 
 {
-    char        *features_file, *condition_files[MAX_CONDITIONS],
-		previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
-		previous_alignment_chrom[MAX_CONDITIONS][BL_CHROM_MAX_CHARS + 1];
+    char        *features_file, *condition_files[MAX_CONDITIONS];
     FILE        *feature_stream, *condition_stream[MAX_CONDITIONS];
-    bl_gff_t    feature;
-    bl_sam_t    alignment;
-    int         conditions, c, cmp;
-    double      coverage[MAX_CONDITIONS];
+    int         conditions, c;
     
     if ( argc < 4 )
 	usage(argv);
@@ -58,8 +53,23 @@ int     main(int argc,char *argv[])
 	}
 	
 	bl_sam_skip_header(condition_stream[conditions]);
-	strlcpy(previous_alignment_chrom[conditions], "0", BL_CHROM_MAX_CHARS + 1);
     }
+    
+    return diffanal(feature_stream, condition_stream, conditions);
+}
+
+
+int     diffanal(FILE *feature_stream, FILE *condition_stream[], int conditions)
+
+{
+    char        previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
+		previous_alignment_chrom[MAX_CONDITIONS][BL_CHROM_MAX_CHARS + 1];
+    bl_gff_t    feature;
+    bl_sam_t    alignment;
+    int         c, cmp;
+    double      coverage[MAX_CONDITIONS];
+    
+    // FIXME: Currently only support two conditions
     printf("%d conditions.\n", conditions);
     
     /*
@@ -69,7 +79,10 @@ int     main(int argc,char *argv[])
      *  Thoroughly test and optimize, then explore more
      *  sophisticated depth algorithms.
      */
-		
+
+    for (c = 0; c < conditions; ++c)
+	strlcpy(previous_alignment_chrom[c], "0", BL_CHROM_MAX_CHARS + 1);
+
     // FIXME: discard unnecessary fields to improve performance
     bl_gff_init(&feature);
     bl_sam_init(&alignment);
@@ -82,6 +95,8 @@ int     main(int argc,char *argv[])
 	{
 	    for (c = 0; c < conditions; ++c)
 		coverage[c] = 0;
+	    
+	    // Verify that features are properly sorted
 	    cmp = bl_chrom_name_cmp(BL_GFF_SEQID(&feature), previous_feature_chrom);
 	    if ( cmp < 0 )
 	    {
@@ -125,6 +140,7 @@ int     main(int argc,char *argv[])
     xt_fclose(feature_stream);
     
     return EX_OK;
+
 }
 
 
@@ -167,6 +183,7 @@ int     bl_gff_find_overlapping_alignment(
     while ( ((status = bl_sam_read(alignment, alignment_stream, SAM_MASK)) == BL_READ_OK) &&
 	    (bl_sam_gff_cmp(alignment, feature) < 0) )
     {
+	// Verify that alignments are properly sorted
 	cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
 	if ( cmp > 0 )
 	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
