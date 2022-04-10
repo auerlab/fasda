@@ -68,6 +68,7 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
     bl_sam_t    alignment;
     int         c, cmp;
     double      coverage[MAX_CONDITIONS];
+    FILE        *buffer_streams[MAX_CONDITIONS];
     
     /*
      *  Start simple: Count reads overlapping each position
@@ -81,7 +82,14 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
     bl_sam_init(&alignment);
     strlcpy(previous_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
     for (c = 0; c < conditions; ++c)
+    {
 	strlcpy(previous_alignment_chrom[c], "0", BL_CHROM_MAX_CHARS + 1);
+	if ( (buffer_streams[c] = tmpfile()) == NULL )
+	{
+	    fprintf(stderr, "diffanal: Cannot create temp file for SAM buffer.\n");
+	    return EX_CANTCREAT;
+	}
+    }
     print_header(conditions);
     
     while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
@@ -109,7 +117,8 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
 		 */
 
 		if ( (bl_gff_find_overlapping_alignment(&feature,
-			condition_streams[c], previous_alignment_chrom[c],
+			condition_streams[c], buffer_streams[c],
+			previous_alignment_chrom[c],
 			&alignment) == BL_READ_OK) &&
 		     (bl_sam_gff_cmp(&alignment, &feature) == 0) )
 		{
@@ -120,6 +129,7 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
 		    
 		    coverage[c] = count_coverage(&feature, &alignment,
 					condition_streams[c],
+					buffer_streams[c],
 					previous_alignment_chrom[c]);
 		}
 	    }
@@ -128,7 +138,10 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
     }
     
     for (c = 2; c < conditions; ++c)
+    {
 	bl_sam_fclose(condition_streams[c]);
+	fclose(buffer_streams[c]);
+    }
     xt_fclose(feature_stream);
     
     return EX_OK;
@@ -165,12 +178,37 @@ int     diffanal(FILE *feature_stream, FILE *condition_streams[], int conditions
  ***************************************************************************/
 
 int     bl_gff_find_overlapping_alignment(
-	    bl_gff_t *feature, FILE *alignment_stream,
+	    bl_gff_t *feature, FILE *alignment_stream, FILE *buffer_stream,
 	    char *previous_alignment_chrom,
 	    bl_sam_t *alignment)
 
 {
     int     status, cmp;
+
+    // First search alignments buffered from previous gene
+    rewind(buffer_stream);
+    while ( ((status = bl_sam_read(alignment, buffer_stream, SAM_MASK)) == BL_READ_OK) &&
+	    (bl_sam_gff_cmp(alignment, feature) < 0) )
+    {
+	// Verify that alignments are properly sorted
+	cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
+	if ( cmp > 0 )
+	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
+	else if ( cmp < 0 )
+	{
+	    fprintf(stderr, "diffanal, %s(): "
+		    "Chromosomes out of order in SAM stream: %s %s\n",
+		    __FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
+	    exit(EX_DATAERR);
+	}
+    }
+    if ( status != BL_READ_EOF )
+	return status;  // Found an overlap in buffered alignments
+
+    // If no overlapping alignment found in buffered reads, discard the
+    // old ones snd continue in primary SAM stream
+    rewind(buffer_stream);
+    ftruncate(fileno(buffer_stream), 0);
     
     while ( ((status = bl_sam_read(alignment, alignment_stream, SAM_MASK)) == BL_READ_OK) &&
 	    (bl_sam_gff_cmp(alignment, feature) < 0) )
@@ -224,18 +262,18 @@ int     bl_gff_find_overlapping_alignment(
  ***************************************************************************/
 
 double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
-		       FILE *sam_stream, char *previous_alignment_chrom)
+		       FILE *sam_stream, FILE *buffer_stream,
+		       char *previous_alignment_chrom)
 
 {
     int64_t overlapping_bases = 0;
     double  coverage;
     int     cmp;
     
-    // FIXME: Buffer overlapping alignments so they can also
-    // be checked against the next gene.
-    
-    // alignment arg already contains first overlapping read
+    // "alignment" arg already contains first overlapping read
     // Loop through all reads overlapping the feature
+    // Check alignments buffered from previous gene first
+    rewind(buffer_stream);
     do
     {
 	cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
@@ -249,8 +287,35 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	    exit(EX_DATAERR);
 	}
 	overlapping_bases += bl_gff_sam_overlap(feature, alignment);
-    }   while ( (bl_sam_read(alignment, sam_stream, SAM_MASK) == BL_READ_OK)
+    }   while ( (bl_sam_read(alignment, buffer_stream, SAM_MASK) == BL_READ_OK)
 		&& (bl_sam_gff_cmp(alignment, feature) == 0) );
+    
+    // If we ran out of buffered alignments, discard the old ones and
+    // continue in primary SAM stream
+    if ( bl_sam_gff_cmp(alignment, feature) == 0 )
+    {
+	rewind(buffer_stream);
+	ftruncate(fileno(buffer_stream), 0);
+	do
+	{
+	    cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
+	    if ( cmp > 0 )
+		strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
+	    else if ( cmp < 0 )
+	    {
+		fprintf(stderr, "diffanal: %s(): "
+			"Chromosomes out of order in SAM stream: %s %s\n",
+			__FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
+		exit(EX_DATAERR);
+	    }
+	    overlapping_bases += bl_gff_sam_overlap(feature, alignment);
+    
+	    // Buffer new overlapping alignments so they can also
+	    // be checked against the next gene.
+	    bl_sam_write(alignment, buffer_stream, SAM_MASK);
+	}   while ( (bl_sam_read(alignment, sam_stream, SAM_MASK) == BL_READ_OK)
+		    && (bl_sam_gff_cmp(alignment, feature) == 0) );
+    }
     
     // Divide by length of gene
     coverage = (double)overlapping_bases /
