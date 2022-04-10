@@ -310,6 +310,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	// gene, they won't overlap the next either, since they're sorted.
 	rewind(buffer_stream);
 	ftruncate(fileno(buffer_stream), 0);
+	buffer_pos = 0;     // rewind() obsoletes ftell() above
 	
 	while ( (bl_sam_read(alignment, sam_stream, SAM_MASK) == BL_READ_OK)
 		&& (bl_sam_gff_cmp(alignment, feature) == 0) )
@@ -340,10 +341,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	}
     }
     
-    //fprintf(stderr, "Seeking to %ld\n", buffer_pos);
-    // FIXME: Causes bl_chrom_name_cmp() to fail in bl_sam_gff_cmp()
-    //fseek(buffer_stream, buffer_pos, SEEK_SET);
-    rewind(buffer_stream);
+    fseek(buffer_stream, buffer_pos, SEEK_SET);
     
     // Divide by length of gene
     coverage = (double)overlapping_bases /
