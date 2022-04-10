@@ -310,8 +310,16 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	    }
 	    overlapping_bases += bl_gff_sam_overlap(feature, alignment);
     
-	    // Buffer new overlapping alignments so they can also
-	    // be checked against the next gene.
+	    /*
+	     *  Buffer new overlapping alignments so they can also be
+	     *  checked against the next gene.  The number of overlapping
+	     *  alignments is typically in the tens or hundreds, but
+	     *  occasionally in the tens of thousands.  Buffering them in
+	     *  an array therefore leads to highly variable memory use,
+	     *  requiring wasteful memory allocations for batch jobs.
+	     *  Using a temporary file trades a modest amount of
+	     *  performance for consistently low memory use and simplicity.
+	     */
 	    bl_sam_write(alignment, buffer_stream, SAM_MASK);
 	}   while ( (bl_sam_read(alignment, sam_stream, SAM_MASK) == BL_READ_OK)
 		    && (bl_sam_gff_cmp(alignment, feature) == 0) );
