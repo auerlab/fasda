@@ -31,9 +31,8 @@ coverage algorithms, and adding other features.
 The sample output below is from Mus musculus annotations (GRCm39) and 3
 hisat2 BAM files with 68, 89, and 76 million reads, representing three time
 points during development.  This 3-condition differential analysis runs in
-6 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) and uses about
-2 megabytes (yes, megabytes - not gigabytes) of RAM. The analysis for just
-conditions 1 and 2 runs in 4.5 minutes.
+about 8 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) and uses about
+2 megabytes (yes, megabytes - not gigabytes) of RAM.
 
 ```
 diffanal mouse-sorted.gff3 time1.bam time2.bam time3.bam
