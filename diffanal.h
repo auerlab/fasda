@@ -8,5 +8,9 @@
 // more expensive to decode, so it may help there.
 #define SAMTOOLS_ARGS   "--exclude-flags UNMAP"
 
+#ifndef _BIOLIBC_ALIGNMENT_STATS_H_
+#include "alignment-stats.h"
+#endif
+
 #include "diffanal-protos.h"
 

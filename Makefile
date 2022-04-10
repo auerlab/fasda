@@ -53,7 +53,7 @@ BIN     = diffanal
 ############################################################################
 # List object files that comprise BIN.
 
-OBJS    = diffanal.o
+OBJS    = diffanal.o alignment-stats-mutators.o
 
 ############################################################################
 # Compile, link, and install options

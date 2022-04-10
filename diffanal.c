@@ -69,6 +69,7 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
     int         c, cmp;
     double      coverage[MAX_CONDITIONS];
     FILE        *buffer_streams[MAX_CONDITIONS];
+    bl_alignment_stats_t    alignment_stats = BL_ALIGNMENT_STATS_INIT;
     
     /*
      *  Start simple: Count reads overlapping each position
@@ -119,7 +120,7 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
 		if ( (bl_gff_find_overlapping_alignment(&feature,
 			sam_streams[c], buffer_streams[c],
 			previous_alignment_chrom[c],
-			&alignment) == BL_READ_OK) &&
+			&alignment, &alignment_stats) == BL_READ_OK) &&
 		     (bl_sam_gff_cmp(&alignment, &feature) == 0) )
 		{
 		    /*
@@ -130,7 +131,8 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
 		    coverage[c] = count_coverage(&feature, &alignment,
 					sam_streams[c],
 					buffer_streams[c],
-					previous_alignment_chrom[c]);
+					previous_alignment_chrom[c],
+					&alignment_stats);
 		}
 	    }
 	    print_fold_change(&feature, coverage, conditions);
@@ -144,8 +146,12 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
     }
     xt_fclose(feature_stream);
     
+    printf("\nTotal alignments processed:        %lu\n",
+	    BL_ALIGNMENT_STATS_TOTAL(&alignment_stats));
+    printf("Alignments overlapping a feature:  %lu\n",
+	    BL_ALIGNMENT_STATS_OVERLAPPING(&alignment_stats));
+    
     return EX_OK;
-
 }
 
 
@@ -177,10 +183,10 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
  *  2022-04-06  Jason Bacon Begin
  ***************************************************************************/
 
-int     bl_gff_find_overlapping_alignment(
-	    bl_gff_t *feature, FILE *sam_stream, FILE *buffer_stream,
-	    char *previous_alignment_chrom,
-	    bl_sam_t *alignment)
+int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
+	    FILE *sam_stream, FILE *buffer_stream,
+	    char *previous_alignment_chrom, bl_sam_t *alignment,
+	    bl_alignment_stats_t *alignment_stats)
 
 {
     int     status, cmp;
@@ -217,6 +223,8 @@ int     bl_gff_find_overlapping_alignment(
 	while ( ((status = bl_sam_read(alignment, sam_stream, SAM_MASK)) == BL_READ_OK) &&
 		(bl_sam_gff_cmp(alignment, feature) < 0) )
 	{
+	    ++BL_ALIGNMENT_STATS_TOTAL(alignment_stats);
+	    
 	    // Verify that alignments are properly sorted
 	    cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
 	    if ( cmp > 0 )
@@ -267,7 +275,8 @@ int     bl_gff_find_overlapping_alignment(
 
 double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 		       FILE *sam_stream, FILE *buffer_stream,
-		       char *previous_alignment_chrom)
+		       char *previous_alignment_chrom,
+		       bl_alignment_stats_t *alignment_stats)
 
 {
     int64_t overlapping_bases = 0;
@@ -315,6 +324,8 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	while ( (bl_sam_read(alignment, sam_stream, SAM_MASK) == BL_READ_OK)
 		&& (bl_sam_gff_cmp(alignment, feature) == 0) )
 	{
+	    ++BL_ALIGNMENT_STATS_TOTAL(alignment_stats);
+	    ++BL_ALIGNMENT_STATS_OVERLAPPING(alignment_stats);
 	    cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
 	    if ( cmp > 0 )
 		strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
