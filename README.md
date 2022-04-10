@@ -8,12 +8,12 @@ and peak calling.  Well-maintained tools such as FastQC, cutadapt, BWA,
 Bowtie2, HISAT2, samtools, and MACS2 make the early stages of an RNA-Seq,
 ATAC-Seq, or ChIP-Seq analysis fairly straightforward.
 
-The differential analysis step itself has until now has presented a major
-hurdle, with few well-developed tools available, and many of them
+The differential analysis step itself has until now has been problematic,
+with few well-developed tools available, and many of them
 requiring fairly sophisticated R scripting for basic use.  Code maintenance
 has also been an issue, with even the most popular tools falling into
 disrepair at times and frequently presenting installation issues due to
-incompatibility with the latest R or other dependencies.
+incompatibility with the latest version of R or other dependencies.
 
 Diffanal aims to provide a fast and simple differential analysis tool that
 just works and does not require any knowledge beyond basic Unix command-line
@@ -28,11 +28,12 @@ simplistic coverage measurement.  Once this code
 is robust we will move onto computing P-values, exploring more sophisticated
 coverage algorithms, and adding other features.
 
-The sample output below is from Mus musculus data (GRCm39) and three hisat2
-BAM files with 68, 89, and 76 million reads.  This 3-condition differential
-analysis runs in 6 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) and
-uses less than 2 megabytes (yes, megabytes - not gigabytes) of RAM. The DA
-for just conditions 1 and 2 runs in 4.5 minutes.
+The sample output below is from Mus musculus annotations (GRCm39) and 3
+hisat2 BAM files with 68, 89, and 76 million reads, representing three time
+points during development.  This 3-condition differential analysis runs in
+6 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) and uses less than
+2 megabytes (yes, megabytes - not gigabytes) of RAM. The analysis for just
+conditions 1 and 2 runs in 4.5 minutes.
 
 ```
 diffanal mouse-sorted.gff3 time1.bam time2.bam time3.bam
@@ -120,7 +121,7 @@ pkg install diffanal
 
 You can just as easily build and install from source.  This is useful for
 FreeBSD ports with special build options, for building with non-portable
-optimizations such as -march=native, and for 
+optimizations such as -march=native, building with debugging info, and for 
 [work-in-progress ports](https://github.com/outpaddling/freebsd-ports-wip),
 for which binary packages are not yet maintained.
 
