@@ -28,38 +28,37 @@ simplistic coverage measurement.  Once this code
 is robust we will move onto computing P-values, exploring more sophisticated
 coverage algorithms, and adding other features.
 
-The sample output below is from Mus musculus data (GRCm39) and kallisto
-pseudobams with 70 to 90 million reads each.  This 3-condition differential
+The sample output below is from Mus musculus data (GRCm39) and three hisat2
+BAM files with 68, 89, and 76 million reads.  This 3-condition differential
 analysis runs in 6 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) and
 uses less than 2 megabytes (yes, megabytes - not gigabytes) of RAM. The DA
 for just conditions 1 and 2 runs in 4.5 minutes.
 
 ```
-diffanal mouse-sorted.gff3 \
-    time1/pseudoalignments.bam \
-    time2/pseudoalignments.bam \
-    time3/pseudoalignments.bam
+diffanal mouse-sorted.gff3 time1.bam time2.bam time3.bam
 
 Ch Gene             Cond1  Cond2  Cond3  FC 1-2  FC 1-3  FC 2-3
  1 4933401J01Rik     0.00   0.00   0.00       *       *       *
- 1 Xkr4              0.03   0.05   0.02    1.54    0.59    0.38
+ 1 Xkr4              0.33   0.45   0.10    1.36    0.29    0.22
  1 Gm37180           0.00   0.00   0.00       *       *       *
  1 Gm37363           0.00   0.00   0.00       *       *       *
  1 Gm37686           0.00   0.00   0.00       *       *       *
  1 Gm37329           0.00   0.00   0.00       *       *       *
  1 Gm38148           0.00   0.00   0.00       *       *       *
  1 Gm10568           0.00   0.00   0.00       *       *       *
- 1 Gm38385           0.00   0.00   0.00       *       *       *
- 1 Rp1               0.02   0.03   0.00    1.21    0.03    0.03
+ 1 Gm38385           0.27   0.10   0.13    0.39    0.47    1.21
+ 1 Rp1               0.03   0.04   0.02    1.29    0.68    0.52
  1 Gm37483           0.00   0.00   0.00       *       *       *
- 1 Sox17             0.00   0.00   0.00       *       *       *
- 1 Mrpl15           27.06  36.37  22.48    1.34    0.83    0.62
+ 1 Sox17             0.36   0.19   0.14    0.52    0.39    0.75
+ 1 Mrpl15           27.97  36.81  22.93    1.32    0.82    0.62
  1 Gm37144           0.00   0.00   0.00       *       *       *
- 1 Lypla1           29.88  30.62  26.90    1.02    0.90    0.88
- 1 Gm37988           0.07   0.06   0.05    0.90    0.82    0.92
- 1 Tcea1             0.00   0.00   0.00       *       *       *
- 1 Gm37277           0.22   0.00   1.10    0.00    5.07     inf
- 1 Rgs20             2.35   2.97   2.83    1.26    1.20    0.95
+ 1 Lypla1           42.11  34.87  29.35    0.83    0.70    0.84
+ 1 Gm37988           0.15   0.06   0.09    0.40    0.60    1.51
+ 1 Tcea1             0.20   0.05   0.11    0.25    0.54    2.17
+ 1 Gm37277           0.62   0.00   1.56    0.00    2.53     inf
+ 1 Rgs20             3.02   3.30   3.13    1.09    1.04    0.95
+ 1 Gm37079           0.00   0.00   0.00       *       *       *
+ 1 Atp6v1h           1.19   1.47   1.35    1.24    1.13    0.92
 ```
 
 ## Design and Implementation
