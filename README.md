@@ -31,7 +31,7 @@ coverage algorithms, and adding other features.
 The sample output below is from Mus musculus annotations (GRCm39) and 3
 hisat2 BAM files with 68, 89, and 76 million reads, representing three time
 points during development.  This 3-condition differential analysis runs in
-about 8 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) and uses about
+about 8 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) using about
 2 megabytes (yes, megabytes - not gigabytes) of RAM.
 
 ```
@@ -54,11 +54,21 @@ Ch Gene             Cond1  Cond2  Cond3  FC 1-2  FC 1-3  FC 2-3
  1 Gm37144           0.00   0.00   0.00       *       *       *
  1 Lypla1           42.11  34.87  29.35    0.83    0.70    0.84
  1 Gm37988           0.15   0.06   0.09    0.40    0.60    1.51
- 1 Tcea1             0.20   0.05   0.11    0.25    0.54    2.17
- 1 Gm37277           0.62   0.00   1.56    0.00    2.53     inf
- 1 Rgs20             3.02   3.30   3.13    1.09    1.04    0.95
- 1 Gm37079           0.00   0.00   0.00       *       *       *
- 1 Atp6v1h           1.19   1.47   1.35    1.24    1.13    0.92
+
+...
+
+19 Sfxn4             7.67  11.27   8.98    1.47    1.17    0.80
+19 Prdx3             1.94   3.04   1.41    1.56    0.73    0.46
+19 Grk5              0.50   0.78   0.87    1.56    1.74    1.12
+19 Zfp950            2.46   3.34   2.68    1.36    1.09    0.80
+19 Gm7102            0.06   0.06   0.06    1.00    1.00    1.00
+19 Gm6020            0.00   0.52   0.00     inf       *    0.00
+19 Csf2ra            0.00   0.00   0.00       *       *       *
+19 Gm21060           0.00   0.00   0.00       *       *       *
+
+Total alignments processed:        192751477
+
+      476.10 real       518.16 user        15.53 sys
 ```
 
 ## Design and Implementation
