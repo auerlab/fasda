@@ -25,11 +25,21 @@ int     main(int argc,char *argv[])
 {
     char        *features_file, *condition_files[MAX_CONDITIONS];
     FILE        *feature_stream, *sam_streams[MAX_CONDITIONS];
-    int         conditions, c;
+    int         conditions, c, flags;
     
     if ( argc < 4 )
 	usage(argv);
-    features_file = argv[1];
+    
+    for (c = 1, flags = 0x0; (c < argc) && (argv[c][0] == '-'); ++c)
+    {
+	if ( strcmp(argv[c], "--show-gene-name") == 0 )
+	    flags |= DIFFANAL_FLAG_SHOW_GENE;
+	else if ( strcmp(argv[c], "--map-to-gene") == 0 )
+	    flags |= DIFFANAL_FLAG_MAP_GENE;
+	else
+	    usage(argv);
+    }
+    features_file = argv[c++];
     
     if ( (feature_stream = xt_fopen(features_file, "r")) == NULL )
     {
@@ -39,7 +49,7 @@ int     main(int argc,char *argv[])
     }
     bl_gff_skip_header(feature_stream);
 
-    for (c = 2, conditions = 0; c < argc; ++c, ++conditions)
+    for (conditions = 0; c < argc; ++c, ++conditions)
     {
 	condition_files[conditions] = argv[c];
 
@@ -55,15 +65,17 @@ int     main(int argc,char *argv[])
 	bl_sam_skip_header(sam_streams[conditions]);
     }
     
-    return diffanal(feature_stream, sam_streams, conditions);
+    return diffanal(feature_stream, sam_streams, conditions, flags);
 }
 
 
-int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
+int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions,
+		 int flags)
 
 {
     char        previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
-		previous_alignment_chrom[MAX_CONDITIONS][BL_CHROM_MAX_CHARS + 1];
+		previous_alignment_chrom[MAX_CONDITIONS][BL_CHROM_MAX_CHARS + 1],
+		*feature_type = "mRNA";
     bl_gff_t    feature;
     bl_sam_t    alignment;
     int         c, cmp;
@@ -79,6 +91,8 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
      *  sophisticated depth algorithms.
      */
 
+    if ( flags | DIFFANAL_FLAG_MAP_GENE )
+	feature_type = "gene";
     bl_gff_init(&feature);
     bl_sam_init(&alignment);
     strlcpy(previous_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
@@ -95,7 +109,7 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
     
     while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
     {
-	if ( strcmp(BL_GFF_TYPE(&feature), "gene") == 0 )
+	if ( strcmp(BL_GFF_TYPE(&feature), feature_type) == 0 )
 	{
 	    for (c = 0; c < conditions; ++c)
 		coverage[c] = 0;
@@ -135,7 +149,7 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions)
 					&alignment_stats);
 		}
 	    }
-	    print_fold_change(&feature, coverage, conditions);
+	    print_fold_change(&feature, coverage, conditions, flags);
 	}
     }
     
@@ -375,7 +389,7 @@ void    print_header(int conditions)
 {
     int     c1, c2;
     
-    printf("%2s %-15s", "Ch", "Gene");
+    printf("%2s %-15s", "Ch", "Feature");
     for (c1 = 0; c1 < conditions; ++c1)
 	printf(" %5s%d", "Cond", c1 + 1);
     for (c1 = 0; c1 < conditions; ++c1)
@@ -396,13 +410,19 @@ void    print_header(int conditions)
  *  2022-04-09  Jason Bacon Begin
  ***************************************************************************/
 
-void    print_fold_change(bl_gff_t *feature, double coverage[], int conditions)
+void    print_fold_change(bl_gff_t *feature, double coverage[],
+			  int conditions, int flags)
 
 {
     int     c1, c2;
+    char    *id;
     
-    printf("%2s %-15s",
-	   BL_GFF_SEQID(feature), BL_GFF_FEATURE_NAME(feature));
+    if ( flags & DIFFANAL_FLAG_SHOW_GENE )
+	id = BL_GFF_FEATURE_NAME(feature);
+    else
+	id = BL_GFF_FEATURE_ID(feature);
+    
+    printf("%2s %-15s", BL_GFF_SEQID(feature), id);
     for (c1 = 0; c1 < conditions; ++c1)
 	printf(" %6.2f", coverage[c1]);
     for (c1 = 0; c1 < conditions; ++c1)
