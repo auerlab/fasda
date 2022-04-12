@@ -92,7 +92,7 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions,
      *  sophisticated depth algorithms.
      */
 
-    if ( flags | DIFFANAL_FLAG_MAP_GENE )
+    if ( flags & DIFFANAL_FLAG_MAP_GENE )
 	feature_type = "gene";
     bl_gff_init(&feature);
     bl_sam_init(&alignment);
@@ -116,7 +116,8 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions,
 		coverage[c] = 0;
 	    
 	    // Verify that features are properly sorted
-	    cmp = bl_chrom_name_cmp(BL_GFF_SEQID(&feature), previous_feature_chrom);
+	    cmp = bl_chrom_name_cmp(BL_GFF_SEQID(&feature),
+				    previous_feature_chrom);
 	    if ( cmp < 0 )
 	    {
 		fprintf(stderr, "diffanal: Error: GFF3 chromosomes out of order: %s %s\n",
@@ -124,7 +125,8 @@ int     diffanal(FILE *feature_stream, FILE *sam_streams[], int conditions,
 		return EX_DATAERR;
 	    }
 	    else if ( cmp > 0 )
-		strlcpy(previous_feature_chrom, BL_GFF_SEQID(&feature), BL_CHROM_MAX_CHARS + 1);
+		strlcpy(previous_feature_chrom, BL_GFF_SEQID(&feature),
+			BL_CHROM_MAX_CHARS + 1);
 
 	    for (c = 0; c < conditions; ++c)
 	    {
@@ -443,8 +445,9 @@ void    print_fold_change(bl_gff_t *feature, double coverage[],
 void    usage(char *argv[])
 
 {
-    fprintf(stderr, "Usage: %s features.gff3 \\\n", argv[0]);
-    fprintf(stderr, "\tcondition1.[sam|bam|cram][.gz|.bz2|.xz] \\\n");
-    fprintf(stderr, "\tcondition2.[sam|bam|cram][.gz|.bz2|.xz]\n");
+    fprintf(stderr, "Usage: %s features.gff3 \\\n"
+	    "\t[--show-gene-name] [--map-to-gene]\n"
+	    "\tcondition1.[sam|bam|cram][.gz|.bz2|.xz] \\\n"
+	    "\tcondition2.[sam|bam|cram][.gz|.bz2|.xz]\n", argv[0]);
     exit(EX_USAGE);
 }
