@@ -1,6 +1,13 @@
 
 Kallisto abundances.tsv
 
-P-values
-
 Test script (Download SRA data?)
+
+P-values
+    Paul:
+	EdgeR, etc. very sophisticated
+	Sum rank test almost as good
+	R function wilcox.test()
+	    Some cases not as sensitive
+	    Some cases more robust
+    
