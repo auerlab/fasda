@@ -14,3 +14,8 @@ P-values
 	    Some cases more robust
 	https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4
 	Saves as DE-false-positives.pdf
+    Paper:
+	Wilcoxon test is the only method that controls FDR consistently
+	Wilcoxon has almost no power for sample sizes < 8
+	    Need a parametric test?
+	    Better power than most other methods for SS > 8
