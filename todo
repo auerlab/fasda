@@ -6,7 +6,7 @@ Test script (Download SRA data?)
 P-values
     Paul:
 	EdgeR, etc. very sophisticated
-	Sum rank test almost as good
+	Rank sum test almost as good
 	Could be especially useful for large studies with many samples
 	where R packages become too cumbersome
 	R function wilcox.test()
