@@ -71,6 +71,16 @@ Total alignments processed:        192751477
       476.10 real       518.16 user        15.53 sys
 ```
 
+The next phase will involve implementing the Mann-Whitney U test for
+determining P-values.  According to
+[https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4),
+this method provides great stability and low FDR.  The down side is that
+it requires a minimum sample size of about 8, and hence is not useful for
+typical RNA-Seq or ATAC-Seq experiments with 3 replicates.  However,
+since popular differential analysis tools perform poorly for large sample
+sizes, we will try to address this need first in order to fill an under-served
+niche.
+
 ## Design and Implementation
 
 The code is organized following basic object-oriented design principals, but
