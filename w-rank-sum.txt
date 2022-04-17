@@ -5,7 +5,7 @@ MWW/MWU
 
 Assumption:         Samples T1 and T2 are independent
 
-Null hypothesis:    P(T1 > T2) = P(T1 < T2), i.e. distirbutions are equal
+Null hypothesis:    P(T1 > T2) = P(T1 < T2), i.e. distributions are equal
 
 T1 = abundance for gene X at time 1
 T2 =             "                2
@@ -52,5 +52,8 @@ R2 = N(N+1)/2 - R1 = 16(16+1)/2 - 64.5 = 272/2 - 64.5 = 136 - 64.5 = 71.5
 U2 = 71.5 - 36 = 35.5
 
 U = MIN(U1, U2) = 28.5
+
+From MWU table:
+
 n1/n2 = 8/8, alpha = 0.5: Critical U value = 13
-Conclusion: Reject H0
+Conclusion: U > critical value, fail to reject H0
