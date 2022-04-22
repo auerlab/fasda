@@ -19,3 +19,22 @@ P-values
 	Wilcoxon has almost no power for sample sizes < 8
 	    Need a parametric test?
 	    Better power than most other methods for SS > 8
+
+Better abundance estimates from BAMs
+    Kallisto reports TPM
+    https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/
+    Effective length l~[i] = l[i] - ufl + 1
+	Accounts for all possible start sites of fragments
+	ufl = mean fragment length
+	bias?
+    TPM = transcripts per million
+	Adjusts for read count in the sample
+	Rate (counts per base) = X[i]/l~[i]
+	TPM = rate * (1 / sum(rates)) * 10^6
+    FPKM = fragments per kilobase of EXON per million
+	= X[i]/(l~[i]*N) * 10^9
+	    N = total reads
+	RPKM == FPMK for single-end, not meaningful for paired-end
+    These are not comparable across experiments due to potential
+    differences in RNA distributions under different experimental conditions.
+    
