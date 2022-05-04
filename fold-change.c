@@ -126,7 +126,7 @@ void    print_header(int conditions)
 {
     int     c1, c2;
     
-    printf("%2s %-15s", "Ch", "Feature");
+    printf("%-30s", "Feature");
     for (c1 = 0; c1 < conditions; ++c1)
 	printf(" %5s%d", "Cond", c1 + 1);
     for (c1 = 0; c1 < conditions; ++c1)
@@ -152,6 +152,7 @@ void    print_fold_change(const char *id, double coverage[], int conditions)
 {
     int     c1, c2;
     
+    printf("%-30s", id);
     for (c1 = 0; c1 < conditions; ++c1)
 	printf(" %6.2f", coverage[c1]);
     for (c1 = 0; c1 < conditions; ++c1)
