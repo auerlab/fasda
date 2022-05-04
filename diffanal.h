@@ -1,3 +1,4 @@
+#define MAX_FILE_COUNT  1024    // SAM stream args to abundance.c
 #define MAX_CONDITIONS  128
 #define MAX_SEQ_LEN     1024
 #define GFF_MASK        BL_GFF_FIELD_SEQID|BL_GFF_FIELD_TYPE|\
