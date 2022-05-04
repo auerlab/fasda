@@ -16,12 +16,15 @@
 #include <stdio.h>
 #include <sysexits.h>
 #include <stdlib.h>
+#include <xtend/dsv.h>
 
 void    usage(char *argv[]);
 
 int     main(int argc,char *argv[])
 
 {
+    dsv_line_t  dsv_line;
+    
     switch(argc)
     {
 	case 1:
@@ -31,6 +34,13 @@ int     main(int argc,char *argv[])
 	    usage(argv);
     }
     
+    dsv_line_init(&dsv_line);
+    while ( dsv_line_read(&dsv_line, stdin, "\t") != EOF )
+    {
+	// Dummy output: Just echo non-normalized counts to test UI
+	printf("%s\t%s\n", DSV_LINE_FIELDS_AE(&dsv_line, 0),
+		DSV_LINE_FIELDS_AE(&dsv_line, 3));
+    }
     return EX_OK;
 }
 

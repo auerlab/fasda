@@ -30,7 +30,7 @@ int     main(int argc,char *argv[])
 		*abundance_streams[MAX_FILE_COUNT];
     int         file_count, c, flags;
     
-    if ( argc < 4 )
+    if ( argc < 3 )
 	usage(argv);
     
     for (c = 1, flags = 0x0; (c < argc) && (argv[c][0] == '-'); ++c)
@@ -85,8 +85,10 @@ int     main(int argc,char *argv[])
 			    abundance_files[file_count]);
 		    return EX_NOINPUT;
 		}
-	strlcpy(p, ".tsv", 5);
-	fprintf(stderr, "output = %s\n", abundance_files[file_count]);
+	
+	*p = '\0';
+	strlcat(p, "-abundance.tsv", PATH_MAX);
+	//fprintf(stderr, "output = %s\n", abundance_files[file_count]);
 	if ( (abundance_streams[file_count] =
 	      fopen(abundance_files[file_count], "w")) == NULL )
 	{
