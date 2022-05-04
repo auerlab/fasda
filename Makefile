@@ -78,6 +78,11 @@ LOCALBASE   ?= ${PREFIX}
 # Allow caller to override either MANPREFIX or MANDIR
 MANPREFIX   ?= ${PREFIX}
 MANDIR      ?= ${MANPREFIX}/man
+# FIXME: Need to realpath this if relative (e.g. ../local) or blt won't
+# find subcommands from arbitrary CWD
+# Currently must use cave-man-install.sh for this until a bmake/gmake
+# portable method is found
+LIBEXECDIR  ?= ${PREFIX}/libexec/diffanal
 
 ############################################################################
 # Build flags
@@ -90,6 +95,8 @@ MANDIR      ?= ${MANPREFIX}/man
 # Defaults that should work with GCC and Clang.
 CC          ?= cc
 CFLAGS      ?= -Wall -g -O
+CFLAGS      += -DLIBEXECDIR=\"${LIBEXECDIR}\"
+CFLAGS      += -DVERSION=\"`./version.sh`\"
 
 # Link command:
 # Use ${FC} to link when mixing C and Fortran
@@ -185,12 +192,17 @@ realclean: clean
 # Install all target files (binaries, libraries, docs, etc.)
 
 install: all
-	${MKDIR} -p ${DESTDIR}${PREFIX}/bin ${DESTDIR}${MANDIR}/man1
-	${INSTALL} -s -m 0555 ${BIN} ${DESTDIR}${PREFIX}/bin
-	${INSTALL} -m 0444 Man/*.1 ${DESTDIR}${MANDIR}/man1
+	${MKDIR} -p ${DESTDIR}${PREFIX}/bin ${DESTDIR}${LIBEXECDIR} \
+		    ${DESTDIR}${MANDIR}/man1
+	${INSTALL} -s -m 0755 ${BIN} ${DESTDIR}${PREFIX}/bin
+	${INSTALL} -s -m 0755 ${LIBEXEC} ${DESTDIR}${LIBEXECDIR}
+	${INSTALL} -m 0644 Man/*.1 ${DESTDIR}${MANDIR}/man1
 
 install-strip: install
 	${STRIP} ${DESTDIR}${PREFIX}/bin/${BIN}
+	for f in ${LIBEXEC}; do \
+	    ${STRIP} ${DESTDIR}${LIBEXECDIR}/$${f}; \
+	done
 
 help:
 	@printf "Usage: make [VARIABLE=value ...] all\n\n"

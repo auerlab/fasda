@@ -17,3 +17,5 @@ for bam in $bams; do
     echo $tsv
     time ./normalize < $intsv > $outtsv
 done
+
+# time ./fold-change outtsv1 outtsv2 outtsv3

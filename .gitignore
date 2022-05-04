@@ -1,4 +1,7 @@
 *.o
 diffanal
+abundance
+normalize
+fold-change
 .*.bak
 Data

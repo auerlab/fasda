@@ -1,0 +1,21 @@
+#!/bin/sh -e
+
+##########################################################################
+#   Be sure to set VERSION in the build phase of any ports, since there
+#   will be no .git in the work directory.
+##########################################################################
+
+if [ -e .git ]; then
+    if git describe --tags > /dev/null 2>&1; then
+	version=$(git describe --tags | cut -d - -f 1-2 | tr - .)
+    else
+	commits=$(git log | awk '$1 == "commit"' | wc -l)
+	version=0.0.0.`echo $commits`
+    fi
+elif [ -n "$VERSION" ]; then
+    version=$VERSION
+else
+    version="Unknown-version"
+fi
+echo $version
+
