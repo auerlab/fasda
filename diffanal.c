@@ -62,6 +62,7 @@ int     main(int argc,char *argv[])
 		    condition_files[conditions], strerror(errno));
 	    return EX_NOINPUT;
 	}
+	fprintf(stderr, "sam stream = %p\n", sam_streams[conditions]);
 	
 	bl_sam_skip_header(sam_streams[conditions]);
     }
