@@ -1,3 +1,19 @@
-diffanal.o: diffanal.c diffanal.h diffanal-protos.h
+abundance.o: abundance.c
+	${CC} -c ${CFLAGS} abundance.c
+
+alignment-stats-mutators.o: alignment-stats-mutators.c alignment-stats.h \
+  alignment-stats-rvs.h alignment-stats-accessors.h \
+  alignment-stats-mutators.h
+	${CC} -c ${CFLAGS} alignment-stats-mutators.c
+
+diffanal.o: diffanal.c diffanal.h alignment-stats.h alignment-stats-rvs.h \
+  alignment-stats-accessors.h alignment-stats-mutators.h \
+  diffanal-protos.h
 	${CC} -c ${CFLAGS} diffanal.c
+
+fold-change.o: fold-change.c
+	${CC} -c ${CFLAGS} fold-change.c
+
+normalize.o: normalize.c
+	${CC} -c ${CFLAGS} normalize.c
 
