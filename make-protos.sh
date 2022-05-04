@@ -1,3 +1,5 @@
 #!/bin/sh -e
 
-cproto -I../local/include *.c > diffanal-protos.h
+for file in *.c; do
+    cproto -I../local/include $file > ${file%.c}-protos.h
+done

@@ -1,4 +1,6 @@
-abundance.o: abundance.c
+abundance.o: abundance.c abundance.h alignment-stats.h \
+  alignment-stats-rvs.h alignment-stats-accessors.h \
+  alignment-stats-mutators.h abundance-protos.h
 	${CC} -c ${CFLAGS} abundance.c
 
 alignment-stats-mutators.o: alignment-stats-mutators.c alignment-stats.h \
@@ -6,14 +8,12 @@ alignment-stats-mutators.o: alignment-stats-mutators.c alignment-stats.h \
   alignment-stats-mutators.h
 	${CC} -c ${CFLAGS} alignment-stats-mutators.c
 
-diffanal.o: diffanal.c diffanal.h alignment-stats.h alignment-stats-rvs.h \
-  alignment-stats-accessors.h alignment-stats-mutators.h \
-  diffanal-protos.h
+diffanal.o: diffanal.c
 	${CC} -c ${CFLAGS} diffanal.c
 
-fold-change.o: fold-change.c
+fold-change.o: fold-change.c fold-change.h fold-change-protos.h
 	${CC} -c ${CFLAGS} fold-change.c
 
-normalize.o: normalize.c
+normalize.o: normalize.c normalize.h normalize-protos.h
 	${CC} -c ${CFLAGS} normalize.c
 

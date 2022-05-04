@@ -19,7 +19,7 @@
 #include <biolibc/gff.h>
 #include <biolibc/sam.h>
 #include <biolibc/biostring.h>
-#include "diffanal.h"
+#include "abundance.h"
 
 int     main(int argc,char *argv[])
 

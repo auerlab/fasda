@@ -17,8 +17,7 @@
 #include <sysexits.h>
 #include <stdlib.h>
 #include <xtend/dsv.h>
-
-void    usage(char *argv[]);
+#include "normalize.h"
 
 int     main(int argc,char *argv[])
 
