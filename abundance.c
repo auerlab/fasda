@@ -66,11 +66,7 @@ int     main(int argc,char *argv[])
 	}
 	bl_sam_skip_header(sam_streams[file_count]);
 	
-	if ( (p = strrchr(sam_files[file_count], '/')) != NULL )
-	    ++p;
-	else
-	    p = sam_files[file_count];
-	abundance_files[file_count] = strdup(p);
+	abundance_files[file_count] = strdup(sam_files[file_count]);
 	if ( abundance_files[file_count] == NULL )
 	{
 	    fprintf(stderr, "abundance: Could not strdup() abudance_files[%d]\n",
@@ -88,7 +84,6 @@ int     main(int argc,char *argv[])
 	
 	*p = '\0';
 	strlcat(p, "-abundance.tsv", PATH_MAX);
-	//fprintf(stderr, "output = %s\n", abundance_files[file_count]);
 	if ( (abundance_streams[file_count] =
 	      fopen(abundance_files[file_count], "w")) == NULL )
 	{
@@ -116,7 +111,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     bl_gff_t    feature;
     bl_sam_t    alignment;
     int         c, cmp;
-    double      counts = 0.0;
+    double      est_counts = 0.0;
     FILE        *buffer_streams[MAX_FILE_COUNT];
     bl_alignment_stats_t    alignment_stats = BL_ALIGNMENT_STATS_INIT;
     
@@ -177,13 +172,13 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 		     *  Buffer reads in case some overlap the next gene as well.
 		     */
 		    
-		    counts = count_coverage(&feature, &alignment,
+		    est_counts = count_coverage(&feature, &alignment,
 					sam_streams[c],
 					buffer_streams[c],
 					previous_alignment_chrom[c],
 					&alignment_stats);
 		}
-		print_abundance(abundance_streams[c], &feature, counts, flags);
+		print_abundance(abundance_streams[c], &feature, est_counts, flags);
 	    }
 	}
     }
@@ -328,8 +323,8 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 		       bl_alignment_stats_t *alignment_stats)
 
 {
-    int64_t overlapping_bases = 0;
-    double  counts;
+    int64_t overlapping_reads = 0;
+    double  est_counts;
     int     cmp, status;
     long    buffer_pos;
     
@@ -354,7 +349,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 		    __FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
 	    exit(EX_DATAERR);
 	}
-	overlapping_bases += bl_gff_sam_overlap(feature, alignment);
+	++overlapping_reads;
     }   while ( ((status = bl_sam_read(alignment, buffer_stream, SAM_MASK))
 			    == BL_READ_OK)
 		&& (bl_sam_gff_cmp(alignment, feature) == 0) );
@@ -385,7 +380,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 			__FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
 		exit(EX_DATAERR);
 	    }
-	    overlapping_bases += bl_gff_sam_overlap(feature, alignment);
+	    ++overlapping_reads;
     
 	    /*
 	     *  Buffer new overlapping alignments so they can also be
@@ -403,10 +398,10 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
     
     fseek(buffer_stream, buffer_pos, SEEK_SET);
     
-    // Divide by length of gene
-    counts = (double)overlapping_bases /
-		(BL_GFF_END(feature) - BL_GFF_START(feature) + 1);
-    return counts;
+    // FIXME: Find out how kallisto computes est_counts
+    est_counts = overlapping_reads;
+    
+    return est_counts;
 }
 
 
@@ -437,21 +432,32 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
  ***************************************************************************/
 
 int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
-			double counts, int flags)
+			double est_counts, int flags)
 
 {
-    char            *id;
-    unsigned long   len = 0;
-    double          eff_len = 0.0, tpm = 0.0;
+    char            *id, *p;
+    unsigned long   length;
+    double          eff_length, tpm;
 
     if ( flags & DIFFANAL_FLAG_SHOW_GENE )
 	id = BL_GFF_FEATURE_NAME(feature);
     else
 	id = BL_GFF_FEATURE_ID(feature);
     
-    //printf("%2s %-15s %6.2f", BL_GFF_SEQID(feature), id, counts[0]);
-    fprintf(abundance_stream, "%-15s\t%lu\t%6.2f\t%6.2f\t%6.2f\n",
-	    id, len, eff_len, counts, tpm);
+    // Drop "gene:" or "transcript:"
+    if ( (p = strchr(id, ':')) != NULL )
+	id = p + 1;
+    
+    // FIXME: Kallisto uses sum of exon lengths
+    length = BL_GFF_END(feature) - BL_GFF_START(feature) + 1;
+    
+    // FIXME: http://robpatro.com/blog/?p=235
+    // https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/
+    eff_length = 0.0;
+    tpm = 0.0;
+    
+    fprintf(abundance_stream, "%s\t%lu\t%f\t%f\t%f\n",
+	    id, length, eff_length, est_counts, tpm);
     return 0;
 }
 
