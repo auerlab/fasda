@@ -8,6 +8,7 @@
  ***************************************************************************/
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <sysexits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -108,10 +109,12 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     char        previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
 		previous_alignment_chrom[MAX_FILE_COUNT][BL_CHROM_MAX_CHARS + 1],
 		*feature_type = "mRNA";
-    bl_gff_t    feature;
+    bl_gff_t    feature, subfeature;
     bl_sam_t    alignment;
-    int         c, cmp;
+    int         c, cmp, status;
+    int64_t     length, previous_start;
     double      est_counts = 0.0;
+    bool        alternate_exons;
     FILE        *buffer_streams[MAX_FILE_COUNT];
     bl_alignment_stats_t    alignment_stats = BL_ALIGNMENT_STATS_INIT;
     
@@ -126,7 +129,9 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     if ( flags & DIFFANAL_FLAG_MAP_GENE )
 	feature_type = "gene";
     bl_gff_init(&feature);
+    bl_gff_init(&subfeature);
     bl_sam_init(&alignment);
+    
     strlcpy(previous_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
     for (c = 0; c < file_count; ++c)
     {
@@ -142,6 +147,8 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     {
 	if ( strcmp(BL_GFF_TYPE(&feature), feature_type) == 0 )
 	{
+	    //fprintf(stderr, "New %s\n", feature_type);
+	    
 	    // Verify that features are properly sorted
 	    cmp = bl_chrom_name_cmp(BL_GFF_SEQID(&feature),
 				    previous_feature_chrom);
@@ -155,6 +162,45 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 		strlcpy(previous_feature_chrom, BL_GFF_SEQID(&feature),
 			BL_CHROM_MAX_CHARS + 1);
 
+	    // Compute sum of exon lengths for abundance TSV output
+	    length = 0;
+	    previous_start = 0;
+	    alternate_exons = false;
+	    fprintf(stderr, "Finding exons of %s...\n",
+		    BL_GFF_FEATURE_ID(&feature));
+	    while ( ((status = bl_gff_read(&subfeature, feature_stream, GFF_MASK))
+			== BL_READ_OK) &&
+		    (strcmp(BL_GFF_TYPE(&subfeature), "###") != 0) )
+	    {
+		//fprintf(stderr, "type = %s\n", BL_GFF_TYPE(&subfeature));
+		// Stop counting exons as soon as one has a lower start
+		// position than the previous one.  This means we're into
+		// alternate splicing data.  Lengths computed this way match
+		// kallisto's abundance.tsv.
+		if ( ! alternate_exons && 
+		     (strcmp(BL_GFF_TYPE(&subfeature), "exon") == 0) )
+		{
+		    //fprintf(stderr, "%ld %ld\n",
+		    //        previous_start, BL_GFF_START(&subfeature));
+		    if ( BL_GFF_START(&subfeature) > previous_start )
+		    {
+			fprintf(stderr, "Adding exon %" PRId64 " %" PRId64 " ",
+			    BL_GFF_START(&subfeature), BL_GFF_END(&subfeature));
+			length += BL_GFF_END(&subfeature) -
+			    BL_GFF_START(&subfeature) + 1;
+			fprintf(stderr, "length = %" PRId64 "\n", length);
+			previous_start = BL_GFF_START(&subfeature);
+		    }
+		    else
+			alternate_exons = true;
+		}
+	    }
+	    //fprintf(stderr, "Found %s  length = %" PRId64 " status = %d\n",
+	    //        feature_type, length, status);
+	    
+	    // Rewind to beginning of next mRNA/gene so outer loop reads it
+	    // fseeko(feature_stream, BL_GFF_FILE_POS(&subfeature), SEEK_SET);
+	    
 	    for (c = 0; c < file_count; ++c)
 	    {
 		/*
@@ -178,7 +224,8 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 					previous_alignment_chrom[c],
 					&alignment_stats);
 		}
-		print_abundance(abundance_streams[c], &feature, est_counts, flags);
+		print_abundance(abundance_streams[c], &feature, length,
+				est_counts, flags);
 	    }
 	}
     }
@@ -432,11 +479,10 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
  ***************************************************************************/
 
 int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
-			double est_counts, int flags)
+			int64_t length, double est_counts, int flags)
 
 {
     char            *id, *p;
-    unsigned long   length;
     double          eff_length, tpm;
 
     if ( flags & DIFFANAL_FLAG_SHOW_GENE )
@@ -448,15 +494,12 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
     if ( (p = strchr(id, ':')) != NULL )
 	id = p + 1;
     
-    // FIXME: Kallisto uses sum of exon lengths
-    length = BL_GFF_END(feature) - BL_GFF_START(feature) + 1;
-    
     // FIXME: http://robpatro.com/blog/?p=235
     // https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/
     eff_length = 0.0;
     tpm = 0.0;
     
-    fprintf(abundance_stream, "%s\t%lu\t%f\t%f\t%f\n",
+    fprintf(abundance_stream, "%s\t%" PRId64 "\t%f\t%f\t%f\n",
 	    id, length, eff_length, est_counts, tpm);
     return 0;
 }

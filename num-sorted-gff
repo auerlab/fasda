@@ -1,0 +1,61 @@
+#!/bin/sh -e
+
+##########################################################################
+#   Description:
+#       Ensembl GFF3 files are sorted lexically by chromosome rather
+#       than numerically for some reason.  This is incompatible with
+#       typical BAM files and makes it impossible to use a memory-effcient
+#       approach by walking through a GFF and BAM in step.  This script
+#       is a workaround that downloads the individual chromosome files
+#       and concatenates them in numerical chromosome order.
+#
+#       Note that resorting a GFF is non-trivial since the sort order
+#       is hierarchical (subfeatures like exons are grouped under their
+#       parent rather than sorted on the same level).
+#       
+#   History:
+#   Date        Name        Modification
+#   2022-05-05  Jason Bacon Begin
+##########################################################################
+
+usage()
+{
+    printf "Usage: $0 species build release numeric-chroms\n"
+    printf "Example: $0 Mus_musculus 39 106 19\n"
+    exit 1
+}
+
+
+##########################################################################
+#   Main
+##########################################################################
+
+if [ $# != 4 ]; then
+    usage
+fi
+species=$1
+build=$2
+release=$3
+numeric_chroms=$4
+
+subdir=$(echo $species | tr '[:upper:]' '[:lower:]')
+site=http://ftp.ensembl.org/pub/release-106/gff3/$subdir/
+file=$species.GRCm$build.$release-numeric-sort.gff3
+
+# Mus_musculus.GRCm39.106.chromosome.1.gff3.gz
+cd Data
+for chrom in $(seq 1 $numeric_chroms) X Y; do
+    url=$site/$species.GRCm$build.$release.chromosome.$chrom.gff3.gz
+    echo $url
+    while ! curl -O --continue-at - $url; do
+	echo $status
+	printf "Retrying...\n"
+    done
+done
+
+rm -f $file
+for chrom in $(seq 1 $numeric_chroms) X Y; do
+    chrom_file=$species.GRCm$build.$release.chromosome.$chrom.gff3.gz
+    echo $chrom_file
+    zcat $chrom_file >> $file
+done

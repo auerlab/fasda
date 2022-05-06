@@ -7,11 +7,12 @@ bams="$data_dir/chondro-sample1-rep1-time1.bam \
 
 ./cave-man-install.sh
 
+gff=Mus_musculus.GRCm39.106-numeric-sort.gff3
 for bam in $bams; do
     printf "Processing $bam...\n"
     raw_abundance=${bam%.bam}-abundance.tsv
     echo $raw_abundance
-    test -e $raw_abundance || time ./abundance "$@" Data/mRNA-sorted.gff3 $bam
+    test -e $raw_abundance || time ./abundance "$@" Data/$gff $bam
     
     norm_tsv=${bam%.bam}-norm.tsv
     time ./normalize < $raw_abundance > $norm_tsv
