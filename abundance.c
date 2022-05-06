@@ -214,7 +214,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 		     (bl_sam_gff_cmp(&alignment, &feature) == 0) )
 		{
 		    /*
-		     *  Now count counts of all reads overlapping the gene.
+		     *  Now get counts of all reads overlapping the gene.
 		     *  Buffer reads in case some overlap the next gene as well.
 		     */
 		    
@@ -372,7 +372,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 {
     int64_t overlapping_reads = 0;
     double  est_counts;
-    int     cmp, status;
+    int     cmp, tmpfile_status;
     long    buffer_pos;
     
     buffer_pos = ftell(buffer_stream);
@@ -397,6 +397,11 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	    exit(EX_DATAERR);
 	}
 	++overlapping_reads;
+	
+	// Finding fragment length for paired end requires
+	// finding the mate as well.
+	// fragment_length = ??;
+	// sum_length += fragment_length;
     }   while ( ((status = bl_sam_read(alignment, buffer_stream, SAM_MASK))
 			    == BL_READ_OK)
 		&& (bl_sam_gff_cmp(alignment, feature) == 0) );
@@ -440,11 +445,24 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	     *  performance for consistently low memory use and simplicity.
 	     */
 	    bl_sam_write(alignment, buffer_stream, SAM_MASK);
+	    
+	    // Finding fragment length for paired end requires
+	    // finding the mate as well.
+	    // fragment_length = ??;
+	    // sum_length += fragment_length;
 	}
     }
     
     fseek(buffer_stream, buffer_pos, SEEK_SET);
     
+    // http://robpatro.com/blog/?p=235#efflen
+    // Count only fragments <= transcript length
+    // avg_fragment_length = sum_fragment_length / fragments <= feature len
+    // Actually "expected" effective length.  Effective length refers
+    // to individual fragments and we want the average of all fragments
+    // shorter than the feature.
+    // effective_length = feature_length - avg_fragment_length;
+
     // FIXME: Find out how kallisto computes est_counts
     est_counts = overlapping_reads;
     
