@@ -13,7 +13,9 @@ pause()
     read junk
 }
 
+cd ..
 ./cave-man-install.sh
+cd Test
 
 printf "Hisat2 alignments:\n\n"
 data_dir=Data/Hisat2
@@ -26,18 +28,18 @@ for bam in $bams; do
     printf "\nCalculating abundances for $bam...\n"
     raw_abundance=${bam%.bam}-abundance.tsv
     echo $raw_abundance
-    test -e $raw_abundance || time ./abundance "$@" Data/$gff $bam
+    test -e $raw_abundance || time ../abundance "$@" Data/$gff $bam
     
     norm_tsv=${bam%.bam}-norm.tsv
     printf "Normalizing $raw_abundance...\n"
-    time ./normalize < $raw_abundance > $norm_tsv
+    time ../normalize < $raw_abundance > $norm_tsv
     
     norm_tsvs="$norm_tsvs $norm_tsv"
 done
 pause
 
 printf "\nComputing fold-change...\n"
-time ./fold-change $norm_tsvs | more
+time ../fold-change $norm_tsvs | more
 
 printf "\nKallisto alignments:\n\n"
 
@@ -47,10 +49,10 @@ for raw_abundance in $data_dir/*/abundance.tsv; do
     echo $raw_abundance
     norm_tsv=${raw_abundance%.tsv}-norm.tsv
     printf "Normalizing $raw_abundance...\n"
-    time ./normalize < $raw_abundance > $norm_tsv
+    time ../normalize < $raw_abundance > $norm_tsv
     
     norm_tsvs="$norm_tsvs $norm_tsv"
 done
 
 printf "\nComputing fold-change...\n"
-time ./fold-change $norm_tsvs | more
+time ../fold-change $norm_tsvs | more
