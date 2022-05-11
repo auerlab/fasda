@@ -41,6 +41,7 @@ int     main(int argc,char *argv[])
     /*
      *  Median of ratios normalization
      *  https://scienceparkstudygroup.github.io/research-data-management-lesson/median_of_ratios_manual_normalization/index.html
+     *  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4878611/
      *  Similar to TMM but more robust: doi 10.1093/bib/bbx008
      *
      *  First sweep:
