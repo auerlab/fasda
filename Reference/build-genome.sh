@@ -26,7 +26,7 @@ done
 
 if [ ! -e $genome ]; then
     printf "Concatenating chromosome FASTAs...\n"
-    for chromosome in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
+    for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
 	printf "$chrom "
 	zcat Saccharomyces_cerevisiae.R$build.dna.chromosome.$chrom.fa.gz >> $genome
     done

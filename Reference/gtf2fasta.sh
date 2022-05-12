@@ -15,8 +15,6 @@ transcriptome=$(Reference/transcriptome-filename.sh)
 gtf=$(Reference/gtf-filename.sh)
 genome=$(Reference/genome-filename.sh)
 
-Reference/build-genome.sh
-
 cd Data/03-reference
 # https://github.com/griffithlab/rnaseq_tutorial/wiki/Kallisto
 if [ ! -e $transcriptome ]; then

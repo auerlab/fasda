@@ -13,7 +13,7 @@ BEGIN {
 {
     # As long as the description line does not indicate a numeric chromosome,
     # discard it and everything to the next sequence line.
-    while ( ($0 ~ "^>") && ($3 !~ /^[0-9]+$/) )
+    while ( ($0 ~ "^>") && ($3 == "Mito") )
     {
 	do
 	{
