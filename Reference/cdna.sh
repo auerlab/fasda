@@ -27,4 +27,4 @@ else
 fi
 
 set -x
-zcat $cdna | $awk -F : -f ../../Reference/keep-autosomes.awk > cdna-$transcriptome
+zcat $cdna | $awk -F : -f ../../Reference/keep-autosomes.awk > $transcriptome
