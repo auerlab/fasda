@@ -9,3 +9,12 @@ https://homolog.us/blogs/rna-seq/2019/10/03/debug-rnaseq-kallisto/
 https://homolog.us/blogs/rna-seq/2019/10/04/debug-rnaseq-effective-length-TPM/
 https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/
 
+Raw yeast data with 48 biological replicates:
+    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4878611/
+    https://www.ebi.ac.uk/ena/browser/view/PRJEB5348 (FASTQ files)
+    https://figshare.com/ndownloader/files/2194841 (sample map)
+    
+    Use map to determine which FASTQ files to download.  There are 7 technical
+    replicates for each of 48 biological replicatesand 2 conditions.  For
+    starters I used the first tech rep of the first 14 bio reps of each
+    condition.
