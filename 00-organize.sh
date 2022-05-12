@@ -1,5 +1,12 @@
 #!/bin/sh -e
 
+mkdir -p Data Logs
+scripts=$(ls 0[2-9]-*) # [1-9][0-9]-*)
+for script in $scripts; do
+    stage=${script%.*}
+    mkdir -p Data/$stage Logs/$stage
+done
+
 mkdir -p Data/Yeast/Raw-renamed
 cd Data/Yeast
 for dir in ERR*; do
