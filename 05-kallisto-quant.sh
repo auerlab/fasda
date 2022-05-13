@@ -54,7 +54,7 @@ for file in Data/01-trim/*.fastq.gz; do
     # Convert xz to gz rather than raw to reduce NFS load from compute nodes
     
     # Kallisto requires an output subdirectory for each sample
-    stem=$(basename $file)
+    stem=$(basename ${file%.fastq.gz})
     out_dir=Data/05-kallisto-quant/$stem
     mkdir -p $out_dir
     
