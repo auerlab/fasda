@@ -17,3 +17,21 @@ for dir in ../../Yeast/ERR*; do
     printf "$dir/$base.fastq.gz -> $fn\n"
     ln -sf $dir/$base.fastq.gz $fn
 done
+
+if [ "$(ls WT-* | wc -l)" -lt 8 ] \
+    || [ "$(ls SNF2-* | wc -l)" -lt 8 ]; then
+    cat << EOM
+
+You must download at least 8 replicates of WT and 8 replicates of
+of SNF2 RNA-Seq data from
+
+https://www.ebi.ac.uk/ena/browser/view/PRJEB5348
+
+Sample names are mapped in ERP004763_sample_mapping.tsv.
+
+EOM
+    printf "WT-*:   $(ls WT-* | wc -l)\n"
+    printf "SNF2-*: $(ls SNF2-* | wc -l)\n"
+    exit 1
+fi
+
