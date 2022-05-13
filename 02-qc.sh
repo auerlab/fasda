@@ -1,9 +1,9 @@
 #!/bin/sh -e
 
-for fir in Raw-renamed Trimmed; do
+for dir in Raw-renamed 01-trim; do
     report_dir=Data/02-qc/$dir
     mkdir -p $report_dir
-    for file in Data/Yeast/$dir/*.fastq.gz; do
+    for file in Data/$dir/*.fastq.gz; do
 	stem=`basename ${file%.fastq.gz}`
 	report=$report_dir/${stem}_fastqc.zip
 	if [ -e $report ]; then

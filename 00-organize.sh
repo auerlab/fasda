@@ -7,13 +7,13 @@ for script in $scripts; do
     mkdir -p Data/$stage Logs/$stage
 done
 
-mkdir -p Data/Yeast/Raw-renamed
-cd Data/Yeast
-for dir in ERR*; do
-    fn=`awk -v id=$dir '$1 == id { printf("%s-%s-%s.fastq.gz", $1, $3, $4) }' \
+mkdir -p Data/Raw-renamed
+cd Data/Raw-renamed
+for dir in ../../Yeast/ERR*; do
+    base=$(basename $dir)
+    test -e $dir/$base.fastq.gz
+    fn=`awk -v id=$base '$1 == id { printf("%s-%s.fastq.gz", $3, $4) }' \
 	../../ERP004763_sample_mapping.tsv`
-    echo $fn
-    cd Raw-renamed
-    ln -sf ../$dir/$dir.fastq.gz $fn
-    cd ..
+    printf "$dir/$base.fastq.gz -> $fn\n"
+    ln -sf $dir/$base.fastq.gz $fn
 done

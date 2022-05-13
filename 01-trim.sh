@@ -1,8 +1,11 @@
 #!/bin/sh -e
 
+# So gzip can keep up with fastq-trim
+export GZIP=-1
+
 trimmed_dir=Data/01-trim
 mkdir -p $trimmed_dir
-for file in Data/Yeast/Raw-renamed/*.fastq.gz; do
+for file in Data/Raw-renamed/*.fastq.gz; do
     base=`basename $file`
     trimmed=$trimmed_dir/$base
     if [ -e $trimmed ]; then
