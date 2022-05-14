@@ -115,7 +115,7 @@ CXXFLAGS    += ${INCLUDES}
 FFLAGS      += ${INCLUDES}
 LDFLAGS     += -L${PREFIX}/lib -Wl,-rpath,${PREFIX}/lib \
 	       -L${LOCALBASE}/lib -Wl,-rpath,${LOCALBASE}/lib \
-	       -lbiolibc -lxtend
+	       -lbiolibc -lxtend -lm
 
 ############################################################################
 # Assume first command in PATH.  Override with full pathnames if necessary.

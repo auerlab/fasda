@@ -23,8 +23,10 @@
 #include <errno.h>
 #include <sysexits.h>
 #include <stdlib.h>
+#include <math.h>
 #include <xtend/dsv.h>
 #include <xtend/file.h>
+#include <xtend/mem.h>
 #include "normalize.h"
 
 int     main(int argc,char *argv[])
@@ -76,30 +78,45 @@ int     main(int argc,char *argv[])
 int     mrn(int argc, char *argv[], int arg)
 
 {
-    dsv_line_t  dsv_line;
+    dsv_line_t  dsv_line[DIFFANAL_MAX_SAMPLES];
     int         sample, sample_count, c;
     FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES];
+    char        **abundance_files = &argv[arg], *end;
+    size_t      feature_count = 0, feature_array_size = 0;
+    double      count, sum_counts, *pseudo_refs = NULL;
     
     for (sample_count = 0; arg < argc; ++sample_count, ++arg)
     {
-	if ( (abundance_streams[sample_count] = xt_fopen(argv[arg], "r")) == NULL )
+	if ( (abundance_streams[sample_count] =
+		xt_fopen(abundance_files[sample_count], "r")) == NULL )
 	{
 	    fprintf(stderr, ": Could not open %s for read: %s.\n",
-		    argv[arg], strerror(errno));
+		    abundance_files[sample_count], strerror(errno));
 	    return EX_NOINPUT;
 	}
+	dsv_line_init(&dsv_line[sample_count]);
+	
+	// Every abundance file should have a 1-line header
+	dsv_line_read(&dsv_line[sample_count], abundance_streams[sample_count], "\t");
+	//puts(DSV_LINE_FIELDS_AE(&dsv_line[sample_count], 0));
+	if ( strcmp(DSV_LINE_FIELDS_AE(&dsv_line[sample_count], 0), "target_id") != 0 )
+	{
+	    fprintf(stderr, "normalize: %s: Expected header starting with \"target_id\".\n",
+		    abundance_files[sample_count]);
+	    fprintf(stderr, "Got %s\n", DSV_LINE_FIELDS_AE(&dsv_line[sample_count], 0));
+	    return EX_DATAERR;
+	}
     }
-    
-    dsv_line_init(&dsv_line);
 
     // Abundance file format:
     // target_id       length  eff_length      est_counts      tpm
     
     while ( ! feof(abundance_streams[0]) )
     {
-	for (sample = 0; sample < sample_count; ++sample)
+	for (sample = 0, sum_counts = 0; sample < sample_count; ++sample)
 	{
-	    if ( dsv_line_read(&dsv_line, abundance_streams[sample], "\t") == EOF )
+	    if ( dsv_line_read(&dsv_line[sample], abundance_streams[sample],
+				"\t") == EOF )
 	    {
 		// Make sure all files reach EOF together
 		for (c = 0; c < sample_count; ++c)
@@ -111,8 +128,21 @@ int     mrn(int argc, char *argv[], int arg)
 	    else
 	    {
 		// Dummy output: Just echo non-normalized counts to test UI
-		printf("%s\t%s\n", DSV_LINE_FIELDS_AE(&dsv_line, 0),
-			DSV_LINE_FIELDS_AE(&dsv_line, 3));
+		printf("%s\t%s\n", DSV_LINE_FIELDS_AE(&dsv_line[sample], 0),
+			DSV_LINE_FIELDS_AE(&dsv_line[sample], 3));
+		
+		if ( (sample > 0) &&
+		     (strcmp(DSV_LINE_FIELDS_AE(&dsv_line[sample], 0),
+			     DSV_LINE_FIELDS_AE(&dsv_line[sample], 0)) != 0) )
+		{
+		    fprintf(stderr,
+			    "normalize: %s, %s: Different feature IDs on line %zu\n.\n",
+			    abundance_files[sample - 1],
+			    abundance_files[sample], feature_count + 1);
+		    // FIXME: Close all files
+		    return EX_DATAERR;
+		}
+
 		/*
 		 *  Median of ratios normalization
 		 *  https://scienceparkstudygroup.github.io/research-data-management-lesson/median_of_ratios_manual_normalization/index.html
@@ -123,11 +153,13 @@ int     mrn(int argc, char *argv[], int arg)
 		 *  Read raw counts for all genes and all samples
 		 *
 		 *  1.  Take log of every count (just for filtering in step 3?)
-		 *  2.  Average of all samples for the gene (compute pseudo-reference)
+		 *  2.  Average of all samples for the gene
+		 *      (compute pseudo-reference)
 		 *  3.  Remove genes witn -inf as average
 		 *  4.  Subtract pseudo-reference from each log(expression)
-		 *      This is actually a ratio since subtracting a log is dividing
-		 *      We'll need to store this value and later sort to find median
+		 *      This is actually a ratio since subtracting from log(v)
+		 *      is dividing v. We'll need to store this value and later
+		 *      sort to find median.
 		 *
 		 *  After first sweep:
 		 *
@@ -136,9 +168,32 @@ int     mrn(int argc, char *argv[], int arg)
 		 *  7.  Divide counts by scaling factor
 		 */
 		
-		
+		count = strtof(DSV_LINE_FIELDS_AE(&dsv_line[sample], 3), &end);
+		if ( *end != '\0' )
+		{
+		    fprintf(stderr, "normalize: Invalid count: %s\n",
+			    DSV_LINE_FIELDS_AE(&dsv_line[sample_count],0));
+		    return EX_DATAERR;
+		}
+		sum_counts += log(count);
 	    }
 	}
+	if ( feature_count == feature_array_size )
+	{
+	    feature_array_size += 1024 * 1024;
+	    pseudo_refs = xt_realloc(pseudo_refs, feature_array_size,
+				     sizeof(*pseudo_refs));
+	    if ( pseudo_refs == NULL )
+	    {
+		fprintf(stderr, "normalize: Failed to realloc pseudo_refs.\n");
+		// FIXME: Close all files
+		return EX_UNAVAILABLE;
+	    }
+	}
+	pseudo_refs[feature_count] = sum_counts / sample_count;
+	printf("pseudo_refs[%zu] = %f\n", feature_count,
+		pseudo_refs[feature_count]);
+	++feature_count;
     }
     
     for (sample = 0; sample < sample_count; ++sample)
