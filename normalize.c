@@ -79,9 +79,9 @@ int     mrn(int argc, char *argv[], int arg)
 
 {
     dsv_line_t  dsv_line[DIFFANAL_MAX_SAMPLES];
-    int         sample, sample_count, c;
+    int         sample, sample_count;
     FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES];
-    char        **abundance_files = &argv[arg], *end;
+    char        **abundance_files = &argv[arg], *end, *target_id, *count_str;
     size_t      feature_count = 0, feature_array_size = 0;
     double      count, sum_counts, *pseudo_refs = NULL;
     
@@ -95,18 +95,9 @@ int     mrn(int argc, char *argv[], int arg)
 	    return EX_NOINPUT;
 	}
 	dsv_line_init(&dsv_line[sample_count]);
-	
-	// Every abundance file should have a 1-line header
-	dsv_line_read(&dsv_line[sample_count], abundance_streams[sample_count], "\t");
-	//puts(DSV_LINE_FIELDS_AE(&dsv_line[sample_count], 0));
-	if ( strcmp(DSV_LINE_FIELDS_AE(&dsv_line[sample_count], 0), "target_id") != 0 )
-	{
-	    fprintf(stderr, "normalize: %s: Expected header starting with \"target_id\".\n",
-		    abundance_files[sample_count]);
-	    fprintf(stderr, "Got %s\n", DSV_LINE_FIELDS_AE(&dsv_line[sample_count], 0));
-	    return EX_DATAERR;
-	}
     }
+    
+    skip_headers(abundance_files, abundance_streams, dsv_line, sample_count);
 
     // Abundance file format:
     // target_id       length  eff_length      est_counts      tpm
@@ -118,22 +109,19 @@ int     mrn(int argc, char *argv[], int arg)
 	    if ( dsv_line_read(&dsv_line[sample], abundance_streams[sample],
 				"\t") == EOF )
 	    {
-		// Make sure all files reach EOF together
-		for (c = 0; c < sample_count; ++c)
-		    if ( getc(abundance_streams[c]) != EOF )
-			fprintf(stderr, "normalize: EOF reached on %s but not %s\n",
-				argv[sample + 1], argv[c + 1]);
+		check_all_eof(abundance_files, abundance_streams, sample, sample_count);
 		break;
 	    }
 	    else
 	    {
-		// Dummy output: Just echo non-normalized counts to test UI
-		printf("%s\t%s\n", DSV_LINE_FIELDS_AE(&dsv_line[sample], 0),
-			DSV_LINE_FIELDS_AE(&dsv_line[sample], 3));
+		target_id = DSV_LINE_FIELDS_AE(&dsv_line[sample], 0);
+		count_str = DSV_LINE_FIELDS_AE(&dsv_line[sample], 3);
 		
-		if ( (sample > 0) &&
-		     (strcmp(DSV_LINE_FIELDS_AE(&dsv_line[sample], 0),
-			     DSV_LINE_FIELDS_AE(&dsv_line[sample], 0)) != 0) )
+		// Dummy output: Just echo non-normalized counts to test UI
+		printf("%s\t%s\n", target_id, count_str);
+		
+		if ( (sample > 0) && (strcmp(target_id,
+			DSV_LINE_FIELDS_AE(&dsv_line[sample - 1], 0)) != 0) )
 		{
 		    fprintf(stderr,
 			    "normalize: %s, %s: Different feature IDs on line %zu\n.\n",
@@ -148,24 +136,13 @@ int     mrn(int argc, char *argv[], int arg)
 		 *  https://scienceparkstudygroup.github.io/research-data-management-lesson/median_of_ratios_manual_normalization/index.html
 		 *  Similar to TMM but more robust: doi 10.1093/bib/bbx008
 		 *
-		 *  First sweep:
+		 *  First pass:
 		 *
 		 *  Read raw counts for all genes and all samples
 		 *
 		 *  1.  Take log of every count (just for filtering in step 3?)
 		 *  2.  Average of all samples for the gene
 		 *      (compute pseudo-reference)
-		 *  3.  Remove genes witn -inf as average
-		 *  4.  Subtract pseudo-reference from each log(expression)
-		 *      This is actually a ratio since subtracting from log(v)
-		 *      is dividing v. We'll need to store this value and later
-		 *      sort to find median.
-		 *
-		 *  After first sweep:
-		 *
-		 *  5.  Take the median of the ratios for each sample
-		 *  6.  exp(median) = count scaling factor
-		 *  7.  Divide counts by scaling factor
 		 */
 		
 		count = strtof(DSV_LINE_FIELDS_AE(&dsv_line[sample], 3), &end);
@@ -190,16 +167,172 @@ int     mrn(int argc, char *argv[], int arg)
 		return EX_UNAVAILABLE;
 	    }
 	}
-	pseudo_refs[feature_count] = sum_counts / sample_count;
-	printf("pseudo_refs[%zu] = %f\n", feature_count,
-		pseudo_refs[feature_count]);
+	if ( ! feof(abundance_streams[0]) )
+	{
+	    pseudo_refs[feature_count] = sum_counts / sample_count;
+	    printf("pseudo_refs[%zu] = %f\n", feature_count,
+		    pseudo_refs[feature_count]);
+	    ++feature_count;
+	}
+    }
+    
+    /*
+     *  Second pass:
+     *
+     *  3.  Remove genes with -inf as average
+     *  4.  Subtract pseudo-reference from each log(expression)
+     *      This is actually a ratio since subtracting from log(v)
+     *      is dividing v. We'll need to store this value and later
+     *      sort to find median.
+     *  5.  Take the median of the ratios for each sample
+     *  6.  exp(median) = count scaling factor
+     */
+
+    for (sample = 0; sample < sample_count; ++sample)
+	rewind(abundance_streams[sample]);
+    skip_headers(abundance_files, abundance_streams, dsv_line, sample_count);
+
+    feature_count = 0;
+    while ( ! feof(abundance_streams[0]) )
+    {
+	for (sample = 0, sum_counts = 0; sample < sample_count; ++sample)
+	{
+	    if ( dsv_line_read(&dsv_line[sample], abundance_streams[sample],
+				"\t") == EOF )
+	    {
+		check_all_eof(abundance_files, abundance_streams, sample, sample_count);
+		break;
+	    }
+	    else
+	    {
+		if ( pseudo_refs[feature_count] == -INFINITY )
+		{
+		    fprintf(stderr, "Discarding pseudo_refs[%zu]\n",
+			    feature_count);
+		}
+		else
+		{
+		    // ratios[sample][feature_count] =
+		    //      log(count) - pseudo_refs[feature_count];
+		}
+	    }
+	}
 	++feature_count;
     }
+    
+    // Sort ratios and find exp(median) = scaling factor
+    // for (sample = 0; sample < sample_count; ++sample)
+    // {
+    //     qsort(ratios[sample], feature_count, sizeof(*ratios[sample][0]),
+    //      compar);
+    //     if ( feature_count % 2 == 1 )
+    //         scaling_factor = exp(ratios[sample][middle]);
+    //     else
+    //         scaling_factor = exp((ratios[sample][middle] +
+    //                               ratios[sample][middle + 1]) / 2);
+    // }
+    
+    /*
+     *  Third pass:
+     *
+     *  7.  Divide counts by scaling factor
+     */
     
     for (sample = 0; sample < sample_count; ++sample)
 	fclose(abundance_streams[sample]);
     
     return EX_OK;
+}
+
+
+/***************************************************************************
+ *  Use auto-c2man to generate a man page from this comment
+ *
+ *  Library:
+ *      #include <>
+ *      -l
+ *
+ *  Description:
+ *  
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  Examples:
+ *
+ *  Files:
+ *
+ *  Environment
+ *
+ *  See also:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-05-14  Jason Bacon Begin
+ ***************************************************************************/
+
+void    skip_headers(char *abundance_files[], FILE *abundance_streams[],
+		     dsv_line_t dsv_line[], size_t sample_count)
+
+{
+    size_t  c;
+    
+    for (c = 0; c < sample_count; ++c)
+    {
+	// Every abundance file should have a 1-line header
+	dsv_line_read(&dsv_line[c], abundance_streams[c], "\t");
+	//puts(DSV_LINE_FIELDS_AE(&dsv_line[sample_count], 0));
+	if ( strcmp(DSV_LINE_FIELDS_AE(&dsv_line[c], 0), "target_id") != 0 )
+	{
+	    fprintf(stderr, "normalize: %s: Expected header starting with \"target_id\".\n",
+		    abundance_files[c]);
+	    fprintf(stderr, "Got %s\n", DSV_LINE_FIELDS_AE(&dsv_line[c], 0));
+	    exit(EX_DATAERR);
+	}
+    }
+}
+
+
+/***************************************************************************
+ *  Use auto-c2man to generate a man page from this comment
+ *
+ *  Library:
+ *      #include <>
+ *      -l
+ *
+ *  Description:
+ *  
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  Examples:
+ *
+ *  Files:
+ *
+ *  Environment
+ *
+ *  See also:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-05-14  Jason Bacon Begin
+ ***************************************************************************/
+
+void    check_all_eof(char *abundance_files[], FILE *abundance_streams[],
+	      size_t sample, size_t sample_count)
+
+{
+    size_t  c;
+    
+    // Make sure all files reach EOF together
+    for (c = 0; c < sample_count; ++c)
+	if ( getc(abundance_streams[c]) != EOF )
+	{
+	    fprintf(stderr, "normalize: EOF reached on %s but not %s\n",
+		    abundance_files[sample], abundance_files[c]);
+	    exit(EX_DATAERR);
+	}
 }
 
 
