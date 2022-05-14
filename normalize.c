@@ -24,6 +24,7 @@
 #include <sysexits.h>
 #include <stdlib.h>
 #include <math.h>
+#include <sys/param.h>  // PATH_MAX
 #include <xtend/dsv.h>
 #include <xtend/file.h>
 #include <xtend/mem.h>
@@ -80,11 +81,12 @@ int     mrn(int argc, char *argv[], int arg)
 
 {
     dsv_line_t  dsv_line[DIFFANAL_MAX_SAMPLES];
-    size_t      sample, sample_count;
+    size_t      sample, sample_count, feature_count = 0, c;
     FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES],
-		*tmp_streams[DIFFANAL_MAX_SAMPLES];
-    char        **abundance_files = &argv[arg], *end, *target_id, *count_str;
-    size_t      feature_count = 0, c;
+		*tmp_streams[DIFFANAL_MAX_SAMPLES],
+		*norm_streams[DIFFANAL_MAX_SAMPLES];
+    char        **abundance_files = &argv[arg], *end, *target_id, *count_str,
+		norm_file[PATH_MAX + 1], *p;
     double      count, sum_lcs, lc[DIFFANAL_MAX_SAMPLES],
 		pseudo_ref, *ratios, median_ratio[DIFFANAL_MAX_SAMPLES],
 		scaling_factor[DIFFANAL_MAX_SAMPLES];
@@ -206,7 +208,6 @@ int     mrn(int argc, char *argv[], int arg)
     
     for (sample = 0; sample < sample_count; ++sample)
     {
-	rewind(abundance_streams[sample]);
 	rewind(tmp_streams[sample]);
 	
 	for (c = 0; c < feature_count; ++c)
@@ -228,7 +229,7 @@ int     mrn(int argc, char *argv[], int arg)
 			    ratios[feature_count / 2 + 1]) / 2;
 	//printf("Median ratio = %f\n", median_ratio[sample]);
 	scaling_factor[sample] = exp(median_ratio[sample]);
-	printf("Scaling factor[%zu] = %f\n", sample, scaling_factor[sample]);
+	printf("Scaling factor[%zu] = %f\n", sample + 1, scaling_factor[sample]);
     }
     
     /*
@@ -236,6 +237,26 @@ int     mrn(int argc, char *argv[], int arg)
      *
      *  7.  Divide counts by scaling factor to normalize
      */
+    
+    for (sample = 0; sample < sample_count; ++sample)
+    {
+	rewind(abundance_streams[sample]);
+	// FIXME: libxtend strreplace()?
+	strlcpy(norm_file, abundance_files[sample], PATH_MAX + 1);
+	if ( (p = strrchr(norm_file, '/')) == NULL )
+	    p = norm_file;
+	else
+	    ++p;    // First after '/'
+	*p = '\0';
+	strlcat(norm_file, "normalized.tsv", PATH_MAX + 1);
+	if ( (norm_streams[sample] = xt_fopen(norm_file, "w")) == NULL )
+	{
+	    fprintf(stderr, "normalize: Could not open %s for write: %s.\n",
+		    norm_file, strerror(errno));
+	    exit(EX_CANTCREAT);
+	}
+	fprintf(norm_streams[sample], "target_id\tlength\teff_length\test_counts\ttpm\tnorm_counts\n");
+    }
     
     skip_headers(abundance_files, abundance_streams, dsv_line, sample_count);
     feature_count = 0;
@@ -251,14 +272,28 @@ int     mrn(int argc, char *argv[], int arg)
 	    }
 	    else
 	    {
+		for (c = 0; c < DSV_LINE_NUM_FIELDS(&dsv_line[sample]); ++c)
+		    fprintf(norm_streams[sample], "%s\t",
+			    DSV_LINE_FIELDS_AE(&dsv_line[sample], c));
+		count = strtof(DSV_LINE_FIELDS_AE(&dsv_line[sample], 3), &end);
+		if ( *end != '\0' )
+		{
+		    fprintf(stderr, "normalize: Invalid count: %s\n",
+			    DSV_LINE_FIELDS_AE(&dsv_line[sample],0));
+		    return EX_DATAERR;
+		}
+		fprintf(norm_streams[sample], "%f\n",
+			count * scaling_factor[sample]);
 	    }
 	}
 	++feature_count;
     }
     
     for (sample = 0; sample < sample_count; ++sample)
+    {
 	fclose(abundance_streams[sample]);
-    
+	fclose(norm_streams[sample]);
+    }
     return EX_OK;
 }
 
