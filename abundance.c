@@ -372,7 +372,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 {
     int64_t overlapping_reads = 0;
     double  est_counts;
-    int     cmp, tmpfile_status;
+    int     cmp, read_status;
     long    buffer_pos;
     
     buffer_pos = ftell(buffer_stream);
@@ -402,13 +402,13 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	// finding the mate as well.
 	// fragment_length = ??;
 	// sum_length += fragment_length;
-    }   while ( ((status = bl_sam_read(alignment, buffer_stream, SAM_MASK))
+    }   while ( ((read_status = bl_sam_read(alignment, buffer_stream, SAM_MASK))
 			    == BL_READ_OK)
 		&& (bl_sam_gff_cmp(alignment, feature) == 0) );
     
     // If we ran out of buffered alignments, discard the old ones and
     // continue in primary SAM stream
-    if ( status == BL_READ_EOF )
+    if ( read_status == BL_READ_EOF )
     {
 	// fprintf(stderr, "Counting new alignemnts...\n");
 	// Discard all buffered alignments.  If they didn't overlap this
