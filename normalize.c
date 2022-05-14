@@ -86,7 +86,8 @@ int     mrn(int argc, char *argv[], int arg)
     char        **abundance_files = &argv[arg], *end, *target_id, *count_str;
     size_t      feature_count = 0, c;
     double      count, sum_lcs, lc[DIFFANAL_MAX_SAMPLES],
-		pseudo_ref, *ratios, median_ratio[DIFFANAL_MAX_SAMPLES];
+		pseudo_ref, *ratios, median_ratio[DIFFANAL_MAX_SAMPLES],
+		scaling_factor[DIFFANAL_MAX_SAMPLES];
     
     for (sample_count = 0; arg < argc; ++sample_count, ++arg)
     {
@@ -221,13 +222,15 @@ int     mrn(int argc, char *argv[], int arg)
 	else
 	    median_ratio[sample] = (ratios[feature_count / 2] +
 			    ratios[feature_count / 2 + 1]) / 2;
-	printf("median ratio = %f\n", median_ratio[sample]);
+	printf("Median ratio = %f\n", median_ratio[sample]);
+	scaling_factor[sample] = exp(median_ratio[sample]);
+	printf("Scaling factor = %f\n", scaling_factor[sample]);
     }
     
     /*
      *  Third pass:
      *
-     *  7.  Divide counts by scaling factor
+     *  7.  Divide counts by scaling factor to normalize
      */
     
     skip_headers(abundance_files, abundance_streams, dsv_line, sample_count);
@@ -244,32 +247,10 @@ int     mrn(int argc, char *argv[], int arg)
 	    }
 	    else
 	    {
-		if ( pseudo_ref == -INFINITY )
-		{
-		    fprintf(stderr, "Discarding ratios[%zu]\n",
-			    feature_count);
-		}
-		else
-		{
-		    // ratios[sample][feature_count] =
-		    //      log(count) - ratios[feature_count];
-		}
 	    }
 	}
 	++feature_count;
     }
-    
-    // Sort ratios and find exp(median) = scaling factor
-    // for (sample = 0; sample < sample_count; ++sample)
-    // {
-    //     qsort(ratios[sample], feature_count, sizeof(*ratios[sample][0]),
-    //      compar);
-    //     if ( feature_count % 2 == 1 )
-    //         scaling_factor = exp(ratios[sample][middle]);
-    //     else
-    //         scaling_factor = exp((ratios[sample][middle] +
-    //                               ratios[sample][middle + 1]) / 2);
-    // }
     
     for (sample = 0; sample < sample_count; ++sample)
 	fclose(abundance_streams[sample]);
