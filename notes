@@ -18,3 +18,7 @@ Raw yeast data with 48 biological replicates:
     replicates for each of 48 biological replicatesand 2 conditions.  For
     starters I used the first tech rep of the first 14 bio reps of each
     condition.
+
+Mann-Whitney p-value:
+    https://support.minitab.com/en-us/minitab/18/help-and-how-to/statistics/nonparametrics/how-to/mann-whitney-test/methods-and-formulas/methods-and-formulas/
+
