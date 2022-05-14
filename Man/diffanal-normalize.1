@@ -16,8 +16,8 @@ diffanal normalize abundance1.tsv abundance2.tsv ...
 
 .SH OPTIONS
 .TP
-\fB\-\-\flagfR[=\fIparameter\fR]
-description
+\fB\--mrn\fR
+Use Mean Ratios Normalization [default]
 
 .SH "DESCRIPTION"
 
@@ -36,7 +36,8 @@ the scaling factor for that sample.  This should, in theory, normalize for
 differences in library size (total reads for a given sample).  This method
 assumes that technical effects are the same for DE and non-DE genes and
 that expression is roughly symmetric (there are equal numbers of
-up-regulated and down-regulated genes).
+up-regulated and down-regulated genes). [Evans, et al, 2018 doi:
+10.1093/bib/bbx008]
 
 Additional normalization methods, including the use of spike-in controls,
 are planned for the future.

@@ -30,10 +30,20 @@
 int     main(int argc,char *argv[])
 
 {
+    int     arg;
+    
     if ( argc < 3 )
 	usage(argv);
 
-    return mrn(argc, argv);
+    for (arg = 1; *argv[arg] == '-'; ++arg)
+    {
+	if ( strcmp(argv[arg], "--mrn") == 0 )
+	    ;
+	else
+	    usage(argv);
+    }
+    
+    return mrn(argc, argv, arg);
 }
 
 
@@ -63,20 +73,14 @@ int     main(int argc,char *argv[])
  *  2022-05-14  Jason Bacon Begin
  ***************************************************************************/
 
-int     mrn(int argc, char *argv[])
+int     mrn(int argc, char *argv[], int arg)
 
 {
     dsv_line_t  dsv_line;
-    int         sample, arg, sample_count, c;
+    int         sample, sample_count, c;
     FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES];
     
-    // One abundance file for each sample
-    // char *abundance_files[MAX_SAMPLES]
-    // FILE *abundance_stream[MAX_SAMPLES]
-    // Array of ratios for each sample
-    // double *ratios[MAX_SAMPLES];
-
-    for (sample_count = 0, arg = 1; arg < argc; ++sample_count, ++arg)
+    for (sample_count = 0; arg < argc; ++sample_count, ++arg)
     {
 	if ( (abundance_streams[sample_count] = xt_fopen(argv[arg], "r")) == NULL )
 	{
