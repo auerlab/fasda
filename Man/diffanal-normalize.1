@@ -10,7 +10,7 @@ diffanal normalize - Normalize abundances given raw counts and lengths
 .PP
 .nf 
 .na 
-diffanal normalize abundance.tsv
+diffanal normalize abundance1.tsv abundance2.tsv ...
 .ad
 .fi
 
@@ -19,28 +19,37 @@ diffanal normalize abundance.tsv
 \fB\-\-\flagfR[=\fIparameter\fR]
 description
 
-\" Optional sections
-.SH "HOW TO READ THIS MANUAL"
-.SH "ORGANIZATION"
-.SH "PURPOSE"
 .SH "DESCRIPTION"
+
+The
+.B blt normalize
+command attempts to normalize the read counts in 2 or more kallisto-style
+abundance.tsv files.  Each TSV file represents a biological sample. 
+Multiple samples are required in order to statistically estimate the
+normalization factor.
+
+Currently, only Median Ratios Normalization (MRN) is implemented.  This
+method computes the average count for all samples of a given feature (e.g.
+gene or transcript), then the ratio of each count to the average for the
+feature, and finally the median ratio for each sample.  The median ratio is
+the scaling factor for that sample.  This should, in theory, normalize for
+differences in library size (total reads for a given sample).  This method
+assumes that technical effects are the same for DE and non-DE genes and
+that expression is roughly symmetric (there are equal numbers of
+up-regulated and down-regulated genes).
+
+Additional normalization methods, including the use of spike-in controls,
+are planned for the future.
 
 .SH FILES
 .nf
 .na
-    \" List related files and describe each one here
-.ad
-.fi
-
-.SH ENVIRONMENT
-.nf
-.na
-    \" List related environment variables and describe each one here
+abundance.tsv - kallisto-style abundance estimates
 .ad
 .fi
 
 .SH "SEE ALSO"
-    \" List related commands here
+diffanal-abundance(1), diffanal-fold-change(1)
 
 .SH BUGS
 Please report bugs to the author and send patches in unified diff format.
@@ -49,4 +58,4 @@ Please report bugs to the author and send patches in unified diff format.
 .SH AUTHOR
 .nf
 .na
-
+J. Bacon
