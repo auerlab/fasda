@@ -80,7 +80,7 @@ int     mrn(int argc, char *argv[], int arg)
 
 {
     dsv_line_t  dsv_line[DIFFANAL_MAX_SAMPLES];
-    int         sample, sample_count;
+    size_t      sample, sample_count;
     FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES],
 		*tmp_streams[DIFFANAL_MAX_SAMPLES];
     char        **abundance_files = &argv[arg], *end, *target_id, *count_str;
@@ -152,7 +152,7 @@ int     mrn(int argc, char *argv[], int arg)
 		 *  Read raw counts for all genes and all samples
 		 *
 		 *  1.  Take log of every count (just for filtering in step 3?)
-		 *  2.  Average of all samples for the gene
+		 *  2.  Average of all log(counts) for the gene
 		 *      (compute pseudo-reference)
 		 */
 		
@@ -169,7 +169,7 @@ int     mrn(int argc, char *argv[], int arg)
 	}
 
 	/*
-	 *  3.  Remove genes with -inf as average
+	 *  3.  Remove genes with -inf as pseudo-reference
 	 *  4.  Subtract pseudo-reference from each log(expression)
 	 *      This is actually a ratio since subtracting from log(v)
 	 *      is dividing v. We'll need to store this value and later
@@ -179,7 +179,7 @@ int     mrn(int argc, char *argv[], int arg)
 	if ( ! feof(abundance_streams[0]) )
 	{
 	    pseudo_ref = sum_lcs / sample_count;
-	    printf("pseudo_ref = %f\n", pseudo_ref);
+	    printf("pseudo_ref [avg log(count)] = %f\n", pseudo_ref);
 	    if ( pseudo_ref != -INFINITY )
 		for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
 		    fprintf(tmp_streams[sample], "%f\n",
@@ -191,40 +191,44 @@ int     mrn(int argc, char *argv[], int arg)
     /*
      *  Second pass:
      *
-     *  5.  Take the median of the ratios for each sample
-     *  6.  exp(median) = count scaling factor
+     *  5.  Find the median of the log ratios for each sample
+     *  6.  exp(median) = scaling factor for the sample
      */
 
+    // Reuse same ratios array for all samples
+    ratios = xt_malloc(feature_count, sizeof(*ratios));
+    if ( ratios == NULL )
+    {
+	fprintf(stderr, "normalize: Could not allocate ratios[%zu]\n",
+		feature_count);
+	return EX_UNAVAILABLE;
+    }
+    
     for (sample = 0; sample < sample_count; ++sample)
     {
 	rewind(abundance_streams[sample]);
 	rewind(tmp_streams[sample]);
 	
-	ratios = xt_malloc(feature_count, sizeof(*ratios));
-	if ( ratios == NULL )
-	{
-	    fprintf(stderr, "normalize: Could not allocate ratios[%zu]\n",
-		    feature_count);
-	    return EX_UNAVAILABLE;
-	}
 	for (c = 0; c < feature_count; ++c)
 	    fscanf(tmp_streams[sample], "%lf", &ratios[c]);
 	qsort(ratios, feature_count, sizeof(*ratios),
 	      (int (*)(const void *,const void *))double_cmp);
+	/*
 	printf("Sorted %zu:\n", feature_count);
 	for (c = 0; c < feature_count; ++c)
 	{
 	    if ( c % 1000 == 0 )
 		printf("%f\n", ratios[c]);
 	}
+	*/
 	if ( feature_count % 2 == 1 )
 	    median_ratio[sample] = ratios[feature_count / 2];
 	else
 	    median_ratio[sample] = (ratios[feature_count / 2] +
 			    ratios[feature_count / 2 + 1]) / 2;
-	printf("Median ratio = %f\n", median_ratio[sample]);
+	//printf("Median ratio = %f\n", median_ratio[sample]);
 	scaling_factor[sample] = exp(median_ratio[sample]);
-	printf("Scaling factor = %f\n", scaling_factor[sample]);
+	printf("Scaling factor[%zu] = %f\n", sample, scaling_factor[sample]);
     }
     
     /*
