@@ -27,6 +27,7 @@
 #include <xtend/dsv.h>
 #include <xtend/file.h>
 #include <xtend/mem.h>
+#include <xtend/math.h> // double_cmp()
 #include "normalize.h"
 
 int     main(int argc,char *argv[])
@@ -80,18 +81,27 @@ int     mrn(int argc, char *argv[], int arg)
 {
     dsv_line_t  dsv_line[DIFFANAL_MAX_SAMPLES];
     int         sample, sample_count;
-    FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES];
+    FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES],
+		*tmp_streams[DIFFANAL_MAX_SAMPLES];
     char        **abundance_files = &argv[arg], *end, *target_id, *count_str;
-    size_t      feature_count = 0, feature_array_size = 0;
-    double      count, sum_counts, *pseudo_refs = NULL;
+    size_t      feature_count = 0, c;
+    double      count, sum_lcs, lc[DIFFANAL_MAX_SAMPLES],
+		pseudo_ref, *ratios, median_ratio[DIFFANAL_MAX_SAMPLES];
     
     for (sample_count = 0; arg < argc; ++sample_count, ++arg)
     {
 	if ( (abundance_streams[sample_count] =
 		xt_fopen(abundance_files[sample_count], "r")) == NULL )
 	{
-	    fprintf(stderr, ": Could not open %s for read: %s.\n",
+	    fprintf(stderr, "normalize: Could not open %s for read: %s.\n",
 		    abundance_files[sample_count], strerror(errno));
+	    return EX_NOINPUT;
+	}
+	
+	if ( (tmp_streams[sample_count] = tmpfile()) == NULL )
+	{
+	    fprintf(stderr, "normalize: Could not open temp file: %s\n",
+		    strerror(errno));
 	    return EX_NOINPUT;
 	}
 	dsv_line_init(&dsv_line[sample_count]);
@@ -104,7 +114,7 @@ int     mrn(int argc, char *argv[], int arg)
     
     while ( ! feof(abundance_streams[0]) )
     {
-	for (sample = 0, sum_counts = 0; sample < sample_count; ++sample)
+	for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
 	{
 	    if ( dsv_line_read(&dsv_line[sample], abundance_streams[sample],
 				"\t") == EOF )
@@ -152,26 +162,27 @@ int     mrn(int argc, char *argv[], int arg)
 			    DSV_LINE_FIELDS_AE(&dsv_line[sample_count],0));
 		    return EX_DATAERR;
 		}
-		sum_counts += log(count);
+		lc[sample] = log(count);
+		sum_lcs += lc[sample];
 	    }
 	}
-	if ( feature_count == feature_array_size )
-	{
-	    feature_array_size += 1024 * 1024;
-	    pseudo_refs = xt_realloc(pseudo_refs, feature_array_size,
-				     sizeof(*pseudo_refs));
-	    if ( pseudo_refs == NULL )
-	    {
-		fprintf(stderr, "normalize: Failed to realloc pseudo_refs.\n");
-		// FIXME: Close all files
-		return EX_UNAVAILABLE;
-	    }
-	}
+
+	/*
+	 *  3.  Remove genes with -inf as average
+	 *  4.  Subtract pseudo-reference from each log(expression)
+	 *      This is actually a ratio since subtracting from log(v)
+	 *      is dividing v. We'll need to store this value and later
+	 *      sort to find median.
+	 */   
+	
 	if ( ! feof(abundance_streams[0]) )
 	{
-	    pseudo_refs[feature_count] = sum_counts / sample_count;
-	    printf("pseudo_refs[%zu] = %f\n", feature_count,
-		    pseudo_refs[feature_count]);
+	    pseudo_ref = sum_lcs / sample_count;
+	    printf("pseudo_ref = %f\n", pseudo_ref);
+	    if ( pseudo_ref != -INFINITY )
+		for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
+		    fprintf(tmp_streams[sample], "%f\n",
+			    lc[sample] - pseudo_ref);
 	    ++feature_count;
 	}
     }
@@ -179,23 +190,51 @@ int     mrn(int argc, char *argv[], int arg)
     /*
      *  Second pass:
      *
-     *  3.  Remove genes with -inf as average
-     *  4.  Subtract pseudo-reference from each log(expression)
-     *      This is actually a ratio since subtracting from log(v)
-     *      is dividing v. We'll need to store this value and later
-     *      sort to find median.
      *  5.  Take the median of the ratios for each sample
      *  6.  exp(median) = count scaling factor
      */
 
     for (sample = 0; sample < sample_count; ++sample)
+    {
 	rewind(abundance_streams[sample]);
+	rewind(tmp_streams[sample]);
+	
+	ratios = xt_malloc(feature_count, sizeof(*ratios));
+	if ( ratios == NULL )
+	{
+	    fprintf(stderr, "normalize: Could not allocate ratios[%zu]\n",
+		    feature_count);
+	    return EX_UNAVAILABLE;
+	}
+	for (c = 0; c < feature_count; ++c)
+	    fscanf(tmp_streams[sample], "%lf", &ratios[c]);
+	qsort(ratios, feature_count, sizeof(*ratios),
+	      (int (*)(const void *,const void *))double_cmp);
+	printf("Sorted %zu:\n", feature_count);
+	for (c = 0; c < feature_count; ++c)
+	{
+	    if ( c % 1000 == 0 )
+		printf("%f\n", ratios[c]);
+	}
+	if ( feature_count % 2 == 1 )
+	    median_ratio[sample] = ratios[feature_count / 2];
+	else
+	    median_ratio[sample] = (ratios[feature_count / 2] +
+			    ratios[feature_count / 2 + 1]) / 2;
+	printf("median ratio = %f\n", median_ratio[sample]);
+    }
+    
+    /*
+     *  Third pass:
+     *
+     *  7.  Divide counts by scaling factor
+     */
+    
     skip_headers(abundance_files, abundance_streams, dsv_line, sample_count);
-
     feature_count = 0;
     while ( ! feof(abundance_streams[0]) )
     {
-	for (sample = 0, sum_counts = 0; sample < sample_count; ++sample)
+	for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
 	{
 	    if ( dsv_line_read(&dsv_line[sample], abundance_streams[sample],
 				"\t") == EOF )
@@ -205,15 +244,15 @@ int     mrn(int argc, char *argv[], int arg)
 	    }
 	    else
 	    {
-		if ( pseudo_refs[feature_count] == -INFINITY )
+		if ( pseudo_ref == -INFINITY )
 		{
-		    fprintf(stderr, "Discarding pseudo_refs[%zu]\n",
+		    fprintf(stderr, "Discarding ratios[%zu]\n",
 			    feature_count);
 		}
 		else
 		{
 		    // ratios[sample][feature_count] =
-		    //      log(count) - pseudo_refs[feature_count];
+		    //      log(count) - ratios[feature_count];
 		}
 	    }
 	}
@@ -231,12 +270,6 @@ int     mrn(int argc, char *argv[], int arg)
     //         scaling_factor = exp((ratios[sample][middle] +
     //                               ratios[sample][middle + 1]) / 2);
     // }
-    
-    /*
-     *  Third pass:
-     *
-     *  7.  Divide counts by scaling factor
-     */
     
     for (sample = 0; sample < sample_count; ++sample)
 	fclose(abundance_streams[sample]);
