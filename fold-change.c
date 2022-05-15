@@ -169,6 +169,42 @@ void    print_fold_change(const char *id, double coverage[], int conditions)
 }
 
 
+/***************************************************************************
+ *  Use auto-c2man to generate a man page from this comment
+ *
+ *  Library:
+ *      #include <>
+ *      -l
+ *
+ *  Description:
+ *      https://support.minitab.com/en-us/minitab/18/help-and-how-to/statistics/nonparametrics/how-to/mann-whitney-test/methods-and-formulas/methods-and-formulas/
+ 
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  Examples:
+ *
+ *  Files:
+ *
+ *  Environment
+ *
+ *  See also:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-05-14  Jason Bacon Begin
+ ***************************************************************************/
+
+/*
+double  mann_whitney_p_val()
+
+{
+    p = (w - n*(n + m + 1)/2) /
+	sqrt(n * m (n + m + 1) / 12);
+}
+*/
+
 void    usage(char *argv[])
 
 {
