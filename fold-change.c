@@ -13,6 +13,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <sys/param.h>
 #include <xtend/file.h>
 #include <xtend/dsv.h>
 #include <xtend/mem.h>
@@ -258,22 +259,26 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 			   size_t num_reps1, size_t num_reps2)
 
 {
-    double  p = 0.0, s12, u1;
-    size_t  c1, c2;
+    double  z, p, s12, w, k;
+    size_t  c1, c2, n = num_reps1, m = num_reps2;
     
-    for (c1 = 0, u1 = 0.0; c1 < num_reps1; ++c1)
+    for (c1 = 0, w = 0.0; c1 < n; ++c1)
     {
-	for (c2 = 0; c2 < num_reps2; ++c2)
+	for (c2 = 0; c2 < m; ++c2)
 	{
 	    s12 = rep_counts1[c1] > rep_counts2[c2] ? 1 :
 		rep_counts1[c1] < rep_counts2[c2] ? 0 : 0.5;
-	    u1 += s12;
+	    w += s12;
 	}
     }
     
-    p = (u1 - num_reps1 * (num_reps2 + num_reps1 + 1.0) / 2.0) /
-	 sqrt(num_reps2 * num_reps1 * (num_reps2 + num_reps1 + 1.0) / 12.0);
+    // Map to Minitab doc: n = num_reps1, m = num_reps2
+    printf(" u = %f", w);
+    z = (w - n * (n + m + 1.0) / 2.0) /
+	 sqrt(n * m * (n + m + 1.0) / 12.0);
     
+    k = MIN(w, n * (n + m + 1.0) - w);
+    p = 0.0;    // FIXME
     return p;
 }
 

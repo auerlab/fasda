@@ -1,9 +1,10 @@
 #!/bin/sh -e
 
 mkdir -p Data Logs
-scripts=$(ls 0[2-9]-*) # [1-9][0-9]-*)
+scripts=$(ls 0[1-9]-*) # [1-9][0-9]-*)
 for script in $scripts; do
     stage=${script%.*}
+    echo $stage
     mkdir -p Data/$stage Logs/$stage
 done
 

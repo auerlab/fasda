@@ -66,7 +66,6 @@ for file in Data/01-trim/*.fastq.gz; do
 	--genomebam \
 	    --gtf=Data/03-reference/$gtf \
 	    --chromosomes=Data/03-reference/chromosome-sizes.tsv \
-	--bootstrap-samples=100 \
 	--threads=2 \
 	--index=Data/04-kallisto-index/all-but-xy.index \
 	--output-dir=$out_dir $file
