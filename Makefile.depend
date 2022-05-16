@@ -14,6 +14,6 @@ diffanal.o: diffanal.c
 fold-change.o: fold-change.c fold-change.h fold-change-protos.h
 	${CC} -c ${CFLAGS} fold-change.c
 
-normalize.o: normalize.c normalize.h normalize-protos.h
+normalize.o: normalize.c normalize.h diffanal.h normalize-protos.h
 	${CC} -c ${CFLAGS} normalize.c
 

@@ -35,6 +35,7 @@ int     main(int argc,char *argv[])
 
 {
     int     arg;
+    FILE    *norm_all_stream = stdin;
     
     if ( argc < 3 )
 	usage(argv);
@@ -43,11 +44,20 @@ int     main(int argc,char *argv[])
     {
 	if ( strcmp(argv[arg], "--mrn") == 0 )
 	    ;
+	else if ( strcmp(argv[arg], "--output") == 0 )
+	{
+	    if ( (norm_all_stream = fopen(argv[++arg], "w")) == NULL )
+	    {
+		fprintf(stderr, "normalize: Could not open %s for write: %s.\n",
+			argv[arg], strerror(errno));
+		return EX_CANTCREAT;
+	    }
+	}
 	else
 	    usage(argv);
     }
     
-    return mrn(argc, argv, arg);
+    return mrn(argc, argv, arg, norm_all_stream);
 }
 
 
@@ -77,16 +87,16 @@ int     main(int argc,char *argv[])
  *  2022-05-14  Jason Bacon Begin
  ***************************************************************************/
 
-int     mrn(int argc, char *argv[], int arg)
+int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 
 {
     dsv_line_t  dsv_line[DIFFANAL_MAX_SAMPLES];
     size_t      sample, sample_count, feature_count = 0, c;
     FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES],
 		*tmp_streams[DIFFANAL_MAX_SAMPLES],
-		*norm_streams[DIFFANAL_MAX_SAMPLES];
+		*norm_sample_streams[DIFFANAL_MAX_SAMPLES];
     char        **abundance_files = &argv[arg], *end, *target_id, *count_str,
-		norm_file[PATH_MAX + 1], *p;
+		norm_sample_file[PATH_MAX + 1], *p;
     double      count, sum_lcs, lc[DIFFANAL_MAX_SAMPLES],
 		pseudo_ref, *ratios, median_ratio[DIFFANAL_MAX_SAMPLES],
 		scaling_factor[DIFFANAL_MAX_SAMPLES];
@@ -238,24 +248,27 @@ int     mrn(int argc, char *argv[], int arg)
      *  7.  Divide counts by scaling factor to normalize
      */
     
+    // Rewind input abundance.tsv files and create matching output files
     for (sample = 0; sample < sample_count; ++sample)
     {
 	rewind(abundance_streams[sample]);
 	// FIXME: libxtend strreplace()?
-	strlcpy(norm_file, abundance_files[sample], PATH_MAX + 1);
-	if ( (p = strrchr(norm_file, '/')) == NULL )
-	    p = norm_file;
+	strlcpy(norm_sample_file, abundance_files[sample], PATH_MAX + 1);
+	if ( (p = strrchr(norm_sample_file, '/')) == NULL )
+	    p = norm_sample_file;
 	else
 	    ++p;    // First after '/'
 	*p = '\0';
-	strlcat(norm_file, "normalized.tsv", PATH_MAX + 1);
-	if ( (norm_streams[sample] = xt_fopen(norm_file, "w")) == NULL )
+	strlcat(norm_sample_file, "normalized.tsv", PATH_MAX + 1);
+	fprintf(stderr, "sample = %zu  file = %s\n", sample, norm_sample_file);
+	if ( (norm_sample_streams[sample] = xt_fopen(norm_sample_file, "w")) == NULL )
 	{
 	    fprintf(stderr, "normalize: Could not open %s for write: %s.\n",
-		    norm_file, strerror(errno));
+		    norm_sample_file, strerror(errno));
 	    exit(EX_CANTCREAT);
 	}
-	fprintf(norm_streams[sample], "target_id\tlength\teff_length\test_counts\ttpm\tnorm_counts\n");
+	// Add header to each output file
+	fprintf(norm_sample_streams[sample], "target_id\tlength\teff_length\test_counts\ttpm\tnorm_counts\n");
     }
     
     skip_headers(abundance_files, abundance_streams, dsv_line, sample_count);
@@ -272,8 +285,14 @@ int     mrn(int argc, char *argv[], int arg)
 	    }
 	    else
 	    {
+		/*
+		 *  Add normalized count to original abundance.tsv for
+		 *  viewing alongside raw count and TPM.
+		 */
+		
+		// Copy abundance.tsv fields
 		for (c = 0; c < DSV_LINE_NUM_FIELDS(&dsv_line[sample]); ++c)
-		    fprintf(norm_streams[sample], "%s\t",
+		    fprintf(norm_sample_streams[sample], "%s\t",
 			    DSV_LINE_FIELDS_AE(&dsv_line[sample], c));
 		count = strtof(DSV_LINE_FIELDS_AE(&dsv_line[sample], 3), &end);
 		if ( *end != '\0' )
@@ -282,18 +301,39 @@ int     mrn(int argc, char *argv[], int arg)
 			    DSV_LINE_FIELDS_AE(&dsv_line[sample],0));
 		    return EX_DATAERR;
 		}
-		fprintf(norm_streams[sample], "%f\n",
+		
+		// Add normalized count
+		fprintf(norm_sample_streams[sample], "%f\n",
+			count * scaling_factor[sample]);
+		//fprintf(stderr, "sample %zu  nc = %f\n",
+		//        sample, count * scaling_factor[sample]);
+		//getchar();
+		
+		/*
+		 *  Put all normalized counts together in one file for
+		 *  easy reading by fold-change.
+		 */
+
+		// Feature ID (target_id) just once
+		if ( sample == 0 )
+		    fprintf(norm_all_stream, "%s",
+			    DSV_LINE_FIELDS_AE(&dsv_line[0],0));
+		
+		fprintf(norm_all_stream, "\t%f",
 			count * scaling_factor[sample]);
 	    }
 	}
+	
+	putc('\n', norm_all_stream);
 	++feature_count;
     }
     
     for (sample = 0; sample < sample_count; ++sample)
     {
 	fclose(abundance_streams[sample]);
-	fclose(norm_streams[sample]);
+	fclose(norm_sample_streams[sample]);
     }
+    fclose(norm_all_stream);
     return EX_OK;
 }
 
@@ -392,6 +432,7 @@ void    check_all_eof(char *abundance_files[], FILE *abundance_streams[],
 void    usage(char *argv[])
 
 {
-    fprintf(stderr, "Usage: %s abundance1.tsv abundance2.tsv ...\n", argv[0]);
+    fprintf(stderr, "Usage: %s [--mrn] [--output file.tsv] \\\n"
+		    "       abundance1.tsv abundance2.tsv ...\n", argv[0]);
     exit(EX_USAGE);
 }
