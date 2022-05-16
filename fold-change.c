@@ -46,10 +46,10 @@ int     main(int argc,char *argv[])
 int     fold_change(FILE *condition_streams[], int conditions)
 
 {
-    int         c;
-    double      coverage[MAX_CONDITIONS];
+    size_t      condition;
+    double      condition_counts[MAX_CONDITIONS];
     dsv_line_t  dsv_line[MAX_CONDITIONS];
-    char        *id, *end;
+    char        *id;
     
     print_header(conditions);
     
@@ -59,54 +59,51 @@ int     fold_change(FILE *condition_streams[], int conditions)
 	if ( strcmp(id, "target_id") == 0 )
 	{
 	    // Skip header line if present
-	    for (c = 1; c < conditions; ++c)
-		dsv_skip_rest_of_line(condition_streams[c]);
-	    continue;
+	    for (condition = 1; condition < conditions; ++condition)
+		dsv_skip_rest_of_line(condition_streams[condition]);
 	}
-	
-	coverage[0] = strtof(DSV_LINE_FIELDS_AE(&dsv_line[0], 1), &end);
-	if ( *end != '\0' )
+	else
 	{
-	    fprintf(stderr, "fold-change: Invalid abundance on line %d: %f\n",
-		    0, coverage[0]);
-	    return EX_DATAERR;
-	}
-	
-	for (c = 1; c < conditions; ++c)
-	{
-	    coverage[c] = 0;
-	    
-	    if ( dsv_line_read(&dsv_line[c], condition_streams[c], "\t") != '\n' )
-	    {
-		fprintf(stderr, "fold-change: Expected newline on condition stream %d\n", c);
-		return EX_DATAERR;
-	    }
-	
 	    /*
-	     *  We should see the same transcript/gene ID on corresponding
-	     *  lines from each abundances file.
+	     *  Fold-change is ratio of total (or avg) normalized abundances
 	     */
 	    
-	    if ( strcmp(DSV_LINE_FIELDS_AE(&dsv_line[c], 0), id) != 0 )
+	    condition_counts[0] = dsv_total_counts(&dsv_line[0]);
+	    
+	    for (condition = 1; condition < conditions; ++condition)
 	    {
-		fprintf(stderr, "fold-change: Abundances files out of sync: %s %s\n",
-			id, DSV_LINE_FIELDS_AE(&dsv_line[c], 0));
-		return EX_DATAERR;
+		if ( dsv_line_read(&dsv_line[condition], condition_streams[condition], "\t") != '\n' )
+		{
+		    fprintf(stderr, "fold-change: Expected newline on condition stream %zu\n",
+			    condition);
+		    return EX_DATAERR;
+		}
+	    
+		/*
+		 *  Sanity check: We should see the same transcript/gene ID
+		 *  on corresponding lines from each abundances file.
+		 */
+		
+		if ( strcmp(DSV_LINE_FIELDS_AE(&dsv_line[condition], 0), id) != 0 )
+		{
+		    fprintf(stderr, "fold-change: Abundances files out of sync: %s %s\n",
+			    id, DSV_LINE_FIELDS_AE(&dsv_line[condition], 0));
+		    return EX_DATAERR;
+		}
+    
+		condition_counts[condition] = dsv_total_counts(&dsv_line[condition]);
 	    }
-
-	    coverage[c] = strtof(DSV_LINE_FIELDS_AE(&dsv_line[c], 1), &end);
-	    if ( *end != '\0' )
-	    {
-		fprintf(stderr, "fold-change: Invalid abundance on line %d: %f\n",
-			c, coverage[c]);
-		return EX_DATAERR;
-	    }
+	    
+	    // Compute p-value
+	    // p_val = mann_whitney();
+	    
+	    // Output fold-change and p-value
+	    print_fold_change(id, condition_counts, conditions);
 	}
-	print_fold_change(id, coverage, conditions);
     }    
     
-    for (c = 0; c < conditions; ++c)
-	xt_fclose(condition_streams[c]);
+    for (condition = 0; condition < conditions; ++condition)
+	xt_fclose(condition_streams[condition]);
     
     return EX_OK;
 }
@@ -114,7 +111,7 @@ int     fold_change(FILE *condition_streams[], int conditions)
 
 /***************************************************************************
  *  Description:
- *      Print header for genes, coverage, and fold-change
+ *      Print header for genes, count, and fold-change
  *
  *  History: 
  *  Date        Name        Modification
@@ -140,27 +137,27 @@ void    print_header(int conditions)
 
 /***************************************************************************
  *  Description:
- *      Print coverage and fold-change stats for a given gene
+ *      Print count and fold-change stats for a given gene
  *
  *  History: 
  *  Date        Name        Modification
  *  2022-04-09  Jason Bacon Begin
  ***************************************************************************/
 
-void    print_fold_change(const char *id, double coverage[], int conditions)
+void    print_fold_change(const char *id, double condition_counts[], int conditions)
 
 {
     int     c1, c2;
     
     printf("%-30s", id);
     for (c1 = 0; c1 < conditions; ++c1)
-	printf(" %6.2f", coverage[c1]);
+	printf(" %6.2f", condition_counts[c1]);
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
 	{
-	    if ( (coverage[c1] != 0.0) || (coverage[c2] != 0.0) )
-		printf(" %7.2f", coverage[c2] / coverage[c1]);
+	    if ( (condition_counts[c1] != 0.0) || (condition_counts[c2] != 0.0) )
+		printf(" %7.2f", condition_counts[c2] / condition_counts[c1]);
 	    else
 		printf(" %7s", "*");
 	}
@@ -204,6 +201,58 @@ double  mann_whitney_p_val()
 	sqrt(n * m (n + m + 1) / 12);
 }
 */
+
+
+/***************************************************************************
+ *  Use auto-c2man to generate a man page from this comment
+ *
+ *  Library:
+ *      #include <>
+ *      -l
+ *
+ *  Description:
+ *  
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  Examples:
+ *
+ *  Files:
+ *
+ *  Environment
+ *
+ *  See also:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-05-16  Jason Bacon Begin
+ ***************************************************************************/
+
+double  dsv_total_counts(dsv_line_t *dsv_line)
+
+{
+    size_t  f;
+    double  total_counts, rep_count;
+    char    *end;
+    
+    // All but first field are counts
+    for (f = 1, total_counts = 0.0; f < DSV_LINE_NUM_FIELDS(dsv_line); ++f)
+    {
+	rep_count = strtof(DSV_LINE_FIELDS_AE(dsv_line, f), &end);
+	if ( *end != '\0' )
+	{
+	    fprintf(stderr, "fold-change: Invalid abundance: %s\n",
+		    DSV_LINE_FIELDS_AE(dsv_line, f));
+	    return EX_DATAERR;
+	}
+	total_counts += rep_count;
+	//fprintf(stderr, "total_counts = %f\n", total_counts);
+	//getchar();
+    }
+    return total_counts;
+}
+
 
 void    usage(char *argv[])
 
