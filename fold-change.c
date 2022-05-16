@@ -237,7 +237,9 @@ void    print_fold_change(const char *id, double condition_counts[],
  *
  *  Description:
  *      https://support.minitab.com/en-us/minitab/18/help-and-how-to/statistics/nonparametrics/how-to/mann-whitney-test/methods-and-formulas/methods-and-formulas/
- 
+ *
+ *  Test site for p-values: https://www.statziki.com/Mannwhitneyu
+ *
  *  Arguments:
  *
  *  Returns:
@@ -261,7 +263,13 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 {
     double  z, p, s12, w, k;
     size_t  c1, c2, n = num_reps1, m = num_reps2;
-    
+
+    printf("\nCounts1:\n");
+    for (c1 = 0; c1 < n; ++c1)
+	printf("%f\n", rep_counts1[c1]);
+    printf("Counts2:\n");
+    for (c2 = 0; c2 < n; ++c2)
+	printf("%f\n", rep_counts2[c2]);
     for (c1 = 0, w = 0.0; c1 < n; ++c1)
     {
 	for (c2 = 0; c2 < m; ++c2)
@@ -273,11 +281,11 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     }
     
     // Map to Minitab doc: n = num_reps1, m = num_reps2
-    // printf(" u = %f", w);
-    z = (w - n * (n + m + 1.0) / 2.0) /
-	 sqrt(n * m * (n + m + 1.0) / 12.0);
-    printf(" Z = %f", z);
+    printf(" u = %f", w);
     k = MIN(w, n * (n + m + 1.0) - w);
+    z = ((k + 0.5) - n * (n + m + 1.0) / 2.0) /
+	 sqrt(n * m * (n + m + 1.0) / 12.0);
+    printf(" z = %f", z);
     p = 0.0;    // FIXME
     return p;
 }
