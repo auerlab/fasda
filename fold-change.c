@@ -273,10 +273,10 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     }
     
     // Map to Minitab doc: n = num_reps1, m = num_reps2
-    printf(" u = %f", w);
+    // printf(" u = %f", w);
     z = (w - n * (n + m + 1.0) / 2.0) /
 	 sqrt(n * m * (n + m + 1.0) / 12.0);
-    
+    printf(" Z = %f", z);
     k = MIN(w, n * (n + m + 1.0) - w);
     p = 0.0;    // FIXME
     return p;
