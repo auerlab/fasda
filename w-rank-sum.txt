@@ -61,5 +61,5 @@ U = MIN(U1, U2) = 28.5
 
 From MWU table:
 
-n1/n2 = 8/8, alpha = 0.5: Critical U value = 13
+n1,n2 = 8,8, alpha = 0.5: Critical U value = 13
 Conclusion: U > critical value, fail to reject H0

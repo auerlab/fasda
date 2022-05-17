@@ -261,33 +261,38 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 			   size_t num_reps1, size_t num_reps2)
 
 {
-    double  z, zne, p, s12, w, k;
+    double  z, zne, p, s12, w1, w2, w, k;
     size_t  c1, c2, n = num_reps1, m = num_reps2;
 
-    printf("\nCounts1:\n");
+    puts("\n\nCounts1:");
     for (c1 = 0; c1 < n; ++c1)
-	printf("%f\n", rep_counts1[c1]);
+	printf("%f ", rep_counts1[c1]);
+    puts("\n");
     printf("Counts2:\n");
     for (c2 = 0; c2 < n; ++c2)
-	printf("%f\n", rep_counts2[c2]);
-    for (c1 = 0, w = 0.0; c1 < n; ++c1)
+	printf("%f ", rep_counts2[c2]);
+    puts("\n");
+    
+    for (c1 = 0, w1 = 0.0; c1 < n; ++c1)
     {
 	for (c2 = 0; c2 < m; ++c2)
 	{
 	    s12 = rep_counts1[c1] > rep_counts2[c2] ? 1 :
 		rep_counts1[c1] < rep_counts2[c2] ? 0 : 0.5;
-	    w += s12;
+	    w1 += s12;
 	}
     }
+    w2 = m * n - w1;
     
     // Map to Minitab doc: n = num_reps1, m = num_reps2
-    printf(" u = %f", w);
+    printf("\nw1 = %f  w2 = %f", w1, w2);
+    w = MIN(w1, w2);
     k = MIN(w, n * (n + m + 1.0) - w);
     z = (w - n * (n + m + 1.0) / 2.0) /
 	 sqrt(n * m * (n + m + 1.0) / 12.0);
     zne = ((k + 0.5) - n * (n + m + 1.0) / 2.0) /
 	 sqrt(n * m * (n + m + 1.0) / 12.0);
-    printf(" z = %f  zne = %f", z, zne);
+    printf("  z = %f  zne = %f\n", z, zne);
     p = 0.0;    // FIXME
     return p;
 }
