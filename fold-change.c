@@ -305,6 +305,9 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     k = MIN(w, n * (n + m + 1.0) - w);
     // Paul A.: Minitab formula was wrong.  Numerator is just n*m/2 per
     // R source for wilcox.test().
+    // FIXME: This normal approximation might not be stable for small
+    // sample sizes, so maybe compute the p-value combinatorically.
+    // (Determine total # of possible rank sums and where this one falls)
     z = (w - n * m / 2) /
 	 sqrt(n * m * (n + m + 1.0) / 12.0);
     p = 2.0 * normal_cdf(z, 0.0, 1.0);
