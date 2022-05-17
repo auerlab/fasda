@@ -133,7 +133,7 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 				"\t") == EOF )
 	    {
 		check_all_eof(abundance_files, abundance_streams, sample, sample_count);
-		break;
+		break;  // Back to outer while loop
 	    }
 	    else
 	    {
@@ -141,7 +141,7 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 		count_str = DSV_LINE_FIELDS_AE(&dsv_line[sample], 3);
 		
 		// Dummy output: Just echo non-normalized counts to test UI
-		printf("%s\t%s\n", target_id, count_str);
+		// printf("%s\t%s\n", target_id, count_str);
 		
 		if ( (sample > 0) && (strcmp(target_id,
 			DSV_LINE_FIELDS_AE(&dsv_line[sample - 1], 0)) != 0) )
@@ -191,7 +191,7 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 	if ( ! feof(abundance_streams[0]) )
 	{
 	    pseudo_ref = sum_lcs / sample_count;
-	    printf("pseudo_ref [avg log(count)] = %f\n", pseudo_ref);
+	    //printf("pseudo_ref [avg log(count)] = %f\n", pseudo_ref);
 	    if ( pseudo_ref != -INFINITY )
 		for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
 		    fprintf(tmp_streams[sample], "%f\n",
@@ -239,7 +239,7 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 			    ratios[feature_count / 2 + 1]) / 2;
 	//printf("Median ratio = %f\n", median_ratio[sample]);
 	scaling_factor[sample] = exp(median_ratio[sample]);
-	printf("Scaling factor[%zu] = %f\n", sample + 1, scaling_factor[sample]);
+	// printf("Scaling factor[%zu] = %f\n", sample + 1, scaling_factor[sample]);
     }
     
     /*
@@ -260,7 +260,7 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 	    ++p;    // First after '/'
 	*p = '\0';
 	strlcat(norm_sample_file, "normalized.tsv", PATH_MAX + 1);
-	fprintf(stderr, "sample = %zu  file = %s\n", sample, norm_sample_file);
+	//fprintf(stderr, "sample = %zu  file = %s\n", sample, norm_sample_file);
 	if ( (norm_sample_streams[sample] = xt_fopen(norm_sample_file, "w")) == NULL )
 	{
 	    fprintf(stderr, "normalize: Could not open %s for write: %s.\n",
@@ -324,8 +324,11 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 	    }
 	}
 	
-	putc('\n', norm_all_stream);
-	++feature_count;
+	if ( ! feof(abundance_streams[0]) )
+	{
+	    putc('\n', norm_all_stream);
+	    ++feature_count;
+	}
     }
     
     for (sample = 0; sample < sample_count; ++sample)

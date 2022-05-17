@@ -1,5 +1,18 @@
 #!/bin/sh -e
 
+##########################################################################
+#   Function description:
+#       Pause until user presses return
+##########################################################################
+
+pause()
+{
+    local junk
+    
+    printf "Press return to continue..."
+    read junk
+}
+
 cd ..
 ./cave-man-install.sh
 cd Test
@@ -43,7 +56,11 @@ fi
 
 dir=Data/05-kallisto-quant
 for condition in WT SNF2; do
+    printf "Normalizing $condition...\n"
     ../normalize --output $condition-all-norm.tsv $dir/$condition-*/abundance.tsv
 done
 
-../fold-change WT-all-norm.tsv SNF2-all-norm.tsv
+printf "Computing fold-change...\n"
+../fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
+pause
+more WT-SNF2-FC.txt

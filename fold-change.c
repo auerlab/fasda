@@ -23,15 +23,29 @@ int     main(int argc,char *argv[])
 
 {
     char        *condition_files[MAX_CONDITIONS];
-    FILE        *condition_streams[MAX_CONDITIONS];
-    int         conditions, c;
+    FILE        *condition_streams[MAX_CONDITIONS],
+		*diff_stream = stdout;
+    int         conditions, arg;
     
     if ( argc < 3 )
 	usage(argv);
-    
-    for (c = 1, conditions = 0; c < argc; ++c, ++conditions)
+
+    for (arg = 1; *argv[arg] == '-'; ++arg)
     {
-	condition_files[conditions] = argv[c];
+	if ( strcmp(argv[arg], "--output") == 0 )
+	{
+	    if ( (diff_stream = fopen(argv[++arg], "w")) == NULL )
+	    {
+		fprintf(stderr, "normalize: Could not open %s for write: %s.\n",
+			argv[arg], strerror(errno));
+		return EX_CANTCREAT;
+	    }
+	}
+    }
+    
+    for (conditions = 0; arg < argc; ++arg, ++conditions)
+    {
+	condition_files[conditions] = argv[arg];
 
 	if ( (condition_streams[conditions] =
 	      xt_fopen(condition_files[conditions], "r")) == NULL )
@@ -42,11 +56,11 @@ int     main(int argc,char *argv[])
 	}
     }
     
-    return fold_change(condition_streams, conditions);
+    return fold_change(condition_streams, conditions, diff_stream);
 }
 
 
-int     fold_change(FILE *condition_streams[], int conditions)
+int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream)
 
 {
     size_t      condition;
@@ -57,7 +71,7 @@ int     fold_change(FILE *condition_streams[], int conditions)
     static double   *rep_counts[MAX_CONDITIONS];
     size_t          num_reps[MAX_CONDITIONS];
     
-    print_header(conditions);
+    print_header(diff_stream, conditions);
 
     // Skip header line if present
     for (condition = 0; condition < conditions; ++condition)
@@ -151,7 +165,7 @@ int     fold_change(FILE *condition_streams[], int conditions)
 	}
 	
 	// Output fold-change and p-value
-	print_fold_change(id, condition_counts, conditions,
+	print_fold_change(diff_stream, id, condition_counts, conditions,
 			  rep_counts, num_reps);
     }    
     
@@ -171,20 +185,20 @@ int     fold_change(FILE *condition_streams[], int conditions)
  *  2022-04-09  Jason Bacon Begin
  ***************************************************************************/
 
-void    print_header(int conditions)
+void    print_header(FILE *diff_stream, int conditions)
 
 {
     int     c1, c2;
     
-    printf("%-30s", "Feature");
+    fprintf(diff_stream, "%-30s", "Feature");
     for (c1 = 0; c1 < conditions; ++c1)
-	printf(" %5s%d", "Cond", c1 + 1);
+	fprintf(diff_stream, " %5s%d", "Cond", c1 + 1);
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
-	    printf("  FC %d-%d", c1 + 1, c2 + 1);
+	    fprintf(diff_stream,"  FC %d-%d", c1 + 1, c2 + 1);
     }
-    putchar('\n');
+    putc('\n', diff_stream);
 }
 
 
@@ -197,34 +211,34 @@ void    print_header(int conditions)
  *  2022-04-09  Jason Bacon Begin
  ***************************************************************************/
 
-void    print_fold_change(const char *id, double condition_counts[],
-			  int conditions, double *rep_counts[],
-			  size_t num_reps[])
+void    print_fold_change(FILE *diff_stream, const char *id,
+			  double condition_counts[], int conditions,
+			  double *rep_counts[], size_t num_reps[])
 
 {
     int     c1, c2;
     
-    printf("%-30s", id);
+    fprintf(diff_stream,"%-30s", id);
     
     // Report average counts across all reps
     for (c1 = 0; c1 < conditions; ++c1)
-	printf(" %7.2f", condition_counts[c1] / num_reps[c1]);
+	fprintf(diff_stream," %8.2f", condition_counts[c1] / num_reps[c1]);
     
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
 	{
 	    if ( (condition_counts[c1] != 0.0) || (condition_counts[c2] != 0.0) )
-		printf(" %7.2f", condition_counts[c2] / condition_counts[c1]);
+		fprintf(diff_stream," %7.2f", condition_counts[c2] / condition_counts[c1]);
 	    else
-		printf(" %7s", "*");
+		fprintf(diff_stream," %7s", "*");
 	    
 	    // Compute p-value
-	    printf(" %0.4f", mann_whitney_p_val(rep_counts[c1], rep_counts[c2],
+	    fprintf(diff_stream," %0.4f", mann_whitney_p_val(rep_counts[c1], rep_counts[c2],
 					     num_reps[c1], num_reps[c2]));
 	}
     }
-    putchar('\n');
+    putc('\n', diff_stream);
 }
 
 
@@ -360,7 +374,7 @@ double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[])
 void    usage(char *argv[])
 
 {
-    fprintf(stderr, "Usage: %s \\\n"
+    fprintf(stderr, "Usage: %s [--output file.txt]\\\n"
 	    "\tabundances1.tsv[.gz|.bz2|.xz] abundances2.tsv[.gz|.bz2|.xz] \\\n"
 	    "\t[abundances3.tsv[.gz|.bz2|.xz] ...]\n",
 	    argv[0]);

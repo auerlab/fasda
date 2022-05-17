@@ -4,7 +4,6 @@ mkdir -p Data Logs
 scripts=$(ls 0[1-9]-*) # [1-9][0-9]-*)
 for script in $scripts; do
     stage=${script%.*}
-    echo $stage
     mkdir -p Data/$stage Logs/$stage
 done
 
@@ -15,7 +14,7 @@ for dir in ../../Yeast/ERR*; do
     test -e $dir/$base.fastq.gz
     fn=`awk -v id=$base '$1 == id { printf("%s-%s.fastq.gz", $3, $4) }' \
 	../../ERP004763_sample_mapping.tsv`
-    printf "$dir/$base.fastq.gz -> $fn\n"
+    #printf "$dir/$base.fastq.gz -> $fn\n"
     ln -sf $dir/$base.fastq.gz $fn
 done
 
