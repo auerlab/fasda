@@ -208,7 +208,7 @@ void    print_fold_change(const char *id, double condition_counts[],
     
     // Report average counts across all reps
     for (c1 = 0; c1 < conditions; ++c1)
-	printf(" %6.2f", condition_counts[c1] / num_reps[c1]);
+	printf(" %7.2f", condition_counts[c1] / num_reps[c1]);
     
     for (c1 = 0; c1 < conditions; ++c1)
     {
@@ -220,7 +220,7 @@ void    print_fold_change(const char *id, double condition_counts[],
 		printf(" %7s", "*");
 	    
 	    // Compute p-value
-	    printf(" %f", mann_whitney_p_val(rep_counts[c1], rep_counts[c2],
+	    printf(" %0.4f", mann_whitney_p_val(rep_counts[c1], rep_counts[c2],
 					     num_reps[c1], num_reps[c2]));
 	}
     }
@@ -261,9 +261,10 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 			   size_t num_reps1, size_t num_reps2)
 
 {
-    double  z, zne, p, s12, w1, w2, w, k;
+    double  z, p, s12, w1, w2, w, k;
     size_t  c1, c2, n = num_reps1, m = num_reps2;
 
+    /*
     puts("\n\nCounts1:");
     for (c1 = 0; c1 < n; ++c1)
 	printf("%f ", rep_counts1[c1]);
@@ -272,6 +273,7 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     for (c2 = 0; c2 < n; ++c2)
 	printf("%f ", rep_counts2[c2]);
     puts("\n");
+    */
     
     for (c1 = 0, w1 = 0.0; c1 < n; ++c1)
     {
@@ -284,17 +286,23 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     }
     w2 = m * n - w1;
     
-    // Map to Minitab doc: n = num_reps1, m = num_reps2
-    printf("\nw1 = %f  w2 = %f", w1, w2);
+    // printf("\nw1 = %f  w2 = %f", w1, w2);
     w = MIN(w1, w2);
     k = MIN(w, n * (n + m + 1.0) - w);
-    z = (w - n * (n + m + 1.0) / 2.0) /
+    // Paul A.: Minitab formula was wrong.  Numerator is just n*m/2 per
+    // R source for wilcox.test().
+    z = (w - n * m / 2) /
 	 sqrt(n * m * (n + m + 1.0) / 12.0);
-    zne = ((k + 0.5) - n * (n + m + 1.0) / 2.0) /
-	 sqrt(n * m * (n + m + 1.0) / 12.0);
-    printf("  z = %f  zne = %f\n", z, zne);
-    p = 0.0;    // FIXME
+    p = 2.0 * normal_cdf(z, 0.0, 1.0);
+    // printf("  z = %f  p = %f  p(-1.96) = %f\n", z, p, normal_cdf(-1.96, 0.0, 1.0));
     return p;
+}
+
+
+double  normal_cdf(double x, double mean, double stddev)
+
+{
+    return 0.5 * (1 + erf((x - mean) / (stddev * M_SQRT2)));
 }
 
 

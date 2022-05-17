@@ -21,3 +21,14 @@ counts2 <- c(35.113632, 9.991657, 29.798967, 15.793796, 22.247780, 26.676022,
 counts2
 
 wilcox.test(counts1, counts2, alternative="two.sided", exact=TRUE)
+
+U = 33
+mU = length(counts1)*length(counts2)/2
+sdU = sqrt(length(counts1)*length(counts2)*(length(counts1)+length(counts2)+1)/12)
+z = (U-mU)/sdU
+print("z:")
+print(z)
+pval = 2 * pnorm(z)
+print("2 * pnorm(z):")
+print(pval)
+
