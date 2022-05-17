@@ -20,66 +20,86 @@ just works and does not require any knowledge beyond basic Unix command-line
 skills.  The code is written entirely in C to maximize efficiency and
 portability, and to provide a simple command-line user interface.
 
-## Status
-
-We're in the early stages of development.  So far we are able to efficiently
-calculate fold-change for an arbitrary number of conditions using a
-simplistic coverage measurement.  Once this code
-is robust we will move onto computing P-values, exploring more sophisticated
-coverage algorithms, and adding other features.
-
-The sample output below is from Mus musculus annotations (GRCm39) and 3
-hisat2 BAM files with 68, 89, and 76 million reads, representing three time
-points during development.  This 3-condition differential analysis runs in
-about 8 minutes on a Core i5 2.9GHz (ThinkCenter M92p-tiny) using about
-2 megabytes (yes, megabytes - not gigabytes) of RAM.
-
-```
-diffanal mouse-sorted.gff3 time1.bam time2.bam time3.bam
-
-Ch Gene             Cond1  Cond2  Cond3  FC 1-2  FC 1-3  FC 2-3
- 1 4933401J01Rik     0.00   0.00   0.00       *       *       *
- 1 Xkr4              0.33   0.45   0.10    1.36    0.29    0.22
- 1 Gm37180           0.00   0.00   0.00       *       *       *
- 1 Gm37363           0.00   0.00   0.00       *       *       *
- 1 Gm37686           0.00   0.00   0.00       *       *       *
- 1 Gm37329           0.00   0.00   0.00       *       *       *
- 1 Gm38148           0.00   0.00   0.00       *       *       *
- 1 Gm10568           0.00   0.00   0.00       *       *       *
- 1 Gm38385           0.27   0.10   0.13    0.39    0.47    1.21
- 1 Rp1               0.03   0.04   0.02    1.29    0.68    0.52
- 1 Gm37483           0.00   0.00   0.00       *       *       *
- 1 Sox17             0.36   0.19   0.14    0.52    0.39    0.75
- 1 Mrpl15           27.97  36.81  22.93    1.32    0.82    0.62
- 1 Gm37144           0.00   0.00   0.00       *       *       *
- 1 Lypla1           42.11  34.87  29.35    0.83    0.70    0.84
- 1 Gm37988           0.15   0.06   0.09    0.40    0.60    1.51
-
-...
-
-19 Sfxn4             7.67  11.27   8.98    1.47    1.17    0.80
-19 Prdx3             1.94   3.04   1.41    1.56    0.73    0.46
-19 Grk5              0.50   0.78   0.87    1.56    1.74    1.12
-19 Zfp950            2.46   3.34   2.68    1.36    1.09    0.80
-19 Gm7102            0.06   0.06   0.06    1.00    1.00    1.00
-19 Gm6020            0.00   0.52   0.00     inf       *    0.00
-19 Csf2ra            0.00   0.00   0.00       *       *       *
-19 Gm21060           0.00   0.00   0.00       *       *       *
-
-Total alignments processed:        192751477
-
-      476.10 real       518.16 user        15.53 sys
-```
-
-The next phase will involve implementing the Mann-Whitney U test for
-determining P-values.  According to
-[https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4),
-this method provides great stability and low FDR.  The down side is that
-it requires a minimum sample size of about 8, and hence is not useful for
-typical RNA-Seq or ATAC-Seq experiments with 3 replicates.  However,
+In addition, most popular differential analysis tools show a high false
+discovery rate (FDR) regardless of sample size (biological replicates).
+[https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
+Diffanal utilizes the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test), a
+non-parametric test that provides high stability and low FDR.  The down side
+is that
+it requires a minimum sample size of about 8 to achieve reasonable statistical
+power and hence is not useful for typical RNA-Seq or ATAC-Seq experiments
+with only 3 replicates.  Parametric tests used by popular tools can provide
+reasonable power at very low sample sizes in exchange for high FDR. However,
 since popular differential analysis tools perform poorly for large sample
 sizes, we will try to address this need first in order to fill an under-served
 niche.
+
+## Status
+
+We're still in the fairly early stages of development.  So far we are able
+to normalize counts using Mean Ratios Normalization (MRN) and to compute
+fold-change and Mann-Whitney P-values for an arbitrary number of conditions.
+
+The sample output below is from 14 biological replicates of yeast RNA-Seq
+data with wild-type and SNF2 mutant conditions.
+
+An automated pipeline script is provided in Test/yeast-test.sh.
+
+```
+Raw data:
+
+File                    Reads
+SNF2-1.fastq.gz       7541320
+SNF2-10.fastq.gz      6189284
+SNF2-11.fastq.gz      7442520
+SNF2-12.fastq.gz      5549584
+SNF2-13.fastq.gz      5294592
+SNF2-14.fastq.gz      8147372
+SNF2-2.fastq.gz       6376640
+SNF2-3.fastq.gz       6378780
+SNF2-4.fastq.gz       7909012
+SNF2-5.fastq.gz       5487300
+SNF2-6.fastq.gz       6351828
+SNF2-7.fastq.gz       9388052
+SNF2-8.fastq.gz       6077820
+SNF2-9.fastq.gz       7298096
+WT-1.fastq.gz         4375828
+WT-10.fastq.gz        5857000
+WT-11.fastq.gz        5069724
+WT-12.fastq.gz        5895732
+WT-13.fastq.gz        6717716
+WT-14.fastq.gz        7145472
+WT-2.fastq.gz         5870276
+WT-3.fastq.gz         4912828
+WT-4.fastq.gz         7707420
+WT-5.fastq.gz         6053972
+WT-6.fastq.gz         10851336
+WT-7.fastq.gz         6421324
+WT-8.fastq.gz         7078852
+WT-9.fastq.gz         6623692
+
+Normalizing WT...
+	0.27 real         0.21 user         0.06 sys
+Normalizing SNF2...
+	0.27 real         0.25 user         0.02 sys
+Computing fold-change...
+	0.05 real         0.05 user         0.00 sys
+
+Feature                           Cond1    Cond2  FC 1-2  P-val
+YPL071C_mRNA                      43.60    81.96    1.88 0.0169
+YLL050C_mRNA                     603.23   865.14    1.43 0.0432
+YMR172W_mRNA                      81.78   157.15    1.92 0.0131
+YOR185C_mRNA                      76.50    88.00    1.15 0.3346
+YLL032C_mRNA                      45.14    35.93    0.80 0.5814
+YBR225W_mRNA                      67.91   121.57    1.79 0.0274
+YEL041W_mRNA                      24.57    33.46    1.36 0.0731
+YOR237W_mRNA                      18.87    48.77    2.58 0.0003
+YMR027W_mRNA                     217.29   312.18    1.44 0.0244
+YBR182C-A_mRNA                     0.22     0.70    3.19 0.1753
+YKL103C_mRNA                     207.99   414.52    1.99 0.0006
+YOL048C_mRNA                      72.43   147.76    2.04 0.0007
+...
+```
 
 ## Design and Implementation
 
