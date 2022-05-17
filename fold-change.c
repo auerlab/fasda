@@ -261,7 +261,7 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 			   size_t num_reps1, size_t num_reps2)
 
 {
-    double  z, p, s12, w, k;
+    double  z, zne, p, s12, w, k;
     size_t  c1, c2, n = num_reps1, m = num_reps2;
 
     printf("\nCounts1:\n");
@@ -283,9 +283,11 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     // Map to Minitab doc: n = num_reps1, m = num_reps2
     printf(" u = %f", w);
     k = MIN(w, n * (n + m + 1.0) - w);
-    z = ((k + 0.5) - n * (n + m + 1.0) / 2.0) /
+    z = (w - n * (n + m + 1.0) / 2.0) /
 	 sqrt(n * m * (n + m + 1.0) / 12.0);
-    printf(" z = %f", z);
+    zne = ((k + 0.5) - n * (n + m + 1.0) / 2.0) /
+	 sqrt(n * m * (n + m + 1.0) / 12.0);
+    printf(" z = %f  zne = %f", z, zne);
     p = 0.0;    // FIXME
     return p;
 }
