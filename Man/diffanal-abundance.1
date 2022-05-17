@@ -14,33 +14,25 @@ diffanal abundance features.gff3 alignment-file [alignment-file ...]
 .ad
 .fi
 
-.SH OPTIONS
-.TP
-\fB\-\-\flagfR[=\fIparameter\fR]
-description
-
-\" Optional sections
-.SH "HOW TO READ THIS MANUAL"
-.SH "ORGANIZATION"
-.SH "PURPOSE"
 .SH "DESCRIPTION"
+.B "diffanal abundance"
+computes read counts from one or more SAM/BAM/CRAM files overlapping a
+set of features in a GFF3 file.  Output is an abundance.tsv file comparable
+to what is produced by kallisto.
+
+It is currently unfinished, pending a better understanding of estimated
+counts.
 
 .SH FILES
 .nf
 .na
-    \" List related files and describe each one here
-.ad
-.fi
-
-.SH ENVIRONMENT
-.nf
-.na
-    \" List related environment variables and describe each one here
+features.gff3
+alignment.bam
 .ad
 .fi
 
 .SH "SEE ALSO"
-    \" List related commands here
+diffanal-normalize(1), diffanal-fold-change(1)
 
 .SH BUGS
 Please report bugs to the author and send patches in unified diff format.
@@ -49,4 +41,4 @@ Please report bugs to the author and send patches in unified diff format.
 .SH AUTHOR
 .nf
 .na
-
+J. Bacon

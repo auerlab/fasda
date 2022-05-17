@@ -192,11 +192,11 @@ void    print_header(FILE *diff_stream, int conditions)
     
     fprintf(diff_stream, "%-30s", "Feature");
     for (c1 = 0; c1 < conditions; ++c1)
-	fprintf(diff_stream, " %5s%d", "Cond", c1 + 1);
+	fprintf(diff_stream, " %7s%d", "Cond", c1 + 1);
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
-	    fprintf(diff_stream,"  FC %d-%d", c1 + 1, c2 + 1);
+	    fprintf(diff_stream,"  FC %d-%d  P-val", c1 + 1, c2 + 1);
     }
     putc('\n', diff_stream);
 }

@@ -11,37 +11,41 @@ counts
 .PP
 .nf 
 .na 
-diffanal fold-change normalized-counts.tsv
+diffanal fold-change [--output file.txt] \\
+    normalized-counts1.tsv  normalized-counts2.tsv \\
+    [normalized-counts3.tsv ...]
 .ad
 .fi
 
 .SH OPTIONS
 .TP
-\fB\-\-\flagfR[=\fIparameter\fR]
-description
+\fB--output\fR file.txt
+Report fold-change and P-values to file.txt instead of the default stdout.
 
-\" Optional sections
-.SH "HOW TO READ THIS MANUAL"
-.SH "ORGANIZATION"
-.SH "PURPOSE"
 .SH "DESCRIPTION"
+
+.B diffanal fold-change
+computes fold-change and P-values for two or more conditions.  The input
+is two or more tab-separated values (TSV) files containing normalized
+counts for all conditions.  These files are generally produced by
+.B diffanal normalize.
+
+Currently, the Mann-Whitney U-test (A.K.A. Wilcoxon rank sum test) is used
+to compute P-value and this requires a minimum of 8 replicates per condition
+to achieve reasonable statistical power.  Future versions may include
+parametric tests that can provide power with fewer replicates, and the
+expense of high FDR (false discovery rate).
 
 .SH FILES
 .nf
 .na
-    \" List related files and describe each one here
-.ad
-.fi
-
-.SH ENVIRONMENT
-.nf
-.na
-    \" List related environment variables and describe each one here
+abundance.tsv: Input with normalized counts for all replicates of 1 condition
+file.txt: Output containing fold-change and P-values
 .ad
 .fi
 
 .SH "SEE ALSO"
-    \" List related commands here
+diffanal-abundance(1), diffanal-normalize(1)
 
 .SH BUGS
 Please report bugs to the author and send patches in unified diff format.
@@ -50,4 +54,4 @@ Please report bugs to the author and send patches in unified diff format.
 .SH AUTHOR
 .nf
 .na
-
+J. Bacon

@@ -1,0 +1,36 @@
+.TH DIFFANAL 1
+.SH NAME    \" Section header
+.PP
+
+diffanal - Fast, simple differential analysis
+
+\" Convention:
+\" Underline anything that is typed verbatim - commands, etc.
+.SH SYNOPSIS
+.PP
+.nf 
+.na 
+diffanal abundance features.gff3 alignment-file [alignment-file ...]
+diffanal normalize [--mrn] [--output file.tsv] abundance1.tsv abundance2.tsv ...
+diffanal [--output file.txt] abundance1.tsv abundance2.tsv [abudance3.tsv...]
+.ad
+.fi
+
+\" Optional sections
+.SH "DESCRIPTION"
+
+.B Diffanal
+is a set of fast, simple differential analysis tools written in C for
+maximum speed, portability, and easy command-line use.
+
+.SH "SEE ALSO"
+diffanal-abundance(1), diffanal-normalize(1), diffanal-fold-change(1)
+
+.SH BUGS
+Please report bugs to the author and send patches in unified diff format.
+(man diff for more information)
+
+.SH AUTHOR
+.nf
+.na
+J. Bacon
