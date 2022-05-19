@@ -47,21 +47,22 @@ with only 3 replicates.
 
 Parametric tests used by popular tools can provide reasonable power at very
 low sample sizes in exchange for high FDR. However, their high FDR and
-otherwise poor performance for large sample sizes indicates a need for
+otherwise poor performance for large sample sizes illustrates a need for
 a new approach.  Our first goal with diffanal is to address this need
-order to fill an under-served niche.  Additional use cases may be addressed
-at a later date.
+order to fill an under-served niche.  Additional use cases including
+data with fewer replicates may be addressed at a later date.
 
 ## Status
 
-We're still in the fairly early stages of development.  Currently, we are able
+We're still in the fairly early stages of development.  We are able
 to normalize counts using Mean Ratios Normalization (MRN) and compute
 fold-change and Mann-Whitney P-values for an arbitrary number of conditions.
 
 Currently only kallisto abundance.tsv files can be used as input.  A
 tool to compute abundances from SAM/BAM/CRAM files and produce a kallisto
-style abundance file is in the works so that data from other aligners
-can eventually be used, including ChIP and ATAC peaks.
+style abundance file is in the works so that RNA-Seq data from other aligners
+can eventually be used.  We also plan to eventually support ChIP and ATAC
+peak data.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
