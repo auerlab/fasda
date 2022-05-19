@@ -46,13 +46,12 @@ at a later date.
 ## Status
 
 We're still in the fairly early stages of development.  Currently, we are able
-to normalize counts using Mean Ratios Normalization (MRN) and to compute
+to normalize counts using Mean Ratios Normalization (MRN) and compute
 fold-change and Mann-Whitney P-values for an arbitrary number of conditions.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
 below show that diffanal is extremely fast.
-
 Memory use is also very low, with "diffanal normalize" peaking around
 66 megabytes and "diffanal fold-change" around 9 megabytes for the yeast
 example.
