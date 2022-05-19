@@ -71,6 +71,12 @@ int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream
     static double   *rep_counts[MAX_CONDITIONS];
     size_t          num_reps[MAX_CONDITIONS];
     
+    if ( conditions < 2 )
+    {
+	fprintf(stderr, "fold-change: Must have at least 2 conditions.\n");
+	return EX_DATAERR;
+    }
+    
     print_header(diff_stream, conditions);
 
     // Skip header line if present
@@ -275,7 +281,7 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 			   size_t num_reps1, size_t num_reps2)
 
 {
-    double  z, p, s12, w1, w2, w, k;
+    double  z, p, s12, w1, w2, w;
     size_t  c1, c2, n = num_reps1, m = num_reps2;
 
     /*
@@ -299,17 +305,14 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 	}
     }
     w2 = m * n - w1;
-    
-    // printf("\nw1 = %f  w2 = %f", w1, w2);
     w = MIN(w1, w2);
-    k = MIN(w, n * (n + m + 1.0) - w);
-    // Paul A.: Minitab formula was wrong.  Numerator is just n*m/2 per
+    
+    // Paul A.: Minitab formula is wrong.  Numerator is just n*m/2 per
     // R source for wilcox.test().
     // FIXME: This normal approximation might not be stable for small
     // sample sizes, so maybe compute the p-value combinatorically.
     // (Determine total # of possible rank sums and where this one falls)
-    z = (w - n * m / 2) /
-	 sqrt(n * m * (n + m + 1.0) / 12.0);
+    z = (w - n * m / 2) / sqrt(n * m * (n + m + 1.0) / 12.0);
     p = 2.0 * normal_cdf(z, 0.0, 1.0);
     // printf("  z = %f  p = %f  p(-1.96) = %f\n", z, p, normal_cdf(-1.96, 0.0, 1.0));
     return p;

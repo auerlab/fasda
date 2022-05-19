@@ -24,11 +24,12 @@
 #include <sysexits.h>
 #include <stdlib.h>
 #include <math.h>
-#include <sys/param.h>  // PATH_MAX
+#include <sys/param.h>      // PATH_MAX
 #include <xtend/dsv.h>
 #include <xtend/file.h>
 #include <xtend/mem.h>
-#include <xtend/math.h> // double_cmp()
+#include <xtend/math.h>     // double_cmp()
+#include <xtend/string.h>   // strlcpy() on Linux
 #include "normalize.h"
 
 int     main(int argc, const char *argv[])
@@ -110,7 +111,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
     FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES],
 		*tmp_streams[DIFFANAL_MAX_SAMPLES],
 		*norm_sample_streams[DIFFANAL_MAX_SAMPLES];
-    char        *end, *target_id, *count_str,
+    char        *end, *target_id,
 		norm_sample_file[PATH_MAX + 1], *p;
     double      count, sum_lcs, lc[DIFFANAL_MAX_SAMPLES],
 		pseudo_ref, *ratios, median_ratio[DIFFANAL_MAX_SAMPLES],
@@ -153,9 +154,9 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	    else
 	    {
 		target_id = DSV_LINE_FIELDS_AE(&dsv_line[sample], 0);
-		count_str = DSV_LINE_FIELDS_AE(&dsv_line[sample], 3);
 		
 		// Dummy output: Just echo non-normalized counts to test UI
+		// count_str = DSV_LINE_FIELDS_AE(&dsv_line[sample], 3);
 		// printf("%s\t%s\n", target_id, count_str);
 		
 		if ( (sample > 0) && (strcmp(target_id,
