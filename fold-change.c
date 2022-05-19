@@ -66,7 +66,7 @@ int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream
     size_t      condition;
     double      condition_counts[MAX_CONDITIONS];
     dsv_line_t  dsv_line[MAX_CONDITIONS];
-    char        *id;
+    char        *id = NULL; // Silence GCC 7 uninit warning, later versions OK
     int         delim;
     static double   *rep_counts[MAX_CONDITIONS];
     size_t          num_reps[MAX_CONDITIONS];
