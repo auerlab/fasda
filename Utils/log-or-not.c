@@ -31,7 +31,7 @@ int     main(int argc,char *argv[])
     {
 	v[c] = random();
 	lv[c] = log(v[c]);
-	printf("%ld %f\n", v[c], lv[c]);
+	printf("v = %ld  log(v) = %f\n", v[c], lv[c]);
 	sum_v += v[c];
 	sum_lv += lv[c];
     }
@@ -39,7 +39,8 @@ int     main(int argc,char *argv[])
 	    avg_v = (double)sum_v / MAX, avg_lv = sum_lv / MAX);
     
     for (c = 0; c < MAX; ++c)
-	printf("%f %f %f\n", v[c] / avg_v, exp(lv[c] - avg_lv),
+	printf("v/avg = %f  e^(lv/avg_lv) = %f  ratio = %f\n",
+		v[c] / avg_v, exp(lv[c] - avg_lv),
 		(exp(lv[c] - avg_lv)) / (v[c] / avg_v));
     return EX_OK;
 }

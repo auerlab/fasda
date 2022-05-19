@@ -77,7 +77,9 @@ int     main(int argc, const char *argv[])
  *      feature by this reference, and finally taking the median of
  *      these ratios for each replicate as the scaling factor.
  *      Computations are done on log(count) values here for logistical
- *      reasons.
+ *      reasons, subtracting log(counts) to simulate dividing counts.
+ *      This does not produce identical results, but does produce
+ *      consistent ratios.
  *
  *      abundance_files is an argv-style pointer array terminated by
  *      a NULL pointer.  Each file should follow the format of
