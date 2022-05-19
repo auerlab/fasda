@@ -171,7 +171,8 @@ int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream
     
     for (condition = 0; condition < conditions; ++condition)
 	xt_fclose(condition_streams[condition]);
-    
+
+    getchar();
     return EX_OK;
 }
 

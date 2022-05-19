@@ -4,12 +4,16 @@
 
 There are mature, easy-to-use, and efficient tools for all steps in a typical
 differential analysis pipeline up to and including alignment (read mapping)
-and peak calling.  Well-maintained tools such as FastQC, cutadapt, BWA,
-Bowtie2, HISAT2, samtools, and MACS2 make the early stages of an RNA-Seq,
-ATAC-Seq, or ChIP-Seq analysis fairly straightforward.
+and peak calling.  Well-maintained tools such as FastQC, cutadapt, fastq-trim,
+BWA, Bowtie2, HISAT2, samtools, bedtools, and MACS2 make the early stages of
+an RNA-Seq, ATAC-Seq, or ChIP-Seq analysis fairly straightforward.
+
+Data massaging before and after differential analysis is also relatively
+easy using standard Unix tools such as awk, cut, grep, sed, and tr, or
+simple perl or python scripts.
 
 The differential analysis step itself has until now has been problematic,
-with few well-developed tools available, and many of them
+however, with few well-developed tools available, and many of them
 requiring fairly sophisticated R scripting for basic use.  Code maintenance
 has also been an issue, with even the most popular tools falling into
 disrepair at times and frequently presenting installation issues due to
@@ -17,33 +21,44 @@ incompatibility with the latest version of R or other dependencies.
 
 Diffanal aims to provide a fast and simple differential analysis tool that
 just works and does not require any knowledge beyond basic Unix command-line
-skills.  The code is written entirely in C to maximize efficiency and
+skills.  The code is written entirely in C and built on
+[biolibc](https://github.com/auerlab/biolibc) to maximize efficiency and
 portability, and to provide a simple command-line user interface.
 
-In addition, most popular differential analysis tools show a high false
-discovery rate (FDR) regardless of sample size (biological replicates).
+Another issue is that most popular differential analysis tools show a high
+false discovery rate (FDR) regardless of sample size (biological replicates):
 [https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
+
 Diffanal utilizes the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test), a
-non-parametric test that provides high stability and low FDR.  The down side
-is that
-it requires a minimum sample size of about 8 to achieve reasonable statistical
+non-parametric test that provides high stability and low FDR.  The main
+limitation is that Mann-Whitney
+requires a minimum sample size of about 8 to achieve reasonable statistical
 power and hence is not useful for typical RNA-Seq or ATAC-Seq experiments
-with only 3 replicates.  Parametric tests used by popular tools can provide
-reasonable power at very low sample sizes in exchange for high FDR. However,
-since popular differential analysis tools perform poorly for large sample
-sizes, we will try to address this need first in order to fill an under-served
-niche.
+with only 3 replicates.
+
+Parametric tests used by popular tools can provide reasonable power at very
+low sample sizes in exchange for high FDR. However, their high FDR and
+otherwise poor performance for large sample sizes indicates a need for
+a new approach.  Our first goal with diffanal is to address this need
+order to fill an under-served niche.  Additional use cases may be addressed
+at a later date.
 
 ## Status
 
-We're still in the fairly early stages of development.  So far we are able
+We're still in the fairly early stages of development.  Currently, we are able
 to normalize counts using Mean Ratios Normalization (MRN) and to compute
 fold-change and Mann-Whitney P-values for an arbitrary number of conditions.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
-data with wild-type and SNF2 mutant conditions.
+data with wild-type and SNF2 mutant conditions.  The run times included
+below show that diffanal is extremely fast.
 
-An automated pipeline script is provided in Test/yeast-test.sh.
+Memory use is also very low, with "diffanal normalize" peaking around
+66 megabytes and "diffanal fold-change" around 9 megabytes for the yeast
+example.
+
+An automated pipeline script for reproducing these results is provided in
+Test/yeast-test.sh.
 
 ```
 Raw data:
