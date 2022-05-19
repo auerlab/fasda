@@ -54,13 +54,14 @@ else
     printf "05-kallisto-quant.sh already done.\n"
 fi
 
+export PATH=../../local/bin:$PATH
 dir=Data/05-kallisto-quant
 for condition in WT SNF2; do
     printf "Normalizing $condition...\n"
-    time ../normalize --output $condition-all-norm.tsv $dir/$condition-*/abundance.tsv
+    time diffanal normalize --output $condition-all-norm.tsv $dir/$condition-*/abundance.tsv
 done
 
 printf "Computing fold-change...\n"
-time ../fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
+time diffanal fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
 pause
 more WT-SNF2-FC.txt

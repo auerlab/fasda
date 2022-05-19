@@ -31,7 +31,7 @@
 #include <xtend/math.h> // double_cmp()
 #include "normalize.h"
 
-int     main(int argc,char *argv[])
+int     main(int argc, const char *argv[])
 
 {
     int     arg;
@@ -57,7 +57,7 @@ int     main(int argc,char *argv[])
 	    usage(argv);
     }
     
-    return mrn(argc, argv, arg, norm_all_stream);
+    return mrn(argv + arg, norm_all_stream);
 }
 
 
@@ -69,16 +69,31 @@ int     main(int argc,char *argv[])
  *      -l
  *
  *  Description:
+ *      Perform median ratios normalization (MRN) on a set of abundance
+ *      files, writing output to norm_all_stream.  MRN involves
+ *      computing the average abundance of all replicates for each
+ *      feature (the pseudo-reference), dividing each count for the
+ *      feature by this reference, and finally taking the median of
+ *      these ratios for each replicate as the scaling factor.
+ *      Computations are done on log(count) values here for logistical
+ *      reasons.
+ *
+ *      abundance_files is an argv-style pointer array terminated by
+ *      a NULL pointer.  Each file should follow the format of
+ *      abundance.tsv output by kallisto.
+ *
+ *      Output written to norm_all_stream is a TSV file containing the
+ *      feature name in column 1 followed by a normalized count for each
+ *      replicate (input file) in subsequent columns.
  *  
  *  Arguments:
+ *      abundance_files     argv-style array of abundance file names
+ *      norm_all_output     FILE pointer to TSV output stream
  *
  *  Returns:
+ *      Exit status appropriate for passing back from main()
  *
  *  Examples:
- *
- *  Files:
- *
- *  Environment
  *
  *  See also:
  *
@@ -87,7 +102,7 @@ int     main(int argc,char *argv[])
  *  2022-05-14  Jason Bacon Begin
  ***************************************************************************/
 
-int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
+int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 
 {
     dsv_line_t  dsv_line[DIFFANAL_MAX_SAMPLES];
@@ -95,13 +110,13 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
     FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES],
 		*tmp_streams[DIFFANAL_MAX_SAMPLES],
 		*norm_sample_streams[DIFFANAL_MAX_SAMPLES];
-    char        **abundance_files = &argv[arg], *end, *target_id, *count_str,
+    char        *end, *target_id, *count_str,
 		norm_sample_file[PATH_MAX + 1], *p;
     double      count, sum_lcs, lc[DIFFANAL_MAX_SAMPLES],
 		pseudo_ref, *ratios, median_ratio[DIFFANAL_MAX_SAMPLES],
 		scaling_factor[DIFFANAL_MAX_SAMPLES];
     
-    for (sample_count = 0; arg < argc; ++sample_count, ++arg)
+    for (sample_count = 0; abundance_files[sample_count] != NULL; ++sample_count)
     {
 	if ( (abundance_streams[sample_count] =
 		xt_fopen(abundance_files[sample_count], "r")) == NULL )
@@ -150,7 +165,8 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 			    "normalize: %s, %s: Different feature IDs on line %zu\n.\n",
 			    abundance_files[sample - 1],
 			    abundance_files[sample], feature_count + 1);
-		    // FIXME: Close all files
+		    close_all_streams(abundance_streams, norm_sample_streams,
+				      norm_all_stream, sample_count);
 		    return EX_DATAERR;
 		}
 
@@ -164,7 +180,7 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 		 *  Read raw counts for all genes and all samples
 		 *
 		 *  1.  Take log of every count (just for filtering in step 3?)
-		 *  2.  Average of all log(counts) for the gene
+		 *  2.  Average of all log(counts) for the feature
 		 *      (compute pseudo-reference)
 		 */
 		
@@ -330,6 +346,29 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 	    ++feature_count;
 	}
     }
+
+    close_all_streams(abundance_streams, norm_sample_streams,
+		      norm_all_stream, sample_count);
+    return EX_OK;
+}
+
+
+
+
+/***************************************************************************
+ *  Description:
+ *      Close all input and output streams
+ *  
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-05-19  Jason Bacon Begin
+ ***************************************************************************/
+
+void    close_all_streams(FILE *abundance_streams[], FILE *norm_sample_streams[],
+			  FILE *norm_all_stream, size_t sample_count)
+
+{
+    size_t  sample;
     
     for (sample = 0; sample < sample_count; ++sample)
     {
@@ -337,37 +376,19 @@ int     mrn(int argc, char *argv[], int arg, FILE *norm_all_stream)
 	fclose(norm_sample_streams[sample]);
     }
     fclose(norm_all_stream);
-    return EX_OK;
 }
 
 
 /***************************************************************************
- *  Use auto-c2man to generate a man page from this comment
- *
- *  Library:
- *      #include <>
- *      -l
- *
  *  Description:
- *  
- *  Arguments:
- *
- *  Returns:
- *
- *  Examples:
- *
- *  Files:
- *
- *  Environment
- *
- *  See also:
+ *      Skip header lines if present in all abundance files
  *
  *  History: 
  *  Date        Name        Modification
  *  2022-05-14  Jason Bacon Begin
  ***************************************************************************/
 
-void    skip_headers(char *abundance_files[], FILE *abundance_streams[],
+void    skip_headers(const char *abundance_files[], FILE *abundance_streams[],
 		     dsv_line_t dsv_line[], size_t sample_count)
 
 {
@@ -390,38 +411,21 @@ void    skip_headers(char *abundance_files[], FILE *abundance_streams[],
 
 
 /***************************************************************************
- *  Use auto-c2man to generate a man page from this comment
- *
- *  Library:
- *      #include <>
- *      -l
- *
  *  Description:
- *  
- *  Arguments:
- *
- *  Returns:
- *
- *  Examples:
- *
- *  Files:
- *
- *  Environment
- *
- *  See also:
+ *      Make sure all files have reached EOF at the same time.  All files
+ *      should have exactly the same set of features.
  *
  *  History: 
  *  Date        Name        Modification
  *  2022-05-14  Jason Bacon Begin
  ***************************************************************************/
 
-void    check_all_eof(char *abundance_files[], FILE *abundance_streams[],
+void    check_all_eof(const char *abundance_files[], FILE *abundance_streams[],
 	      size_t sample, size_t sample_count)
 
 {
     size_t  c;
     
-    // Make sure all files reach EOF together
     for (c = 0; c < sample_count; ++c)
 	if ( getc(abundance_streams[c]) != EOF )
 	{
@@ -432,7 +436,7 @@ void    check_all_eof(char *abundance_files[], FILE *abundance_streams[],
 }
 
 
-void    usage(char *argv[])
+void    usage(const char *argv[])
 
 {
     fprintf(stderr, "Usage: %s [--mrn] [--output file.tsv] \\\n"
