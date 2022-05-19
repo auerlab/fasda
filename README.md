@@ -25,6 +25,15 @@ skills.  The code is written entirely in C and built on
 [biolibc](https://github.com/auerlab/biolibc) to maximize efficiency and
 portability, and to provide a simple command-line user interface.
 
+Starting with kallisto output, computing fold-change and associated P-values
+for two conditions can be done in seconds with three simple commands:
+
+```
+diffanal normalize --output c1-all-norm.tsv c1-*/abundance.tsv
+diffanal normalize --output c2-all-norm.tsv c2-*/abundance.tsv
+diffanal fold-change --output FC.txt c1-all-norm.tsv c2-all-norm.tsv
+```
+
 Another issue is that most popular differential analysis tools show a high
 false discovery rate (FDR) regardless of sample size (biological replicates):
 [https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
@@ -49,9 +58,17 @@ We're still in the fairly early stages of development.  Currently, we are able
 to normalize counts using Mean Ratios Normalization (MRN) and compute
 fold-change and Mann-Whitney P-values for an arbitrary number of conditions.
 
+Currently only kallisto abundance.tsv files can be used as input.  A
+tool to compute abundances from SAM/BAM/CRAM files and produce a kallisto
+style abundance file is in the works so that data from other aligners
+can eventually be used, including ChIP and ATAC peaks.
+
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
-below show that diffanal is extremely fast.
+below show that diffanal is extremely fast, normalizing over 92,000 estimated
+counts directly from kallisto abundance.tsv files in about 1/4 second
+(on a 2.6 GHz i5 laptop) and computing fold-change and P-values in 1/20
+second.
 Memory use is also very low, with "diffanal normalize" peaking around
 66 megabytes and "diffanal fold-change" around 9 megabytes for the yeast
 example.
