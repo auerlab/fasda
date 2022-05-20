@@ -22,11 +22,15 @@ Sample  T1  T2  S
 7       134 166 0
 8       94  85  1
 
+n1 = sample size at T1 = 8
+n2 = sample size at T2 = 8
+N = n1 + n2
+
 https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test
 
 Method 1 (direct):
 
-S(T1,T2) = T1 > T2 ? 1 : T1 == T2 ? 0.5 : 0
+Let S(T1,T2) = T1 > T2 ? 1 : T1 == T2 ? 0.5 : 0
 
     49  130 102 84  180 243 166 85
 34  0   0   0   0   0   0   0   0
@@ -37,6 +41,8 @@ S(T1,T2) = T1 > T2 ? 1 : T1 == T2 ? 0.5 : 0
 164 1   1   1   1   0   0   0   1
 134 1   1   1   1   0   0   0   1
 94  1   0   0   1   0   0   0   1
+
+Test statistic = U (often denoted W)
 
 U1 + U2 = n1 x n2 = 64
 
