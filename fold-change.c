@@ -300,6 +300,7 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 {
     double  z, p, s12, w1, w2, w;
     size_t  c1, c2, n = num_reps1, m = num_reps2;
+    //unsigned long   total = 0, ties = 0;
 
     // P-value cannot be computed with fewer than 8 samples
     if ( (n < 8) || (m < 8) )
@@ -320,11 +321,26 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     {
 	for (c2 = 0; c2 < m; ++c2)
 	{
-	    s12 = rep_counts1[c1] > rep_counts2[c2] ? 1 :
-		rep_counts1[c1] < rep_counts2[c2] ? 0 : 0.5;
+	    /*
+	     *  Ties are almost non-existent, except when count == 0.
+	     *  In that case, they can be the majority of comparisons.
+	     */
+	    
+	    if ( rep_counts1[c1] > rep_counts2[c2] )
+		s12 = 1;
+	    else if ( rep_counts1[c1] < rep_counts2[c2] )
+		s12 = 0;
+	    else
+	    {
+		//++ties;
+		//fprintf(stderr, "%f == %f\n", rep_counts1[c1], rep_counts2[c2]);
+		s12 = 0.5;
+	    }
 	    w1 += s12;
+	    //++total;
 	}
     }
+    // fprintf(stderr, "Total = %lu  Ties = %lu\n", total, ties);
     w2 = m * n - w1;
     w = MIN(w1, w2);
     
@@ -332,7 +348,8 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     // R source for wilcox.test().
     // FIXME: This normal approximation might not be stable for small
     // sample sizes, so maybe compute the p-value combinatorically.
-    // (Determine total # of possible rank sums and where this one falls)
+    // (Determine total # of possible rank sums and how many are less
+    // (or greater) than this one.
     z = (w - n * m / 2) / sqrt(n * m * (n + m + 1.0) / 12.0);
     p = 2.0 * normal_cdf(z, 0.0, 1.0);
     // printf("  z = %f  p = %f  p(-1.96) = %f\n", z, p, normal_cdf(-1.96, 0.0, 1.0));
