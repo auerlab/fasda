@@ -63,13 +63,12 @@ int     main(int argc,char *argv[])
 int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream)
 
 {
-    size_t      condition;
+    size_t      condition, c, num_reps[MAX_CONDITIONS];
     double      condition_counts[MAX_CONDITIONS];
     dsv_line_t  dsv_line[MAX_CONDITIONS];
     char        *id = NULL; // Silence GCC 7 uninit warning, later versions OK
     int         delim;
     static double   *rep_counts[MAX_CONDITIONS];
-    size_t          num_reps[MAX_CONDITIONS];
     
     if ( conditions < 2 )
     {
@@ -165,8 +164,25 @@ int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream
 	    }
 	    else
 	    {
-		// EOF should be reached on all files at the same time
-		// condition should be 0, check with getc() on 1 - N
+		// EOF should be reached on condition == 0 first and on
+		// all files at the same time
+		if ( condition == 0 )
+		{
+		    for (c = 1; c < conditions; ++c)
+			if ( getc(condition_streams[c]) != EOF )
+			{
+			    fprintf(stderr, "fold-change: Expected EOF on condition %zu after EOF on condition 0.\n",
+				    condition);
+			    return EX_DATAERR;
+			}
+		    break;  // Avoid re-reading EOF on condition 1, etc.
+		}
+		else
+		{
+		    fprintf(stderr, "fold-change: Found EOF first on condition %zu, should be 0.\n",
+			    condition);
+		    return EX_DATAERR;
+		}
 	    }
 	}
 	
@@ -177,7 +193,8 @@ int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream
     
     for (condition = 0; condition < conditions; ++condition)
 	xt_fclose(condition_streams[condition]);
-
+    xt_fclose(diff_stream);
+    
     return EX_OK;
 }
 
@@ -284,6 +301,10 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     double  z, p, s12, w1, w2, w;
     size_t  c1, c2, n = num_reps1, m = num_reps2;
 
+    // P-value cannot be computed with fewer than 8 samples
+    if ( (n < 8) || (m < 8) )
+	return 1.0;
+    
     /*
     puts("\n\nCounts1:");
     for (c1 = 0; c1 < n; ++c1)
