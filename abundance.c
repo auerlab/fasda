@@ -118,14 +118,6 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     FILE        *buffer_streams[MAX_FILE_COUNT];
     bl_alignment_stats_t    alignment_stats = BL_ALIGNMENT_STATS_INIT;
     
-    /*
-     *  Start simple: Count reads overlapping each position
-     *  in the gene and compute the average
-     *  depth = total bases / gene length.
-     *  Thoroughly test and optimize, then explore more
-     *  sophisticated depth algorithms.
-     */
-
     if ( flags & DIFFANAL_FLAG_MAP_GENE )
 	feature_type = "gene";
     bl_gff_init(&feature);
@@ -396,7 +388,20 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 		    __FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
 	    exit(EX_DATAERR);
 	}
-	++overlapping_reads;
+	
+	// FIXME: What's the best combination of alignment flags to
+	// include/exclude reads?
+	// PROPER_PAIR means both mates mapped together
+	// Paired end fragments will be counted about double, but this
+	// doesn't matter for differential analysis, where ratios across
+	// across conditions will be the same.  If using this for other
+	// purposes, we may need to adjust.
+	#define DONT_COUNT \
+	    BL_SAM_FLAG_SECONDARY|BL_SAM_FLAG_QCFAIL| \
+	    BL_SAM_FLAG_DUP|BL_SAM_FLAG_SUPPLEMENTARY
+	if ( (BL_SAM_FLAG(alignment) & BL_SAM_FLAG_PROPER_PAIR) &&
+	     (! (BL_SAM_FLAG(alignment) & DONT_COUNT)) )
+	    ++overlapping_reads;
 	
 	// Finding fragment length for paired end requires
 	// finding the mate as well.
