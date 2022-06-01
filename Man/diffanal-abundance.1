@@ -16,12 +16,17 @@ diffanal abundance features.gff3 alignment-file [alignment-file ...]
 
 .SH "DESCRIPTION"
 .B "diffanal abundance"
-computes read counts from one or more SAM/BAM/CRAM files overlapping a
-set of features in a GFF3 file.  Output is an abundance.tsv file comparable
-to what is produced by kallisto.
+computes raw read counts from one or more SAM/BAM/CRAM files overlapping
+each features in a GFF3 file.  Output is an abundance.tsv file in the
+same format as those produced by kallisto.
 
-It is currently unfinished, pending a better understanding of estimated
-counts.
+Abundances in the output are raw counts of properly paired reads that are
+not flagged as secondary alignments, failed QC, duplicate, or supplementary.
+For paired-end reads, both mates are counted separately, so the counts
+should be expected to reflect about double the number of fragments aligned.
+
+Any normalization of counts is left to downstream tools such as
+.B diffanal-normalize(1).
 
 .SH FILES
 .nf
