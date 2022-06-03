@@ -33,7 +33,9 @@ int     main(int argc,char *argv[])
     
     if ( argc < 3 )
 	usage(argv);
-    
+
+    // FIXME: Add --require-flags, --include-flags, --exclude-flags
+    // See samtools-view
     for (c = 1, flags = 0x0; (c < argc) && (argv[c][0] == '-'); ++c)
     {
 	if ( strcmp(argv[c], "--show-gene-name") == 0 )
