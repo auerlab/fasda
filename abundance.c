@@ -368,6 +368,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
     double  est_counts;
     int     cmp, read_status;
     long    buffer_pos;
+    bool    do_not_count;
     
     buffer_pos = ftell(buffer_stream);
     
@@ -398,11 +399,11 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	// doesn't matter for differential analysis, where ratios across
 	// across conditions will be the same.  If using this for other
 	// purposes, we may need to adjust.
-	#define DONT_COUNT \
-	    BL_SAM_FLAG_SECONDARY|BL_SAM_FLAG_QCFAIL| \
-	    BL_SAM_FLAG_DUP|BL_SAM_FLAG_SUPPLEMENTARY
+	do_not_count = 
+	    BL_SAM_FLAG_SECONDARY|BL_SAM_FLAG_QCFAIL|
+	    BL_SAM_FLAG_DUP|BL_SAM_FLAG_SUPPLEMENTARY;
 	if ( (BL_SAM_FLAG(alignment) & BL_SAM_FLAG_PROPER_PAIR) &&
-	     (! (BL_SAM_FLAG(alignment) & DONT_COUNT)) )
+	     ! (BL_SAM_FLAG(alignment) & do_not_count) )
 	    ++overlapping_reads;
 	
 	// Finding fragment length for paired end requires
