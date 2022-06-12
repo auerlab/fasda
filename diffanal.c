@@ -73,6 +73,12 @@ int     main(int argc,char *argv[])
 	return EX_USAGE;
     }
 
+    fputs("\n********************************* Note *********************************\n"
+	  "diffanal is experimental.  Be sure to verify all results by other means.\n"
+	  "Please contribute by reporting problems and offering suggestions at\n"
+	  "https://github.com/auerlab/diffanal.\n"
+	  "************************************************************************\n\n",
+	  stderr);
     snprintf(cmd, PATH_MAX, "%s/%s", LIBEXECDIR, argv[1]);
     if ( stat(cmd, &inode) == 0 )
 	execv(cmd, argv + 1);
