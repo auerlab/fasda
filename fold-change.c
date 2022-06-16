@@ -273,9 +273,14 @@ void    print_fold_change(FILE *diff_stream, const char *id,
  *      -l
  *
  *  Description:
- *      https://support.minitab.com/en-us/minitab/18/help-and-how-to/statistics/nonparametrics/how-to/mann-whitney-test/methods-and-formulas/methods-and-formulas/
+ *      Compute a p-value using the Mann-Whitney u-test, a.k.a. Wilcoxon
+ *      rank sum test.  This test has good power and low FDR for sample
+ *      sizes of at least 8.  It has low power if either sample sizes < 8 and
+ *      this function will return a p-value of 1.0 in that case.
  *
- *  Test site for p-values: https://www.statziki.com/Mannwhitneyu
+ *      The formula given here is apparently wrong:
+ *      https://support.minitab.com/en-us/minitab/18/help-and-how-to/statistics/nonparametrics/how-to/mann-whitney-test/methods-and-formulas/methods-and-formulas/
+ *      Test site for p-values: https://www.statziki.com/Mannwhitneyu
  *
  *  Arguments:
  *
