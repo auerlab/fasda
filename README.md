@@ -13,17 +13,19 @@ easy using standard Unix tools such as awk, cut, grep, sed, and tr, or
 simple perl or python scripts.
 
 The differential analysis step itself has until now has been problematic,
-however, with few well-developed tools available, and many of them
-requiring fairly sophisticated R scripting for basic use.  Code maintenance
+however, with few well-developed tools available and many of them requiring
+fairly sophisticated R scripting for basic use.  Code maintenance
 has also been an issue, with even the most popular tools falling into
 disrepair at times and frequently presenting installation issues due to
 incompatibility with the latest version of R or other dependencies.
 
 Diffanal aims to provide a fast and simple differential analysis tool that
 just works and does not require any knowledge beyond basic Unix command-line
-skills.  The code is written entirely in C and built on
+skills.  It operates on a simple command-line interface (CLI) analogous
+to popular tools such as bedtools, BWA, and samtools.
+The code is written entirely in C and built on
 [biolibc](https://github.com/auerlab/biolibc) to maximize efficiency and
-portability, and to provide a simple command-line user interface.
+portability.
 
 Starting with kallisto output, computing fold-change and associated P-values
 for two conditions can be done in seconds with three simple commands:
@@ -34,22 +36,24 @@ diffanal normalize --output c2-all-norm.tsv c2-*/abundance.tsv
 diffanal fold-change --output FC.txt c1-all-norm.tsv c2-all-norm.tsv
 ```
 
-Another issue is that most popular differential analysis tools show a high
+Another issue addressed by diffanal is the fact that most popular
+differential analysis tools suffer from a high
 false discovery rate (FDR) regardless of sample size (biological replicates):
 [https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
 
-Diffanal utilizes the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test), a
-non-parametric test that provides high stability and low FDR.  The main
-limitation is that Mann-Whitney
-requires a minimum sample size of about 8 to achieve reasonable statistical
-power and hence is not useful for typical RNA-Seq or ATAC-Seq experiments
-with only 3 replicates.
+For computing P-values,
+diffanal implements the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test),
+a non-parametric test that provides high stability and low FDR.  The main
+limitation of Mann-Whitney is that it requires a minimum sample size of
+about 8 to achieve reasonable statistical power.  As a result, it is not
+useful for typical RNA-Seq or ATAC-Seq experiments with only 3 replicates.
 
 Parametric tests used by popular tools can provide reasonable power at very
-low sample sizes in exchange for high FDR. However, their high FDR and
+low sample sizes, in exchange for high FDR.  However, their high FDR and
 otherwise poor performance for large sample sizes illustrates a need for
-a new approach.  Our first goal with diffanal is to address this need
-order to fill an under-served niche.  Additional use cases including
+a new approach.  Hence, our first goal with diffanal is to fill an
+under-served niche of high sample studies with a tool that is fast and
+produces more stable results.  Additional use cases including
 data with fewer replicates may be addressed at a later date.
 
 ## Status
@@ -58,11 +62,11 @@ We're still in the fairly early stages of development.  We are able
 to normalize counts using Mean Ratios Normalization (MRN) and compute
 fold-change and Mann-Whitney P-values for an arbitrary number of conditions.
 
-Currently only kallisto abundance.tsv files can be used as input.  A
-tool to compute abundances from SAM/BAM/CRAM files and produce a kallisto
-style abundance file is in the works so that RNA-Seq data from other aligners
-can eventually be used.  We also plan to eventually support ChIP and ATAC
-peak data.
+Currently the kallisto abundance.tsv file format is used as input for
+computing fold-change and P-values.  A tool to compute abundances from
+SAM/BAM/CRAM files and produce a kallisto style abundance file is in the
+works so that RNA-Seq data from other aligners can eventually be used.
+We also plan to eventually support ChIP and ATAC peak data.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
