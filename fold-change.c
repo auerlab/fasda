@@ -17,6 +17,7 @@
 #include <xtend/file.h>
 #include <xtend/dsv.h>
 #include <xtend/mem.h>
+#include <xtend/math.h>     // XT_MAX()
 #include "fold-change.h"
 
 int     main(int argc,char *argv[])
@@ -347,7 +348,7 @@ double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
     }
     // fprintf(stderr, "Total = %lu  Ties = %lu\n", total, ties);
     w2 = m * n - w1;
-    w = MIN(w1, w2);
+    w = XT_MIN(w1, w2);
     
     // Paul A.: Minitab formula is wrong.  Numerator is just n*m/2 per
     // R source for wilcox.test().

@@ -24,6 +24,7 @@
 #include <sysexits.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>         // PATH_MAX OpenIndiana
 #include <sys/param.h>      // PATH_MAX
 #include <xtend/dsv.h>
 #include <xtend/file.h>

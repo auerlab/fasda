@@ -14,7 +14,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>         // ftruncate()
-#include <sys/param.h>      // MIN(), MAX()
+#include <limits.h>         // PATH_MAX OpenIndiana
 #include <xtend/file.h>
 #include <xtend/string.h>   // strlcpy() on Linux
 #include <biolibc/gff.h>
