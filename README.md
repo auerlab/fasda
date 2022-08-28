@@ -31,18 +31,18 @@ Starting with kallisto output, computing fold-change and associated P-values
 for two conditions can be done in seconds with three simple commands:
 
 ```
-diffanal normalize --output c1-all-norm.tsv c1-*/abundance.tsv
-diffanal normalize --output c2-all-norm.tsv c2-*/abundance.tsv
-diffanal fold-change --output FC.txt c1-all-norm.tsv c2-all-norm.tsv
+fasda normalize --output c1-all-norm.tsv c1-*/abundance.tsv
+fasda normalize --output c2-all-norm.tsv c2-*/abundance.tsv
+fasda fold-change --output FC.txt c1-all-norm.tsv c2-all-norm.tsv
 ```
 
-Another issue addressed by diffanal is the fact that most popular
+Another issue addressed by FASDA is the fact that most popular
 differential analysis tools suffer from a high
 false discovery rate (FDR) regardless of sample size (biological replicates):
 [https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
 
 For computing P-values,
-diffanal implements the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test),
+FASDA implements the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test),
 a non-parametric test that provides high stability and low FDR.  The main
 limitation of Mann-Whitney is that it requires a minimum sample size of
 about 8 to achieve reasonable statistical power.  As a result, it is not
@@ -51,7 +51,7 @@ useful for typical RNA-Seq or ATAC-Seq experiments with only 3 replicates.
 Parametric tests used by popular tools can provide reasonable power at very
 low sample sizes, in exchange for high FDR.  However, their high FDR and
 otherwise poor performance for large sample sizes illustrates a need for
-a new approach.  Hence, our first goal with diffanal is to fill an
+a new approach.  Hence, our first goal with FASDA is to fill an
 under-served niche of high sample studies with a tool that is fast and
 produces more stable results.  Additional use cases including
 data with fewer replicates may be addressed at a later date.
@@ -70,12 +70,12 @@ We also plan to eventually support ChIP and ATAC peak data.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
-below show that diffanal is extremely fast, normalizing over 92,000 estimated
+below show that FASDA is extremely fast, normalizing over 92,000 estimated
 counts directly from kallisto abundance.tsv files in about 1/4 second
 (on a 2.6 GHz i5 laptop) and computing fold-change and P-values in 1/20
 second.
-Memory use is also very low, with "diffanal normalize" peaking around
-66 megabytes and "diffanal fold-change" around 9 megabytes for the yeast
+Memory use is also very low, with "fasda normalize" peaking around
+66 megabytes and "fasda fold-change" around 9 megabytes for the yeast
 example.
 
 An automated pipeline script for reproducing these results is provided in
@@ -153,7 +153,7 @@ https://github.com/outpaddling/Coding-Standards/.
 
 ## Building and installing
 
-Diffanal is intended to build cleanly in any POSIX environment on any CPU
+FASDA is intended to build cleanly in any POSIX environment on any CPU
 architecture.  Please don't hesitate to open an issue if you encounter
 problems on any Unix-like system.
 
@@ -176,7 +176,7 @@ hence a good vehicle to learn how to create packages.
 For an overview of available package managers, see the
 [Repology website](https://repology.org/).
 
-### Installing diffanal on FreeBSD:
+### Installing FASDA on FreeBSD:
 
 FreeBSD is a highly underrated platform for scientific computing, with over
 2,000 scientific libraries and applications in the FreeBSD ports collection
@@ -191,7 +191,7 @@ workstation, laptop, or VM using
 To install the binary package on FreeBSD:
 
 ```
-pkg install diffanal
+pkg install fasda
 ```
 
 You can just as easily build and install from source.  This is useful for
@@ -201,7 +201,7 @@ optimizations such as -march=native, building with debugging info, and for
 for which binary packages are not yet maintained.
 
 ```
-cd /usr/ports/biology/diffanal && env CFLAGS='-march=native -O2' make install
+cd /usr/ports/biology/fasda && env CFLAGS='-march=native -O2' make install
 ``` 
 
 ### Installing via pkgsrc
@@ -228,7 +228,7 @@ Then, assuming you selected current packages and the default prefix
 
 ```
 source ~/Pkgsrc/pkg/etc/pkgsrc.sh   # Or pkgsrc.csh for csh or tcsh
-cd ~/Pkgsrc/biology/diffanal
+cd ~/Pkgsrc/biology/fasda
 sbmake install clean clean-depends
 ```
 
@@ -237,18 +237,18 @@ See the pkgsrc documentation for more information.
 Community support for pkgsrc is available through the
 [pkgsrc-users](http://netbsd.org/mailinglists) mailing list.
 
-### Building diffanal locally
+### Building FASDA locally
 
 Below are cave man install instructions for development purposes, not
 recommended for regular use.
-Diffanal depends on [biolibc](https://github.com/auerlab/biolibc).
-Install biolibc before attempting to build diffanal.
+FASDA depends on [biolibc](https://github.com/auerlab/biolibc).
+Install biolibc before attempting to build FASDA.
 
 1. Clone the repository
 2. Run "make depend" to update Makefile.depend
 3. Run "make install"
 
-The default install prefix is ../local.  Clone diffanal, biolibc and dependent
+The default install prefix is ../local.  Clone FASDA, biolibc and dependent
 apps into sibling directories so that ../local represents a common path to all
 of them.
 
