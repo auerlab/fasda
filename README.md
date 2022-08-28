@@ -1,4 +1,4 @@
-# Diffanal
+# FASDA - Fast And Simple Differential Analysis
 
 ## Description
 
@@ -19,7 +19,7 @@ has also been an issue, with even the most popular tools falling into
 disrepair at times and frequently presenting installation issues due to
 incompatibility with the latest version of R or other dependencies.
 
-Diffanal aims to provide a fast and simple differential analysis tool that
+FASDA aims to provide a fast and simple differential analysis tool that
 just works and does not require any knowledge beyond basic Unix command-line
 skills.  It operates on a simple command-line interface (CLI) analogous
 to popular tools such as bedtools, BWA, and samtools.
