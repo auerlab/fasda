@@ -8,12 +8,12 @@ alignment-stats-mutators.o: alignment-stats-mutators.c alignment-stats.h \
   alignment-stats-mutators.h
 	${CC} -c ${CFLAGS} alignment-stats-mutators.c
 
-diffanal.o: diffanal.c
-	${CC} -c ${CFLAGS} diffanal.c
+fasda.o: fasda.c
+	${CC} -c ${CFLAGS} fasda.c
 
 fold-change.o: fold-change.c fold-change.h fold-change-protos.h
 	${CC} -c ${CFLAGS} fold-change.c
 
-normalize.o: normalize.c normalize.h diffanal.h normalize-protos.h
+normalize.o: normalize.c normalize.h fasda.h normalize-protos.h
 	${CC} -c ${CFLAGS} normalize.c
 

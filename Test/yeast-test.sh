@@ -58,10 +58,10 @@ export PATH=../../local/bin:$PATH
 dir=Data/05-kallisto-quant
 for condition in WT SNF2; do
     printf "Normalizing $condition...\n"
-    time diffanal normalize --output $condition-all-norm.tsv $dir/$condition-*/abundance.tsv
+    time fasda normalize --output $condition-all-norm.tsv $dir/$condition-*/abundance.tsv
 done
 
 printf "Computing fold-change...\n"
-time diffanal fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
+time fasda fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
 pause
 more WT-SNF2-FC.txt

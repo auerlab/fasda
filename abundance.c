@@ -39,9 +39,9 @@ int     main(int argc,char *argv[])
     for (c = 1, flags = 0x0; (c < argc) && (argv[c][0] == '-'); ++c)
     {
 	if ( strcmp(argv[c], "--show-gene-name") == 0 )
-	    flags |= DIFFANAL_FLAG_SHOW_GENE;
+	    flags |= FASDA_FLAG_SHOW_GENE;
 	else if ( strcmp(argv[c], "--map-to-gene") == 0 )
-	    flags |= DIFFANAL_FLAG_MAP_GENE;
+	    flags |= FASDA_FLAG_MAP_GENE;
 	else
 	    usage(argv);
     }
@@ -49,7 +49,7 @@ int     main(int argc,char *argv[])
     
     if ( (feature_stream = xt_fopen(features_file, "r")) == NULL )
     {
-	fprintf(stderr, "diffanal: Could not open %s for read: %s.\n",
+	fprintf(stderr, "fasda: Could not open %s for read: %s.\n",
 		features_file, strerror(errno));
 	return EX_NOINPUT;
     }
@@ -120,7 +120,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     FILE        *buffer_streams[MAX_FILE_COUNT];
     bl_alignment_stats_t    alignment_stats = BL_ALIGNMENT_STATS_INIT;
     
-    if ( flags & DIFFANAL_FLAG_MAP_GENE )
+    if ( flags & FASDA_FLAG_MAP_GENE )
 	feature_type = "gene";
     bl_gff_init(&feature);
     bl_gff_init(&subfeature);
@@ -132,7 +132,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 	strlcpy(previous_alignment_chrom[c], "0", BL_CHROM_MAX_CHARS + 1);
 	if ( (buffer_streams[c] = tmpfile()) == NULL )
 	{
-	    fprintf(stderr, "diffanal: Cannot create temp file for SAM buffer.\n");
+	    fprintf(stderr, "fasda: Cannot create temp file for SAM buffer.\n");
 	    return EX_CANTCREAT;
 	}
     }
@@ -148,7 +148,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 				    previous_feature_chrom);
 	    if ( cmp < 0 )
 	    {
-		fprintf(stderr, "diffanal: Error: GFF3 chromosomes out of order: %s %s\n",
+		fprintf(stderr, "fasda: Error: GFF3 chromosomes out of order: %s %s\n",
 			previous_feature_chrom, BL_GFF_SEQID(&feature));
 		return EX_DATAERR;
 	    }
@@ -288,7 +288,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
 	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	else if ( cmp < 0 )
 	{
-	    fprintf(stderr, "diffanal, %s(): "
+	    fprintf(stderr, "fasda, %s(): "
 		    "Chromosomes out of order in SAM stream: %s %s\n",
 		    __FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
 	    exit(EX_DATAERR);
@@ -316,7 +316,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
 		strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	    else if ( cmp < 0 )
 	    {
-		fprintf(stderr, "diffanal, %s(): "
+		fprintf(stderr, "fasda, %s(): "
 			"Chromosomes out of order in SAM stream: %s %s\n",
 			__FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
 		exit(EX_DATAERR);
@@ -386,7 +386,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	else if ( cmp < 0 )
 	{
-	    fprintf(stderr, "diffanal: %s(): "
+	    fprintf(stderr, "fasda: %s(): "
 		    "Chromosomes out of order in SAM stream: %s %s\n",
 		    __FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
 	    exit(EX_DATAERR);
@@ -435,7 +435,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 		strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	    else if ( cmp < 0 )
 	    {
-		fprintf(stderr, "diffanal: %s(): "
+		fprintf(stderr, "fasda: %s(): "
 			"Chromosomes out of order in SAM stream: %s %s\n",
 			__FUNCTION__, previous_alignment_chrom, BL_SAM_RNAME(alignment));
 		exit(EX_DATAERR);
@@ -511,7 +511,7 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
     char            *id, *p;
     double          eff_length, tpm;
 
-    if ( flags & DIFFANAL_FLAG_SHOW_GENE )
+    if ( flags & FASDA_FLAG_SHOW_GENE )
 	id = BL_GFF_FEATURE_NAME(feature);
     else
 	id = BL_GFF_FEATURE_ID(feature);

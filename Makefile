@@ -48,18 +48,18 @@
 ############################################################################
 # Installed targets
 
-BIN     = diffanal
+BIN     = fasda
 LIBEXEC = abundance normalize fold-change
 BINS    = ${BIN} ${LIBEXEC}
 
 ############################################################################
 # List object files that comprise BIN.
 
-OBJS_DIFFANAL       = diffanal.o alignment-stats-mutators.o
+OBJS_FASDA          = fasda.o alignment-stats-mutators.o
 OBJS_ABUNDANCE      = abundance.o
 OBJS_NORMALIZE      = normalize.o
 OBJS_FOLD_CHANGE    = fold-change.o
-OBJS                = ${OBJS_DIFFANAL} ${OBJS_ABUNDANCE} ${OBJS_NORMALIZE} \
+OBJS                = ${OBJS_FASDA} ${OBJS_ABUNDANCE} ${OBJS_NORMALIZE} \
 		      ${OBJS_FOLD_CHANGE}
 
 ############################################################################
@@ -82,7 +82,7 @@ MANDIR      ?= ${MANPREFIX}/man
 # find subcommands from arbitrary CWD
 # Currently must use cave-man-install.sh for this until a bmake/gmake
 # portable method is found
-LIBEXECDIR  ?= ${PREFIX}/libexec/diffanal
+LIBEXECDIR  ?= ${PREFIX}/libexec/fasda
 
 ############################################################################
 # Build flags
@@ -142,8 +142,8 @@ STRIP   ?= strip
 
 all:    ${BINS}
 
-diffanal: ${OBJS_DIFFANAL}
-	${LD} -o diffanal ${OBJS_DIFFANAL} ${LDFLAGS}
+fasda: ${OBJS_FASDA}
+	${LD} -o fasda ${OBJS_FASDA} ${LDFLAGS}
 
 abundance: ${OBJS_ABUNDANCE}
 	${LD} -o abundance ${OBJS_ABUNDANCE} ${LDFLAGS}

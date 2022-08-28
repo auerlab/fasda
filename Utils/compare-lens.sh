@@ -17,7 +17,7 @@ pause()
 cat << EOM
 
 Note: There will be some mismatches if the kallisto output is not from
-the same build/release as the diffanal data.
+the same build/release as the FASDA data.
 
 EOM
 pause

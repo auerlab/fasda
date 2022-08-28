@@ -1,8 +1,8 @@
-.TH DIFFANAL-FOLD-CHANGE 1
+.TH FASDA-FOLD-CHANGE 1
 .SH NAME    \" Section header
 .PP
 
-diffanal fold-change - Compute fold-change and P-values from normalized
+fasda fold-change - Compute fold-change and P-values from normalized
 counts
 
 \" Convention:
@@ -11,7 +11,7 @@ counts
 .PP
 .nf 
 .na 
-diffanal fold-change [--output file.txt] \\
+fasda fold-change [--output file.txt] \\
     normalized-counts1.tsv  normalized-counts2.tsv \\
     [normalized-counts3.tsv ...]
 .ad
@@ -24,11 +24,11 @@ Report fold-change and P-values to file.txt instead of the default stdout.
 
 .SH "DESCRIPTION"
 
-.B diffanal fold-change
+.B fasda fold-change
 computes fold-change and P-values for two or more conditions.  The input
 is two or more tab-separated values (TSV) files containing normalized
 counts for all conditions.  These files are generally produced by
-.B diffanal normalize.
+.B fasda normalize.
 
 Currently, the Mann-Whitney U-test (A.K.A. Wilcoxon rank sum test) is used
 to compute P-value and this requires a minimum of 8 replicates per condition
@@ -45,7 +45,7 @@ file.txt: Output containing fold-change and P-values
 .fi
 
 .SH "SEE ALSO"
-diffanal-abundance(1), diffanal-normalize(1)
+fasda-abundance(1), fasda-normalize(1)
 
 .SH BUGS
 Please report bugs to the author and send patches in unified diff format.

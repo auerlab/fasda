@@ -1,6 +1,6 @@
 /***************************************************************************
  *  Description:
- *      Wrapper to turn diffanal commands into subcommands.  This will help
+ *      Wrapper to turn FASDA commands into subcommands.  This will help
  *      avoid future conflicts with other programs without sacrificing
  *      desriptive command names.
  *
@@ -51,7 +51,7 @@ int     main(int argc,char *argv[])
     
     if ( (argc == 2) && (strcmp(argv[1],"--version") == 0) )
     {
-	printf("diffanal %s\n", VERSION);
+	printf("fasda %s\n", VERSION);
 	return EX_OK;
     }
     else if ( argc < 2 )
@@ -74,9 +74,9 @@ int     main(int argc,char *argv[])
     }
 
     fputs("\n********************************* Note *********************************\n"
-	  "diffanal is experimental.  Be sure to verify all results by other means.\n"
+	  "FASDA is experimental.  Be sure to verify all results by other means.\n"
 	  "Please contribute by reporting problems and offering suggestions at\n"
-	  "https://github.com/auerlab/diffanal.\n"
+	  "https://github.com/auerlab/fasda.\n"
 	  "************************************************************************\n\n",
 	  stderr);
     snprintf(cmd, PATH_MAX, "%s/%s", LIBEXECDIR, argv[1]);

@@ -109,16 +109,16 @@ int     main(int argc, const char *argv[])
 int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 
 {
-    dsv_line_t  dsv_line[DIFFANAL_MAX_SAMPLES];
+    dsv_line_t  dsv_line[FASDA_MAX_SAMPLES];
     size_t      sample, sample_count, feature_count = 0, c;
-    FILE        *abundance_streams[DIFFANAL_MAX_SAMPLES],
-		*tmp_streams[DIFFANAL_MAX_SAMPLES],
-		*norm_sample_streams[DIFFANAL_MAX_SAMPLES];
+    FILE        *abundance_streams[FASDA_MAX_SAMPLES],
+		*tmp_streams[FASDA_MAX_SAMPLES],
+		*norm_sample_streams[FASDA_MAX_SAMPLES];
     char        *end, *target_id,
 		norm_sample_file[PATH_MAX + 1], *p;
-    double      count, sum_lcs, lc[DIFFANAL_MAX_SAMPLES],
-		pseudo_ref, *ratios, median_ratio[DIFFANAL_MAX_SAMPLES],
-		scaling_factor[DIFFANAL_MAX_SAMPLES];
+    double      count, sum_lcs, lc[FASDA_MAX_SAMPLES],
+		pseudo_ref, *ratios, median_ratio[FASDA_MAX_SAMPLES],
+		scaling_factor[FASDA_MAX_SAMPLES];
     
     for (sample_count = 0; abundance_files[sample_count] != NULL; ++sample_count)
     {

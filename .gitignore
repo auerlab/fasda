@@ -1,5 +1,5 @@
 *.o
-diffanal
+fasda
 abundance
 normalize
 fold-change
