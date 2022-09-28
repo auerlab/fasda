@@ -1,0 +1,3 @@
+pval.o: pval.c
+	${CC} -c ${CFLAGS} pval.c
+
