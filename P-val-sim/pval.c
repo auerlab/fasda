@@ -16,16 +16,32 @@
 #include <xtend/math.h>
 #include <time.h>
 
-void    usage(char *argv[]);
+void    usage(char *argv[])
+
+{
+    fprintf(stderr, "Usage:   %s count1-mean count2-mean slop replicates\n", argv[0]);
+    fprintf(stderr, "Example: %s 100 200 .2 3\n",argv[0]);
+    exit(EX_USAGE);
+}
 
 int     main(int argc,char *argv[])
 
 {
     int     c, c1, c2, pairs = 0, fc_ge = 0, replicates = 3,
-	    less = 0, more = 0, equal = 0, counts[replicates * 2],
-	    count1_avg = 100, count2_avg = 200;
-    double  fc, avg_fc;
+	    less = 0, more = 0, equal = 0, *counts,
+	    count1_avg, count2_avg;
+    double  fc, avg_fc, slop;
 
+    if ( argc != 5 )
+	usage(argv);
+    
+    count1_avg = atoi(argv[1]);
+    count2_avg = atoi(argv[2]);
+    slop = atof(argv[3]);
+    replicates = atoi(argv[4]);
+    
+    counts = malloc(replicates * 2 * sizeof(*counts));
+    
     // Find all possible combinations of 3 out of 6 samples
     /*
     printf("6 choose 3 = %lu\n", xt_n_choose_k(6, 3));
@@ -38,16 +54,16 @@ int     main(int argc,char *argv[])
     /*
      *  Generate random counts with FC around 2
      */
-    printf("\ncount1 = %d +/- 0%% to 20%%, count2 = %d +/- 0%% to 20%%\n",
-	    count1_avg, count2_avg);
+    printf("\ncount1 = %d +/- to up to %0.0f%%, count2 = %d +/- same\n",
+	    count1_avg, slop * 100, count2_avg);
     puts("Cond1  Cond2");
     srandom(time(NULL));
     for (c = 0, avg_fc = 0.0; c < replicates; ++c)
     {
 	counts[c] = count1_avg
-		 + random() % (int)(count1_avg * .4) - count1_avg * .2;
+		 + random() % (int)(count1_avg * slop * 2) - count1_avg * slop;
 	counts[c + replicates] = count2_avg
-		 + random() % (int)(count2_avg * .4) - count2_avg * .2;
+		 + random() % (int)(count2_avg * slop * 2) - count2_avg * slop;
 	fc = (double)counts[c + replicates] / counts[c];
 	printf("%3d %3d %f\n", counts[c], counts[c + replicates], fc);
 	avg_fc += fc;
