@@ -1,19 +1,23 @@
 
-Event A = count2 / count1 >= observed fold-change FC
+FC = observed fold-change
+Event A = count1 / count2 >= FC
 Event B = null hypothesis is true
+Null hypothesis (Wilcoxon): P(count2 > count1) = P(count2 < count1)
 
 P-value = P(A|B) = P(A ^ B) / P(B)
 
-Null hypothesis (Wilcoxon):
-
-P(count2 > count1) = P(count2 < count1)
-
 Solution:
 
-Generate set X = all possible pairs of separate counts from pooled samples,
-i.e. all pairs (count m, count n) : m != n.
+S = { All pairs (count m, count n) : m != n }
 
-P(B) = 1
-P(A ^ B) = P(A)
-P(A|B) = P(A) = (# pairs where count2 / count1 >= FC) / (# pairs)
+For S:
+
+    P(A) = |{ (count1, count2) : count1 / count2 >= FC }|
+	   ----------------------------------------------
+			       |S|
+    P(B) = 1
+    P(A ^ B) = P(A)
+    P(A|B) = P(A ^ B) / P(B)
+	   = P(A) / 1
+	   = P(A)
 
