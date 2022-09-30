@@ -1,6 +1,6 @@
 
-FC = observed fold-change
-Event A = count1 / count2 >= FC
+OFC = observed fold-change
+Event A = mean of N fold-changes >= OFC
 Event B = null hypothesis is true
 Null hypothesis (Wilcoxon): P(count2 > count1) = P(count2 < count1)
 
@@ -8,13 +8,16 @@ P-value = P(A|B) = P(A ^ B) / P(B)
 
 Solution:
 
-S = { All pairs (count m, count n) : m != n }
+S1 = { All pairs (count m, count n) : m != n }
+S2 = { Means of all subsets of N fold-changes from S1 }
 
-For S:
+For S2:
 
-    P(A) = |{ (count1, count2) : count1 / count2 >= FC }|
-	   ----------------------------------------------
-			       |S|
+    MFC = mean of 1 subset of N fold-changes
+
+	   |{ MFC >= OFC }|
+    P(A) = ----------------
+		 |S2|
     P(B) = 1
     P(A ^ B) = P(A)
     P(A|B) = P(A ^ B) / P(B)
