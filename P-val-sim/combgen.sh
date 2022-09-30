@@ -22,7 +22,7 @@
 
 usage()
 {
-    printf "Usage: $0 n k\n"
+    printf "Usage: $0 k\n"
     exit 1
 }
 
@@ -54,47 +54,65 @@ print_indent()
 
 
 ##########################################################################
-#   Main
+#   Function description:
+#       
+#   Arguments:
+#       
+#   Returns:
+#       
+#   History:
+#   Date        Name        Modification
+#   2022-09-30  Jason Bacon Begin
 ##########################################################################
 
-if [ $# != 2 ]; then
-    usage
-fi
-n=$1
-k=$2
+gen_loop()
+{
+    local k=$1
+    
+    cat << EOM
 
-cat << EOM
+
 /*
- *  Generate all combinations n choose $k
+ *  Generate all combinations n choose $k.  This is much faster than
+ *  generic algorithms for generating n choose k lists for any n and k.
  */
 
 void    combinations$k(size_t n)
 
 {
 EOM
-
-# Variable defs
-printf "    size_t  "
-for c in $(seq 1 $((k - 1))); do
-    printf "c%d, " $c
-done
-printf "c%d;\n\n" $k
-
-# Nested loop
-printf "    for (c1 = 0; c1 < n; ++c1)\n"
-for c in $(seq 2 $k); do
+    
+    # Variable defs
+    printf "    size_t  "
+    for c in $(seq 1 $((k - 1))); do
+	printf "c%d, " $c
+    done
+    printf "c%d;\n\n" $k
+    
+    # Nested loop
+    printf "    for (c1 = 0; c1 < n; ++c1)\n"
+    for c in $(seq 2 $k); do
+	print_indent $c
+	printf "    for (c$c = c$((c - 1)) + 1; c$c < n; ++c$c)\n"
+    done
+    
+    # Body
     print_indent $c
-    printf "    for (c$c = c$((c - 1)) + 1; c$c < n; ++c$c)\n"
+    printf "    {\n"
+    print_indent $c
+    printf "        fc_count();\n"
+    print_indent $c
+    printf "    }\n"
+    
+    # Closing braces
+    printf "}\n"
+}
+
+
+##########################################################################
+#   Main
+##########################################################################
+
+for c in $(seq 2 10); do
+    gen_loop $c
 done
-
-# Body
-print_indent $c
-printf "    {\n"
-print_indent $c
-printf "        fc_count();\n"
-print_indent $c
-printf "    }\n"
-
-# Closing braces
-printf "}\n"
-
