@@ -71,9 +71,6 @@ gen_loop()
     
     cat << EOM
 
-// FIXME: Just a skeleton
-void    fc_count(void);
-
 /*
  *  Generate all combinations n choose $k.  This is much faster than
  *  generic algorithms for generating n choose k lists for any n and k.
@@ -115,6 +112,11 @@ EOM
 #   Main
 ##########################################################################
 
+cat << EOM
+// FIXME: Just a skeleton
+void    fc_count(void);
+
+EOM
 max_reps=20
 for c in $(seq 2 $max_reps); do
     gen_loop $c
