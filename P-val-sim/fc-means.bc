@@ -21,6 +21,8 @@ define choose(n, k) {
     return factorial(n) / (factorial(k) * factorial(n-k))
 }
 
+/* Do we need to include inverses of every FC in the set from which means
+   are computed? */
 scale=0
 for (r = 3; r <= 15; ++r) {
     fc_counts = choose(r * 2, 2)

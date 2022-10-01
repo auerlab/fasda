@@ -33,33 +33,28 @@ void    usage(char *argv[])
 int     main(int argc,char *argv[])
 
 {
-    int     c, c1, c2, pairs = 0, replicates = 3,
-	    less = 0, more = 0, equal = 0, *counts,
-	    count1_mean, count2_mean, fc_count, fc_ge;
+    unsigned long   c, c1, c2, pairs, replicates,
+		    less, more, equal, *counts,
+		    count1_mean, count2_mean, fc_count, samples, fc_ge,
+		    half_fc_count;
     double  fc, observed_fc_mean, *fc_list, slop, fc_sum,
 	    dist_fc_mean, fc_var_sum, observed_fc_stddev;
 
     if ( argc != 4 )
 	usage(argv);
 
-    for (replicates = 3; replicates <= 10; ++replicates)
-    {
-	fc_count = xt_n_choose_k(replicates * 2, 2);
-	printf("FC count for %d replicates = %d ", replicates, fc_count);
-	printf("FC means = %lu\n", xt_n_choose_k(fc_count, replicates));
-    }
-    
     count1_mean = atoi(argv[1]);
     count2_mean = atoi(argv[2]);
     slop = atof(argv[3]);
     replicates = 3; // atoi(argv[4]);
+    samples = replicates * 2;
     
-    counts = malloc(replicates * 2 * sizeof(*counts));
+    counts = malloc(samples * sizeof(*counts));
     
     /*
      *  Generate random counts with FC around 2
      */
-    printf("\ncount1 = %d +/- to up to %0.0f%%, count2 = %d +/- same\n",
+    printf("\ncount1 = %lu +/- to up to %0.0f%%, count2 = %lu +/- same\n",
 	    count1_mean, slop * 100, count2_mean);
     puts("Cond1 Cond2");
     srandom(time(NULL));
@@ -72,7 +67,7 @@ int     main(int argc,char *argv[])
 		 + random() % (int)(count2_mean * slop * 2)
 		 - count2_mean * slop;
 	fc = (double)counts[c + replicates] / counts[c];
-	printf("%5d %5d %0.3f\n", counts[c], counts[c + replicates], fc);
+	printf("%5lu %5lu %0.3f\n", counts[c], counts[c + replicates], fc);
 	observed_fc_mean += fc;
     }
     observed_fc_mean /= replicates;
@@ -88,7 +83,7 @@ int     main(int argc,char *argv[])
     
     puts("\nPooled counts:");
     for (c = 0; c < replicates * 2; ++c)
-	printf("%3d\n", counts[c]);
+	printf("%3lu\n", counts[c]);
     
     /*
      *  Compute fold-change for every possible pairing.
@@ -97,36 +92,56 @@ int     main(int argc,char *argv[])
     puts("\nFold-change of every possible pairing of samples:");
     puts("(Counts are not paired with themselves.)");
     
-    // FIXME: Slightly over-allocated since we filter out c1 == c2
-    fc_list = malloc(replicates * 2 * replicates * 2 * sizeof(*fc_list));
-    fc_count = fc_sum = fc_ge = 0;
+    half_fc_count = xt_n_choose_k(samples, 2);
+    fc_count = half_fc_count * 2;
+    fc_list = malloc(fc_count * sizeof(*fc_list));
+    
+    /*
+     *  FIXME: Is this needed?  It greatly increases the size of the
+     *  FC means set.
+     *  Include both FC and 1/FC for each count combination in the set
+     *  so that the distribution of FC means covers both cases.
+     */
+    
+    c = fc_sum = fc_ge = less = more = equal = 0;
     for (c1 = 0; c1 < replicates * 2; ++c1)
+    {
 	for (c2 = c1 + 1; c2 < replicates * 2; ++c2)
 	{
-	    ++pairs;
-	    fc_list[fc_count] = (double)counts[c1] / counts[c2];
-	    printf("%2d %3d / %3d = %0.3f\n", fc_count,
-		    counts[c1], counts[c2], fc_list[fc_count]);
-	    if ( fc_list[fc_count] >= observed_fc_mean )
+	    fc_list[c] = (double)counts[c1] / counts[c2];
+	    fc_list[c + half_fc_count] = 1.0 / fc_list[c];
+	    printf("%2lu %3lu / %3lu = %0.3f\n", c,
+		    counts[c1], counts[c2], fc_list[c]);
+	    printf("%2lu %3lu / %3lu = %0.3f\n", c,
+		    counts[c2], counts[c1], fc_list[c + half_fc_count]);
+	    if ( fc_list[c] >= observed_fc_mean )
 		++fc_ge;
 	    
-	    if ( fc_list[fc_count] < 1.0 )
-		++less;
-	    else if ( fc_list[fc_count] > 1.0 )
-		++more;
+	    if ( fc_list[c] < 1.0 )
+		++less, ++more;
+	    else if ( fc_list[c] > 1.0 )
+		++more, ++less;
 	    else
-		++equal;
-	    fc_sum += fc_list[fc_count];
-	    ++fc_count;
+		equal += 2;
+	    fc_sum += fc_list[c] + fc_list[c + half_fc_count];
+	    ++c;
 	}
+    }
+    pairs = c * 2;
     
-    printf("\nTotal pairings = %d  FC >= %0.3f = %d  P(FC >= %0.3f) = %0.3f\n",
+    if ( c != half_fc_count )
+    {
+	printf("%lu != %lu\n", fc_count, c);
+	return 1;
+    }
+    
+    printf("\nTotal pairings = %lu  FC >= %0.3f = %lu  P(FC >= %0.3f) = %0.3f\n",
 	    pairs, observed_fc_mean, fc_ge, observed_fc_mean, (double)fc_ge / pairs);
-    
     dist_fc_mean = fc_sum / fc_count;
-    printf("Distribution: less = %d  more = %d  equal = %d  FC mean = %0.3f\n\n",
+    printf("less + more + equal should be %lu.  FC mean should be slightly > 1.\n",
+	    fc_count);
+    printf("Distribution: less = %lu  more = %lu  equal = %lu  FC mean = %0.3f\n\n",
 	    less, more, equal, dist_fc_mean);
-
     fc_mean_exact_p_val(fc_list, fc_count, replicates,
 			observed_fc_mean, observed_fc_stddev, dist_fc_mean);
     return EX_OK;
@@ -165,13 +180,15 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 	{
 	    for (c3 = c2 + 1; c3 < fc_count; ++c3)
 	    {
-		fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3]) / 3.0;
+		fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3]) / replicates;
 		if ( fc_mean_count % output_interval == 0 )
 		    printf("%4lu %2zu %2zu %2zu %0.3f %0.3f %0.3f %0.3f\n",
 			fc_mean_count, c1, c2, c3,
 			fc_list[c1], fc_list[c2], fc_list[c3], fc_mean);
-		if ( (fc_mean >= observed_fc_mean) ||
-		     (fc_mean <= 1 / observed_fc_mean) )
+		if ( (fc_mean >= observed_fc_mean) )
+		    /* || FIXME: Don't think we need this since both
+			  FC and 1/FC are included in fc_list
+		     (fc_mean <= 1 / observed_fc_mean) ) */
 		    ++fc_ge;
 		
 		if ( fc_mean < dist_fc_mean )   // Allow for round-off
