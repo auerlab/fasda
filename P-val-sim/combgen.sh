@@ -71,19 +71,21 @@ gen_loop()
     
     cat << EOM
 
+// FIXME: Just a skeleton
+void    fc_count(void);
 
 /*
  *  Generate all combinations n choose $k.  This is much faster than
  *  generic algorithms for generating n choose k lists for any n and k.
  */
 
-void    combinations$k(size_t n)
+void    combinations$k(unsigned long n)
 
 {
 EOM
     
     # Variable defs
-    printf "    size_t  "
+    printf "    unsigned long  "
     for c in $(seq 1 $((k - 1))); do
 	printf "c%d, " $c
     done
@@ -113,6 +115,29 @@ EOM
 #   Main
 ##########################################################################
 
-for c in $(seq 2 10); do
+max_reps=20
+for c in $(seq 2 $max_reps); do
     gen_loop $c
 done
+
+cat << EOM
+
+
+void    combinations(unsigned long n, unsigned long k)
+
+{
+    static void    (*comb_funcs[])(unsigned long n) =
+    {
+EOM
+
+for c in $(seq 2 $((max_reps - 1))); do
+    printf "        combinations$c,\n"
+done
+printf "        combinations$max_reps\n    };\n"
+
+cat << EOM
+    unsigned long  func_index = k - 2;
+    
+    comb_funcs[func_index](n);
+}
+EOM
