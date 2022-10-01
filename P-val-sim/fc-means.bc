@@ -1,0 +1,30 @@
+#!/usr/bin/bc -l
+
+/***************************************************************************
+ *  Description:
+ *  
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-10-01  Jason Bacon Begin
+ ***************************************************************************/
+
+define factorial(n) {
+    if (n == 0) return(1)
+    return(n * factorial(n - 1))
+}
+
+define choose(n, k) {
+    return factorial(n) / (factorial(k) * factorial(n-k))
+}
+
+scale=0
+for (r = 3; r <= 15; ++r) {
+    fc_counts = choose(r * 2, 2)
+    fc_means = choose(fc_counts, r)
+    print "r = ", r, "  FC counts = ", fc_counts, "  FC means = ", fc_means, "\n";
+}
+

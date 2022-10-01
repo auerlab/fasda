@@ -41,6 +41,13 @@ int     main(int argc,char *argv[])
 
     if ( argc != 4 )
 	usage(argv);
+
+    for (replicates = 3; replicates <= 10; ++replicates)
+    {
+	fc_count = xt_n_choose_k(replicates * 2, 2);
+	printf("FC count for %d replicates = %d ", replicates, fc_count);
+	printf("FC means = %lu\n", xt_n_choose_k(fc_count, replicates));
+    }
     
     count1_mean = atoi(argv[1]);
     count2_mean = atoi(argv[2]);
@@ -89,9 +96,6 @@ int     main(int argc,char *argv[])
      */
     puts("\nFold-change of every possible pairing of samples:");
     puts("(Counts are not paired with themselves.)");
-    
-    printf("Predicted fc count = %lu\n",
-	    xt_n_choose_k(replicates * 2, 2));
     
     // FIXME: Slightly over-allocated since we filter out c1 == c2
     fc_list = malloc(replicates * 2 * replicates * 2 * sizeof(*fc_list));
