@@ -8,8 +8,13 @@ P-value = P(A|B) = P(A ^ B) / P(B)
 
 Solution:
 
-S1 = { All pairs (count m, count n) : m != n }
+S1 = { All FCs count m / count n and count n / count m : m != n }
+   = { FCs of #samples choose 2 and their inverses }
+   Need all fold-changes and their inverses to construct set of all
+   fold-change means of N samples?
+
 S2 = { Means of all subsets of N fold-changes from S1 }
+   = { Means of { S1 choose N } }
 
 For S2:
 

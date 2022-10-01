@@ -1,9 +1,7 @@
 /***************************************************************************
  *  Description:
- *  
- *  Arguments:
- *
- *  Returns:
+ *      Test driver for computing exact P-values of differential
+ *      expression data.
  *
  *  History: 
  *  Date        Name        Modification
@@ -25,7 +23,7 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 void    usage(char *argv[])
 
 {
-    fprintf(stderr, "Usage:   %s count1-mean count2-mean slop replicates\n", argv[0]);
+    fprintf(stderr, "Usage:   %s count1-mean count2-mean max_deviation\n", argv[0]);
     fprintf(stderr, "Example: %s 100 200 .2 3\n",argv[0]);
     exit(EX_USAGE);
 }
@@ -37,7 +35,7 @@ int     main(int argc,char *argv[])
 		    less, more, equal, *counts,
 		    count1_mean, count2_mean, fc_count, samples, fc_ge,
 		    half_fc_count;
-    double  fc, observed_fc_mean, *fc_list, slop, fc_sum,
+    double  fc, observed_fc_mean, *fc_list, max_deviation, fc_sum,
 	    dist_fc_mean, fc_var_sum, observed_fc_stddev;
 
     if ( argc != 4 )
@@ -45,31 +43,41 @@ int     main(int argc,char *argv[])
 
     count1_mean = atoi(argv[1]);
     count2_mean = atoi(argv[2]);
-    slop = atof(argv[3]);
+    max_deviation = atof(argv[3]);
     replicates = 3; // atoi(argv[4]);
     samples = replicates * 2;
     
     counts = malloc(samples * sizeof(*counts));
     
     /*
-     *  Generate random counts with FC around 2
+     *  Generate samples random counts with FC around count2 / count1
+     *  These are the "observed" counts
      */
     printf("\ncount1 = %lu +/- to up to %0.0f%%, count2 = %lu +/- same\n",
-	    count1_mean, slop * 100, count2_mean);
+	    count1_mean, max_deviation * 100, count2_mean);
     puts("Cond1 Cond2");
     srandom(time(NULL));
     for (c = 0, observed_fc_mean = 0.0; c < replicates; ++c)
     {
 	counts[c] = count1_mean
-		 + random() % (int)(count1_mean * slop * 2)
-		 - count1_mean * slop;
+		 + random() % (int)(count1_mean * max_deviation * 2)
+		 - count1_mean * max_deviation;
 	counts[c + replicates] = count2_mean
-		 + random() % (int)(count2_mean * slop * 2)
-		 - count2_mean * slop;
+		 + random() % (int)(count2_mean * max_deviation * 2)
+		 - count2_mean * max_deviation;
 	fc = (double)counts[c + replicates] / counts[c];
 	printf("%5lu %5lu %0.3f\n", counts[c], counts[c + replicates], fc);
 	observed_fc_mean += fc;
     }
+    
+    puts("\nPooled counts:");
+    for (c = 0; c < replicates * 2; ++c)
+	printf("%3lu\n", counts[c]);
+    
+    /*
+     *  Compute mean and stddev for "observed" values
+     */
+    
     observed_fc_mean /= replicates;
     fc_var_sum = 0;
     for (c = 0; c < replicates; ++c)
@@ -81,19 +89,17 @@ int     main(int argc,char *argv[])
     printf("FC mean = %0.3f  FC stddev = %f\n",
 	    observed_fc_mean, observed_fc_stddev);
     
-    puts("\nPooled counts:");
-    for (c = 0; c < replicates * 2; ++c)
-	printf("%3lu\n", counts[c]);
-    
     /*
      *  Compute fold-change for every possible pairing.
+     *  #samples choose 2 * 2 (FC and 1/FC), since this affects
+     *  the distribution of means of N samples
      *  Satisfies the null hypothesis P(n1 > n2) = P(n1 < N2)
      */
+    
     puts("\nFold-change of every possible pairing of samples:");
     puts("(Counts are not paired with themselves.)");
-    
     half_fc_count = xt_n_choose_k(samples, 2);
-    fc_count = half_fc_count * 2;
+    fc_count = half_fc_count * 2;   // FC and 1/FC
     fc_list = malloc(fc_count * sizeof(*fc_list));
     
     /*
@@ -129,6 +135,7 @@ int     main(int argc,char *argv[])
     }
     pairs = c * 2;
     
+    // Check for program bugs
     if ( c != half_fc_count )
     {
 	printf("%lu != %lu\n", fc_count, c);
