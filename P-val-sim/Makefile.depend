@@ -1,3 +1,9 @@
+fc_ge.o: fc_ge.c
+	${CC} -c ${CFLAGS} fc_ge.c
+
+general-comb.o: general-comb.c
+	${CC} -c ${CFLAGS} general-comb.c
+
 pval.o: pval.c
 	${CC} -c ${CFLAGS} pval.c
 
