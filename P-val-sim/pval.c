@@ -15,6 +15,8 @@
 #include <math.h>
 #include <time.h>
 
+unsigned long   fc_ge_count(double fc_list[], unsigned long fc_count,
+		      unsigned long replicates, double observed_fc_mean);
 void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 			    size_t replicates,
 			    double observed_fc_mean, double observed_fc_stddev,
@@ -169,7 +171,7 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 {
     size_t  c1, c2, c3;
     unsigned long   fc_mean_count, output_interval, fc_ge,
-		    less, more, equal;
+		    less, more, equal, c;
     double  fc_sum, fc_mean;
 
     fc_mean_count = xt_n_choose_k(fc_count, replicates);
@@ -178,7 +180,7 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
     
     puts("Sample of means of all possible combinations of 3 fold-changes:");
     puts("smpl c1 c2 c3   fc1   fc2   fc3 FC mean");
-    fc_mean_count = less = more = equal = fc_sum = 0;
+    c = less = more = equal = fc_sum = 0;
 
     fc_ge = 0;
     for (c1 = 0; c1 < fc_count; ++c1)
@@ -187,38 +189,49 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 	{
 	    for (c3 = c2 + 1; c3 < fc_count; ++c3)
 	    {
-		fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3]) / replicates;
-		if ( fc_mean_count % output_interval == 0 )
+		if ( c % output_interval == 0 )
 		    printf("%4lu %2zu %2zu %2zu %0.3f %0.3f %0.3f %0.3f\n",
 			fc_mean_count, c1, c2, c3,
 			fc_list[c1], fc_list[c2], fc_list[c3], fc_mean);
-		if ( (fc_mean >= observed_fc_mean) )
-		    /* || FIXME: Don't think we need this since both
-			  FC and 1/FC are included in fc_list
-		     (fc_mean <= 1 / observed_fc_mean) ) */
-		    ++fc_ge;
 		
-		if ( fc_mean < dist_fc_mean )   // Allow for round-off
+		// FIXME: Don't think we need to check 1/FC
+		fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3]) / replicates;
+		if ( (fc_mean >= observed_fc_mean) )
+		    ++fc_ge;
+    
+		// Debug
+		if ( fc_mean < dist_fc_mean )
 		    ++less;
 		else if ( fc_mean > dist_fc_mean )
 		    ++more;
-		else
-		    ++equal;
-		++fc_mean_count;
+		
+		// Debug
+		++c;
 		fc_sum += fc_mean;
 	    }
 	}
     }
     
-    printf("\nObserved FC mean = %0.3f  Observed FC stddev = %0.3f\n",
+    printf("\nFC >= %0.3f from generated code = %lu\n", observed_fc_mean,
+	    fc_ge_count(fc_list, fc_count, replicates, observed_fc_mean));
+    
+    // Check for program bugs
+    if ( c != fc_mean_count )
+    {
+	fprintf(stderr, "fc_mean_count = %lu  c = %lu\n", fc_mean_count, c);
+	exit(EX_SOFTWARE);
+    }
+    
+    printf("Observed FC mean = %0.3f  Observed FC stddev = %0.3f\n",
 	    observed_fc_mean, observed_fc_stddev);
     printf("FC mean count = %lu  FC >= %0.3f = %lu  P(FC >= %0.3f) = %0.3f\n",
 	    fc_mean_count, observed_fc_mean, fc_ge, observed_fc_mean,
 	    (double)fc_ge / fc_mean_count);
-    
-    // Q: Do we need to satisfy a null hypothesis, e.g. Wilcoxon here?
-    // FIXME: Why are we getting about twice as many > 1 as < 1
+
+    equal = fc_mean_count - less - more;
     printf("Distribution: < %0.3f = %lu  > %0.3f = %lu  equal = %lu\n",
 	    dist_fc_mean, less, dist_fc_mean, more, equal);
+    
+    // Debug: Should equal fc_mean
     printf("Mean of FC means = %0.3f\n", fc_sum / fc_mean_count);
 }

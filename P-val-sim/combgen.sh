@@ -1,3 +1,5 @@
+#!/bin/sh -e
+
 ##########################################################################
 #   Synopsis:
 #       
@@ -72,15 +74,19 @@ gen_loop()
     cat << EOM
 
 /*
- *  Generate all combinations n choose $k.  This is much faster than
- *  generic algorithms for generating n choose k lists for any n and k.
+ *  Generate all combinations n choose $k and count FCs >= observed.
+ *  This is much faster than generic algorithms for generating n choose
+ *  k lists for any n and k.
  */
 
-void    combinations$k(unsigned long n)
+unsigned long   fc_ge$k(double fc_list[], unsigned long fc_count,
+			double observed_fc_mean)
 
 {
-EOM
+    unsigned long   fc_ge = 0;
+    double          fc_mean;
     
+EOM
     # Variable defs
     printf "    unsigned long  "
     for c in $(seq 1 $((k - 1))); do
@@ -89,22 +95,28 @@ EOM
     printf "c%d;\n\n" $k
     
     # Nested loop
-    printf "    for (c1 = 0; c1 < n; ++c1)\n"
+    printf "    for (c1 = 0; c1 < fc_count; ++c1)\n"
     for c in $(seq 2 $k); do
 	print_indent $c
-	printf "    for (c$c = c$((c - 1)) + 1; c$c < n; ++c$c)\n"
+	printf "    for (c$c = c$((c - 1)) + 1; c$c < fc_count; ++c$c)\n"
     done
     
     # Body
     print_indent $c
     printf "    {\n"
     print_indent $c
-    printf "        fc_count();\n"
+    printf "        fc_mean = ("
+    for c2 in $(seq 1 $((k - 1))); do
+	printf "fc_list[c$c2] + "
+    done
+    printf "fc_list[c$k]) / $k;\n"
+    print_indent $c
+    printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
     print_indent $c
     printf "    }\n"
     
     # Closing braces
-    printf "}\n"
+    printf "    return fc_ge;\n}\n"
 }
 
 
@@ -117,7 +129,7 @@ cat << EOM
 void    fc_count(void);
 
 EOM
-max_reps=20
+max_reps=8
 for c in $(seq 2 $max_reps); do
     gen_loop $c
 done
@@ -125,21 +137,24 @@ done
 cat << EOM
 
 
-void    combinations(unsigned long n, unsigned long k)
+unsigned long   fc_ge_count(double fc_list[], unsigned long fc_count,
+		      unsigned long replicates, double observed_fc_mean)
 
 {
-    static void    (*comb_funcs[])(unsigned long n) =
+    static unsigned long (*fc_ge_funcs[])(double fc_list[],
+				    unsigned long fc_count,
+				    double observed_fc_mean) =
     {
 EOM
 
 for c in $(seq 2 $((max_reps - 1))); do
-    printf "        combinations$c,\n"
+    printf "        fc_ge$c,\n"
 done
-printf "        combinations$max_reps\n    };\n"
+printf "        fc_ge$max_reps\n    };\n"
 
 cat << EOM
-    unsigned long  func_index = k - 2;
+    unsigned long  func_index = replicates - 2;
     
-    comb_funcs[func_index](n);
+    return fc_ge_funcs[func_index](fc_list, fc_count, observed_fc_mean);
 }
 EOM
