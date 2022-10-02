@@ -40,13 +40,13 @@ int     main(int argc,char *argv[])
     double  fc, observed_fc_mean, *fc_list, max_deviation, fc_sum,
 	    dist_fc_mean, fc_var_sum, observed_fc_stddev;
 
-    if ( argc != 4 )
+    if ( argc != 5 )
 	usage(argv);
 
     count1_mean = atoi(argv[1]);
     count2_mean = atoi(argv[2]);
     max_deviation = atof(argv[3]);
-    replicates = 3; // atoi(argv[4]);
+    replicates = atoi(argv[4]);
     samples = replicates * 2;
     
     counts = malloc(samples * sizeof(*counts));
@@ -160,7 +160,6 @@ int     main(int argc,char *argv[])
 /*
  *  Find all possible means of fold-change triplets
  *  Count the number of means >= observed mean
- *  FIXME: Hard-coded for 3 replicates.  Need to generalize.
  */
 
 void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
@@ -169,20 +168,23 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 			    double dist_fc_mean)
 
 {
-    size_t  c1, c2, c3;
-    unsigned long   fc_mean_count, output_interval, fc_ge,
-		    less, more, equal, c;
-    double  fc_sum, fc_mean;
+    //size_t  c1, c2, c3;
+    //unsigned long output_interval, c, less, more, equal;
+    
+    unsigned long   fc_mean_count, fc_ge;
+		    
 
     fc_mean_count = xt_n_choose_k(fc_count, replicates);
     printf("%zu choose %zu = %lu\n", fc_count, replicates, fc_mean_count);
-    output_interval = fc_mean_count / 10;
-    
+    //output_interval = fc_mean_count / 10;
+
+#if 0
     puts("Sample of means of all possible combinations of 3 fold-changes:");
     puts("smpl c1 c2 c3   fc1   fc2   fc3 FC mean");
-    c = less = more = equal = fc_sum = 0;
 
-    fc_ge = 0;
+    less = more = equal = fc_sum = 0;
+    double  fc_sum, fc_mean;
+    c = fc_ge = 0;
     for (c1 = 0; c1 < fc_count; ++c1)
     {
 	for (c2 = c1 + 1; c2 < fc_count; ++c2)
@@ -212,15 +214,17 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 	}
     }
     
-    printf("\nFC >= %0.3f from generated code = %lu\n", observed_fc_mean,
-	    fc_ge_count(fc_list, fc_count, replicates, observed_fc_mean));
-    
     // Check for program bugs
     if ( c != fc_mean_count )
     {
 	fprintf(stderr, "fc_mean_count = %lu  c = %lu\n", fc_mean_count, c);
 	exit(EX_SOFTWARE);
     }
+#endif
+
+    fc_ge = fc_ge_count(fc_list, fc_count, replicates, observed_fc_mean);
+    printf("\nFC >= %0.3f from generated code = %lu\n",
+	    observed_fc_mean, fc_ge);
     
     printf("Observed FC mean = %0.3f  Observed FC stddev = %0.3f\n",
 	    observed_fc_mean, observed_fc_stddev);
@@ -228,10 +232,10 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 	    fc_mean_count, observed_fc_mean, fc_ge, observed_fc_mean,
 	    (double)fc_ge / fc_mean_count);
 
-    equal = fc_mean_count - less - more;
-    printf("Distribution: < %0.3f = %lu  > %0.3f = %lu  equal = %lu\n",
-	    dist_fc_mean, less, dist_fc_mean, more, equal);
+    //equal = fc_mean_count - less - more;
+    //printf("Distribution: < %0.3f = %lu  > %0.3f = %lu  equal = %lu\n",
+    //        dist_fc_mean, less, dist_fc_mean, more, equal);
     
     // Debug: Should equal fc_mean
-    printf("Mean of FC means = %0.3f\n", fc_sum / fc_mean_count);
+    //printf("Mean of FC means = %0.3f\n", fc_sum / fc_mean_count);
 }
