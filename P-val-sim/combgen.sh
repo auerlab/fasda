@@ -83,7 +83,9 @@ unsigned long   fc_ge$k(double fc_list[], unsigned long fc_count,
 			double observed_fc_mean)
 
 {
-    unsigned long   fc_ge = 0;
+    // Using sample++ % sample_rate doesn't produce much gain
+    // Go after loop increments instead
+    unsigned long   fc_ge = 0, sample_rate = 1, sample = 0;
     double          fc_mean;
     
 EOM
@@ -105,13 +107,19 @@ EOM
     print_indent $c
     printf "    {\n"
     print_indent $c
-    printf "        fc_mean = ("
+    printf "        if ( sample++ %% sample_rate == 0 )\n"
+    print_indent $c
+    printf "        {\n"
+    print_indent $c
+    printf "            fc_mean = ("
     for c2 in $(seq 1 $((k - 1))); do
 	printf "fc_list[c$c2] + "
     done
     printf "fc_list[c$k]) / $k;\n"
     print_indent $c
-    printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
+    printf "            if ( fc_mean >= observed_fc_mean ) fc_ge += sample_rate;\n"
+    print_indent $c
+    printf "        }\n"
     print_indent $c
     printf "    }\n"
     
