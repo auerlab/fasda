@@ -59,7 +59,7 @@ int     main(int argc,char *argv[])
     printf("\ncount1 = %lu +/- to up to %0.0f%%, count2 = %lu +/- same\n",
 	    count1_mean, max_deviation * 100, count2_mean);
     puts("Cond1 Cond2");
-    srandom(time(NULL));
+    //srandom(time(NULL));
     for (c = 0, observed_fc_mean = 0.0; c < replicates; ++c)
     {
 	counts[c] = count1_mean
@@ -69,7 +69,7 @@ int     main(int argc,char *argv[])
 		 + random() % (int)(count2_mean * max_deviation * 2)
 		 - count2_mean * max_deviation;
 	fc = (double)counts[c + replicates] / counts[c];
-	printf("%5lu %5lu %0.4f\n", counts[c], counts[c + replicates], fc);
+	printf("%5lu %5lu %0.5f\n", counts[c], counts[c + replicates], fc);
 	observed_fc_mean += fc;
     }
     
@@ -101,7 +101,7 @@ int     main(int argc,char *argv[])
 	}
     }
     observed_fc_stddev = sqrt(fc_var_sum / replicates);
-    printf("FC mean = %0.4f  FC stddev = %f\n",
+    printf("FC mean = %0.5f  FC stddev = %f\n",
 	    observed_fc_mean, observed_fc_stddev);
     
     /*
@@ -131,9 +131,9 @@ int     main(int argc,char *argv[])
 	{
 	    fc_list[c] = (double)counts[c1] / counts[c2];
 	    fc_list[c + half_fc_count] = 1.0 / fc_list[c];
-	    printf("%2lu %3lu / %3lu = %0.4f\n", c,
+	    printf("%2lu %3lu / %3lu = %0.5f\n", c,
 		    counts[c1], counts[c2], fc_list[c]);
-	    printf("%2lu %3lu / %3lu = %0.4f\n", c + half_fc_count,
+	    printf("%2lu %3lu / %3lu = %0.5f\n", c + half_fc_count,
 		    counts[c2], counts[c1], fc_list[c + half_fc_count]);
 	    if ( fc_list[c] >= observed_fc_mean )
 		++fc_ge;
@@ -160,7 +160,7 @@ int     main(int argc,char *argv[])
     printf("\nless + more + equal should be %lu.  FC mean should be slightly > 1.\n",
 	    fc_count);
     printf("less should equal more to satisfy the null hypothesis.\n");
-    printf("Distribution: less = %lu  more = %lu  equal = %lu  FC mean = %0.4f\n",
+    printf("Distribution: less = %lu  more = %lu  equal = %lu  FC mean = %0.5f\n",
 	    less, more, equal, dist_fc_mean);
 
     fc_mean_exact_p_val(fc_list, fc_count, replicates,
@@ -183,15 +183,20 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
     unsigned long   fc_mean_count, fc_ge;
 
     // FIXME: This will overflow unsigned long for replicates > 10
-    fc_mean_count = xt_n_choose_k(fc_count, replicates);
-    printf("%zu choose %zu = %lu possible means of %lu FCs\n",
+    if ( replicates <= 10 )
+    {
+	fc_mean_count = xt_n_choose_k(fc_count, replicates);
+	printf("%zu choose %zu = %lu possible means of %lu FCs\n",
 	    fc_count, replicates, fc_mean_count, replicates);
+    }
+    else
+	printf("fc_mean_count > 2^64 for replicates > 10.\n");
     
     fc_ge = fc_ge_count(fc_list, fc_count, replicates,
 			observed_fc_mean, &fc_mean_count);
-    printf("\nObserved FC mean = %0.4f  Observed FC stddev = %0.4f\n",
+    printf("\nObserved FC mean = %0.5f  Observed FC stddev = %0.5f\n",
 	    observed_fc_mean, observed_fc_stddev);
-    printf("FC mean count = %lu  FC >= %0.4f = %lu  P(FC >= %0.4f) = %0.4f\n",
+    printf("FC mean count = %lu  FC >= %0.5f = %lu  P(FC >= %0.5f) = %0.5f\n",
 	    fc_mean_count, observed_fc_mean, fc_ge, observed_fc_mean,
 	    (double)fc_ge / fc_mean_count);
 }
