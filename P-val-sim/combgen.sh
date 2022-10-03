@@ -163,6 +163,7 @@ cat << EOM
  */
 
 #include <stdlib.h>
+#include <time.h>
 
 EOM
 # FC-count choose 11 overflows a 64-bit integer
@@ -194,6 +195,7 @@ printf "        fc_ge$max_reps\n    };\n"
 cat << EOM
     unsigned long  func_index = replicates - 2;
     
+    srandom(time(NULL));
     return fc_ge_funcs[func_index](fc_list, fc_count,
 				   observed_fc_mean, fc_mean_count);
 }

@@ -59,7 +59,9 @@ int     main(int argc,char *argv[])
     printf("\ncount1 = %lu +/- to up to %0.0f%%, count2 = %lu +/- same\n",
 	    count1_mean, max_deviation * 100, count2_mean);
     puts("Cond1 Cond2");
-    //srandom(time(NULL));
+    
+    // Comment this out to get the same counts repeatedly
+    // srandom(time(NULL));
     for (c = 0, observed_fc_mean = 0.0; c < replicates; ++c)
     {
 	counts[c] = count1_mean
