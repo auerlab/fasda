@@ -73,6 +73,10 @@ gen_loop()
     
     # Downsample set of all possible means for replicates > 5 so that
     # each FC can be computed in a fraction of a second
+    # FIXME: This significantly alters the computed P-values
+    # Find a way to choose a more representative sample
+    # Test by commenting out srandom() in pval.c so we always get the
+    # same counts
     case $k in
     6)
 	increment=2
@@ -103,12 +107,12 @@ gen_loop()
  */
 
 unsigned long   fc_ge$k(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean)
+			double observed_fc_mean, unsigned long *fc_mean_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, increment = $increment;
+    unsigned long   fc_ge = 0, increment = $increment, count = 0;
     double          fc_mean;
     
 EOM
@@ -138,9 +142,12 @@ EOM
     print_indent $c
     printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
     print_indent $c
+    printf "        ++count;\n"
+    print_indent $c
     printf "    }\n"
     
     # Closing braces
+    printf "    *fc_mean_count = count;\n"
     printf "    return fc_ge;\n}\n"
 }
 
@@ -165,12 +172,14 @@ cat << EOM
 
 
 unsigned long   fc_ge_count(double fc_list[], unsigned long fc_count,
-		      unsigned long replicates, double observed_fc_mean)
+		      unsigned long replicates, double observed_fc_mean,
+		      unsigned long *fc_mean_count)
 
 {
     static unsigned long (*fc_ge_funcs[])(double fc_list[],
 				    unsigned long fc_count,
-				    double observed_fc_mean) =
+				    double observed_fc_mean,
+				    unsigned long *fc_mean_count) =
     {
 EOM
 
@@ -182,6 +191,7 @@ printf "        fc_ge$max_reps\n    };\n"
 cat << EOM
     unsigned long  func_index = replicates - 2;
     
-    return fc_ge_funcs[func_index](fc_list, fc_count, observed_fc_mean);
+    return fc_ge_funcs[func_index](fc_list, fc_count,
+				   observed_fc_mean, fc_mean_count);
 }
 EOM
