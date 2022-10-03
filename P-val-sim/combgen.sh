@@ -71,6 +71,29 @@ gen_loop()
 {
     local k=$1
     
+    # Downsample set of all possible means for replicates > 5 so that
+    # each FC can be computed in a fraction of a second
+    case $k in
+    6)
+	increment=2
+	;;
+    7)
+	increment=4
+	;;
+    8)
+	increment=6
+	;;
+    9)
+	increment=10
+	;;
+    10)
+	increment=15
+	;;
+    *)
+	increment=1
+	;;
+    esac
+    
     cat << EOM
 
 /*
@@ -85,7 +108,7 @@ unsigned long   fc_ge$k(double fc_list[], unsigned long fc_count,
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, sample_rate = 1, sample = 0;
+    unsigned long   fc_ge = 0, increment = $increment;
     double          fc_mean;
     
 EOM
@@ -97,29 +120,23 @@ EOM
     printf "c%d;\n\n" $k
     
     # Nested loop
-    printf "    for (c1 = 0; c1 < fc_count; ++c1)\n"
+    printf "    for (c1 = 0; c1 < fc_count; c1 += increment)\n"
     for c in $(seq 2 $k); do
 	print_indent $c
-	printf "    for (c$c = c$((c - 1)) + 1; c$c < fc_count; ++c$c)\n"
+	printf "    for (c$c = c$((c - 1)) + 1; c$c < fc_count; c$c += increment)\n"
     done
     
     # Body
     print_indent $c
     printf "    {\n"
     print_indent $c
-    printf "        if ( sample++ %% sample_rate == 0 )\n"
-    print_indent $c
-    printf "        {\n"
-    print_indent $c
-    printf "            fc_mean = ("
+    printf "        fc_mean = ("
     for c2 in $(seq 1 $((k - 1))); do
 	printf "fc_list[c$c2] + "
     done
     printf "fc_list[c$k]) / $k;\n"
     print_indent $c
-    printf "            if ( fc_mean >= observed_fc_mean ) fc_ge += sample_rate;\n"
-    print_indent $c
-    printf "        }\n"
+    printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
     print_indent $c
     printf "    }\n"
     
@@ -138,7 +155,8 @@ cat << EOM
  */
 
 EOM
-max_reps=8
+# FC-count choose 11 overflows a 64-bit integer
+max_reps=10
 for c in $(seq 2 $max_reps); do
     gen_loop $c
 done

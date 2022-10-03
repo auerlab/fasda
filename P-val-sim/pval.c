@@ -181,6 +181,7 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 {
     unsigned long   fc_mean_count, fc_ge;
 
+    // FIXME: This will overflow unsigned long for replicates > 10
     fc_mean_count = xt_n_choose_k(fc_count, replicates);
     printf("%zu choose %zu = %lu possible means of %lu FCs\n",
 	    fc_count, replicates, fc_mean_count, replicates);
