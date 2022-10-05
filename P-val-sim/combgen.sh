@@ -144,7 +144,8 @@ EOM
     done
     printf "fc_list[c$k]) / $k;\n"
     print_indent $c
-    printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
+    # P-value is prob of all events of equal or lesser likelihood
+    printf "        if ( (fc_mean >= observed_fc_mean ) || (fc_mean <= 1.0 / observed_fc_mean) ) ++fc_ge;\n"
     print_indent $c
     printf "        ++count;\n"
     print_indent $c

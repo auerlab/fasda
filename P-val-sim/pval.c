@@ -61,7 +61,7 @@ int     main(int argc,char *argv[])
     puts("Cond1 Cond2");
     
     // Comment this out to get the same counts repeatedly
-    // srandom(time(NULL));
+    srandom(time(NULL));
     for (c = 0, observed_fc_mean = 0.0; c < replicates; ++c)
     {
 	counts[c] = count1_mean
