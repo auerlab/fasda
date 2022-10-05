@@ -107,6 +107,8 @@ int     main(int argc,char *argv[])
     }
     observed_fc_stddev = sqrt(fc_var_sum / replicates);
     printf("Observed FC mean = %0.5f\n", observed_fc_mean);
+    printf("P-value: Likelihood of a mean of %lu FCs at least as extreme as %0.5f\n",
+	    replicates, observed_fc_mean);
     
     /*
      *  Compute fold-change for every possible pairing.
