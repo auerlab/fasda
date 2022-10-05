@@ -161,7 +161,7 @@ depend:
 # Remove generated files (objs and nroff output from man pages)
 
 clean:
-	rm -f ${OBJS} ${BIN} *.nr
+	rm -f ${BIN} *.o *.nr
 
 # Keep backup files during normal clean, but provide an option to remove them
 realclean: clean
