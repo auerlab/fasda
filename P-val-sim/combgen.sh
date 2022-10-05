@@ -72,11 +72,8 @@ gen_loop()
     local k=$1
     
     # Downsample set of all possible means for replicates > 5 so that
-    # each FC can be computed in a fraction of a second
-    # FIXME: This significantly alters the computed P-values
-    # Find a way to choose a more representative sample
-    # Test by commenting out srandom() in pval.c so we always get the
-    # same counts
+    # each FC can be computed in a fraction of a second.  Incements were
+    # determined by trial and error.
     case $k in
     6)
 	increment=2
@@ -143,13 +140,13 @@ EOM
 	printf "fc_list[c$c2] + "
     done
     printf "fc_list[c$k]) / $k;\n"
-    print_indent $c
     # P-value is prob of all events of equal or lesser likelihood
     # FIXME: What is equally likely to fc_mean >= observed_fc_mean?
     # fc_mean <= 1.0 / observed_fc_mean is about half as likely
+    print_indent $c
     printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
     print_indent $c
-    printf "        else if ( fc_mean <= 1.0 / observed_fc_mean ) ++fc_le;\n"
+    printf "        else if ( 1.0 / fc_mean >= observed_fc_mean ) ++fc_le;\n"
     print_indent $c
     printf "        ++count;\n"
     print_indent $c
@@ -157,8 +154,11 @@ EOM
     
     # Closing braces
     cat << EOM
-    printf("FC means < 1/observed = %lu  FC means > observed = %lu  %f\n", fc_le, fc_ge, (double)fc_ge / fc_le);
+    printf("FC means > observed = %lu  FC means < 1/observed = %lu  Ratio = %f\n",
+	    fc_ge, fc_le, (double)fc_ge / fc_le);
     *fc_mean_count = count;
+    
+    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 EOM

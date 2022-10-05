@@ -106,6 +106,7 @@ int     main(int argc,char *argv[])
 	}
     }
     observed_fc_stddev = sqrt(fc_var_sum / replicates);
+    printf("Observed FC mean = %0.5f\n", observed_fc_mean);
     
     /*
      *  Compute fold-change for every possible pairing.
@@ -114,15 +115,14 @@ int     main(int argc,char *argv[])
      *  Satisfies the null hypothesis P(n1 > n2) = P(n1 < N2)
      */
     
-    puts("\nFold-change of every possible pairing of samples:");
-    puts("(Counts are not paired with themselves.)");
+    printf("\n%lu choose %d = %lu combinations of counts\n",
+	    samples, 2, xt_n_choose_k(samples, 2));
+    puts("2 fold-changes for each combination of samples:");
     half_fc_count = xt_n_choose_k(samples, 2);
     fc_count = half_fc_count * 2;   // FC and 1/FC
     fc_list = malloc(fc_count * sizeof(*fc_list));
     
     /*
-     *  FIXME: Is this needed?  It greatly increases the size of the
-     *  FC means set.
      *  Include both FC and 1/FC for each count combination in the set
      *  so that the distribution of FC means covers both cases.
      */
@@ -162,8 +162,7 @@ int     main(int argc,char *argv[])
     dist_fc_mean = fc_sum / fc_count;
     printf("\nLess + more + equal should be %lu.  FC mean should be > 1.\n",
 	    fc_count);
-    printf("Less should equal more to satisfy the null hypothesis.\n");
-    printf("Lower FC mean, higher stddev, and outlier counts cause higher P-values.\n\n");
+    printf("Less should equal more (distribution is symmetric).\n");
     printf("Distribution: less = %lu  more = %lu  equal = %lu  FC mean = %0.5f\n",
 	    less, more, equal, dist_fc_mean);
 
@@ -186,21 +185,21 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 {
     unsigned long   fc_mean_count, fc_ge, c;
 
-    // FIXME: This will overflow unsigned long for replicates > 10
     if ( replicates <= 10 )
     {
 	fc_mean_count = xt_n_choose_k(fc_count, replicates);
-	printf("%zu choose %zu = %lu possible means of %lu FCs\n",
+	printf("\n%zu choose %zu = %lu possible means of %lu FCs\n",
 	    fc_count, replicates, fc_mean_count, replicates);
     }
     else
-	printf("fc_mean_count > 2^64 for replicates > 10.\n");
+	printf("\nfc_mean_count > 2^64 for replicates > 10.\n");
     
     for (c = 0; c < (replicates > 5 ? 5 : 1); ++c)
     {
     fc_ge = fc_ge_count(fc_list, fc_count, replicates,
 			observed_fc_mean, &fc_mean_count);
-    printf("\nObserved: FC mean = %0.5f  stddev = %0.5f  spread = %0.5f\n",
+    printf("\nLower FC mean, higher stddev, and outlier counts cause higher P-values.\n");
+    printf("Observed: FC mean = %0.5f  stddev = %0.5f  spread = %0.5f\n",
 	    observed_fc_mean, observed_fc_stddev, observed_fc_spread);
     printf("FC mean count = %lu  FC >= %0.5f = %lu  P(FC >= %0.5f) = %0.5f\n",
 	    fc_mean_count, observed_fc_mean, fc_ge, observed_fc_mean,

@@ -97,8 +97,6 @@ RANLIB      ?= ranlib
 
 INCLUDES    += -isystem ${PREFIX}/include -isystem ${LOCALBASE}/include
 CFLAGS      += ${INCLUDES}
-CXXFLAGS    += ${INCLUDES}
-FFLAGS      += ${INCLUDES}
 LDFLAGS     += -L${PREFIX}/lib -Wl,-rpath,${PREFIX}/lib \
 	       -L${LOCALBASE}/lib -Wl,-rpath,${LOCALBASE}/lib -lxtend
 
