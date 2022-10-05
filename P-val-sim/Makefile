@@ -53,7 +53,7 @@ BIN     = pval
 ############################################################################
 # List object files that comprise BIN.
 
-OBJS    = pval.o fc_ge.o
+OBJS    = pval.o fc-ge.o
 
 ############################################################################
 # Compile, link, and install options
@@ -143,8 +143,8 @@ ${BIN}: ${OBJS}
 # If Makefile.depend does not exist, "touch" it before running "make depend"
 include Makefile.depend
 
-fc_ge.c:    combgen.sh
-	./combgen.sh > fc_ge.c
+fc-ge.c:    combgen.sh
+	./combgen.sh > fc-ge.c
 
 ############################################################################
 # Self-generate dependencies the old-fashioned way

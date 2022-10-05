@@ -127,8 +127,11 @@ EOM
     printf "    for (c1 = 0; c1 < fc_count; c1 += increment)\n"
     for c in $(seq 2 $k); do
 	print_indent $c
-	printf "    for (c$c = c$((c - 1)) + 1 + random() %% increment; c$c < fc_count; c$c += increment)\n"
-	#printf "    for (c$c = c$((c - 1)) + 1; c$c < fc_count; c$c += increment)\n"
+	if [ $increment -gt 1 ]; then
+	    printf "    for (c$c = c$((c - 1)) + 1 + random() %% increment; c$c < fc_count; c$c += increment)\n"
+	else
+	    printf "    for (c$c = c$((c - 1)) + 1; c$c < fc_count; c$c += increment)\n"
+	fi
     done
     
     # Body
