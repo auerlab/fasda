@@ -165,7 +165,7 @@ int     main(int argc,char *argv[])
     printf("\nLess + more + equal should be %lu.  FC mean should be > 1.\n",
 	    fc_count);
     printf("Less should equal more (distribution is symmetric).\n");
-    printf("Distribution: less = %lu  more = %lu  equal = %lu  FC mean = %0.5f\n",
+    printf("Distribution: less = %lu  more = %lu  equal = %lu  H0 FC mean = %0.5f\n",
 	    less, more, equal, dist_fc_mean);
 
     fc_mean_exact_p_val(fc_list, fc_count, replicates, observed_fc_mean,
@@ -195,16 +195,17 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
     }
     else
 	printf("\nfc_mean_count > 2^64 for replicates > 10.\n");
-    
-    for (c = 0; c < (replicates > 5 ? 5 : 1); ++c)
+
+    // Run 10 reps for down-sampled FC means to check stability
+    for (c = 0; c < (replicates > 5 ? 10 : 1); ++c)
     {
-    fc_ge = fc_ge_count(fc_list, fc_count, replicates,
-			observed_fc_mean, &fc_mean_count);
-    printf("\nLower FC mean, higher stddev, and outlier counts cause higher P-values.\n");
-    printf("Observed: FC mean = %0.5f  stddev = %0.5f  spread = %0.5f\n",
-	    observed_fc_mean, observed_fc_stddev, observed_fc_spread);
-    printf("FC mean count = %lu  FC >= %0.5f = %lu  P(FC >= %0.5f) = %0.5f\n",
-	    fc_mean_count, observed_fc_mean, fc_ge, observed_fc_mean,
-	    (double)fc_ge / fc_mean_count);
+	fc_ge = fc_ge_count(fc_list, fc_count, replicates,
+			    observed_fc_mean, &fc_mean_count);
+	printf("\nLower FC mean, higher stddev, and outlier counts cause higher P-values.\n");
+	printf("Observed: FC mean = %0.5f  stddev = %0.5f  spread = %0.5f\n",
+		observed_fc_mean, observed_fc_stddev, observed_fc_spread);
+	printf("FC mean count = %lu  FC >= %0.5f = %lu  P(FC >= %0.5f) = %0.5f\n\n",
+		fc_mean_count, observed_fc_mean, fc_ge, observed_fc_mean,
+		(double)fc_ge / fc_mean_count);
     }
 }
