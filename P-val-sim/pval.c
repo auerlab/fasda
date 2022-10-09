@@ -37,7 +37,7 @@ int     main(int argc,char *argv[])
 {
     unsigned long   c, c1, c2, replicates,
 		    less, more, equal, *counts,
-		    count1_mean, count2_mean, fc_count, samples, fc_ge,
+		    count1_mean, count2_mean, temp, fc_count, samples, fc_ge,
 		    half_fc_count;
     double  fc, observed_fc_mean, *fc_list, max_deviation, fc_sum,
 	    dist_fc_mean, fc_var_sum, observed_fc_stddev,
@@ -53,6 +53,14 @@ int     main(int argc,char *argv[])
     samples = replicates * 2;
     
     counts = malloc(samples * sizeof(*counts));
+    
+    // Some code below assumes count2_mean > count1_mean
+    if ( count1_mean > count2_mean )
+    {
+	temp = count1_mean;
+	count1_mean = count2_mean;
+	count2_mean = temp;
+    }
     
     /*
      *  Generate samples random counts with FC around count2 / count1
@@ -88,22 +96,10 @@ int     main(int argc,char *argv[])
     
     observed_fc_mean /= replicates;
     fc_var_sum = 0;
-    if ( observed_fc_mean < 1.0 )
+    for (c = 0; c < replicates; ++c)
     {
-	observed_fc_mean = 1.0 / observed_fc_mean;
-	for (c = 0; c < replicates; ++c)
-	{
-	    fc = counts[c] / (double)counts[c + replicates];
-	    fc_var_sum += (fc - observed_fc_mean) * (fc - observed_fc_mean);
-	}
-    }
-    else
-    {
-	for (c = 0; c < replicates; ++c)
-	{
-	    fc = (double)counts[c + replicates] / counts[c];
-	    fc_var_sum += (fc - observed_fc_mean) * (fc - observed_fc_mean);
-	}
+	fc = (double)counts[c + replicates] / counts[c];
+	fc_var_sum += (fc - observed_fc_mean) * (fc - observed_fc_mean);
     }
     observed_fc_stddev = sqrt(fc_var_sum / replicates);
     printf("Observed FC mean = %0.5f\n", observed_fc_mean);
