@@ -197,7 +197,7 @@ void    fc_mean_exact_p_val(double fc_list[], size_t fc_count,
 	printf("\nfc_mean_count > 2^64 for replicates > 10.\n");
 
     // Run 10 reps for down-sampled FC means to check stability
-    for (c = 0; c < (replicates > 5 ? 10 : 1); ++c)
+    for (c = 0; c < (replicates > 5 ? 5 : 1); ++c)
     {
 	fc_ge = fc_ge_count(fc_list, fc_count, replicates,
 			    observed_fc_mean, &fc_mean_count);

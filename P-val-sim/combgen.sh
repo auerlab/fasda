@@ -109,7 +109,8 @@ unsigned long   fc_ge$k(double fc_list[], unsigned long fc_count,
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = $increment, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0, increment = $increment, count = 0,
+		    fc_g1 = 0, fc_l1 = 0;
     double          fc_mean;
     
 EOM
@@ -147,6 +148,12 @@ EOM
     printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
     print_indent $c
     printf "        else if ( 1.0 / fc_mean >= observed_fc_mean ) ++fc_le;\n"
+
+    print_indent $c
+    printf "        if ( fc_mean > 1 ) ++fc_g1;\n"
+    print_indent $c
+    printf "        else if ( fc_mean < 1 ) ++fc_l1;\n"
+    
     print_indent $c
     printf "        ++count;\n"
     print_indent $c
@@ -154,8 +161,9 @@ EOM
     
     # Closing braces
     cat << EOM
-    printf("FC means > observed = %lu  FC means < 1/observed = %lu  Ratio = %f\n",
-	    fc_ge, fc_le, (double)fc_ge / fc_le);
+    printf("FC means > 1 = %-5lu         FC means < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FC means > observed = %-5lu  FC means < 1/observed = %-5lu\n",
+	    fc_ge, fc_le);
     *fc_mean_count = count;
     
     // FIXME: Is this correct?
