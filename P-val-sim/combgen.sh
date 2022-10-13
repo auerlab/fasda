@@ -104,7 +104,8 @@ gen_loop()
  */
 
 unsigned long   fc_ge$k(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, unsigned long *fc_mean_count)
+			double observed_fc_mean, double observed_fci_mean,
+			unsigned long *fc_mean_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
@@ -147,7 +148,7 @@ EOM
     print_indent $c
     printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
     print_indent $c
-    printf "        else if ( 1.0 / fc_mean >= observed_fc_mean ) ++fc_le;\n"
+    printf "        else if ( fc_mean <= observed_fci_mean ) ++fc_le;\n"
 
     print_indent $c
     printf "        if ( fc_mean > 1 ) ++fc_g1;\n"
@@ -161,9 +162,9 @@ EOM
     
     # Closing braces
     cat << EOM
-    printf("FC means > 1 = %-5lu         FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > observed = %-5lu  FC means < 1/observed = %-5lu\n",
-	    fc_ge, fc_le);
+    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
+	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
     *fc_mean_count = count;
     
     // FIXME: Is this correct?
@@ -198,12 +199,14 @@ cat << EOM
 
 unsigned long   fc_ge_count(double fc_list[], unsigned long fc_count,
 		      unsigned long replicates, double observed_fc_mean,
+		      double observed_fci_mean,
 		      unsigned long *fc_mean_count)
 
 {
     static unsigned long (*fc_ge_funcs[])(double fc_list[],
 				    unsigned long fc_count,
 				    double observed_fc_mean,
+				    double observed_fci_mean,
 				    unsigned long *fc_mean_count) =
     {
 EOM
@@ -218,6 +221,7 @@ cat << EOM
     
     srandom(time(NULL));
     return fc_ge_funcs[func_index](fc_list, fc_count,
-				   observed_fc_mean, fc_mean_count);
+				   observed_fc_mean, observed_fci_mean,
+				   fc_mean_count);
 }
 EOM
