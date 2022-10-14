@@ -59,7 +59,7 @@ int     main(int argc,char *argv[])
      *  Generate samples random counts with FC around count2 / count1
      *  These are the "observed" counts
      */
-    printf("\ncount1 = %lu +/- to up to %0.0f%%, count2 = %lu +/- up to %0.0f\n",
+    printf("\ncount1 = %lu +/- to up to %0.0f%%, count2 = %lu +/- up to %0.0f%%\n",
 	    count1_mean, max_deviation * count1_mean,
 	    count2_mean, max_deviation * count2_mean);
     puts("Cond1 Cond2 FC      1/FC");
@@ -87,6 +87,8 @@ int     main(int argc,char *argv[])
      */
     
     observed_fc = c2_sum / c1_sum;
+    if ( observed_fc < 1.0 )
+	observed_fc = 1.0 / observed_fc;
     printf("Observed: FC = %0.5f  1 / Observed FC = %0.5f\n",
 	    observed_fc, 1.0 / observed_fc);
     
