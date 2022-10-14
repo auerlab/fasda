@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "pval.h"
 
 
 /*
@@ -13,33 +14,41 @@
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge2(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge2(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 1, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1; c2 < fc_count; c2 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
      {
-         fc_mean = (fc_list[c1] + fc_list[c2]) / 2;
-         if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-         else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-         if ( fc_mean > 1 ) ++fc_g1;
-         else if ( fc_mean < 1 ) ++fc_l1;
+         fc = (double)(
+                  count_pairs[c1].c2_count +
+                  count_pairs[c2].c2_count
+              )
+              / 
+              (
+                  count_pairs[c1].c1_count +
+                  count_pairs[c2].c1_count
+              );
+         if ( fc >= observed_fc ) ++fc_ge;
+         else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+         if ( fc > 1 ) ++fc_g1;
+         else if ( fc < 1 ) ++fc_l1;
          ++count;
      }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -51,34 +60,44 @@ unsigned long   fc_ge2(double fc_list[], unsigned long fc_count,
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge3(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge3(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 1, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2, c3;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1; c2 < fc_count; c2 += increment)
-      for (c3 = c2 + 1; c3 < fc_count; c3 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
       {
-          fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3]) / 3;
-          if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-          else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-          if ( fc_mean > 1 ) ++fc_g1;
-          else if ( fc_mean < 1 ) ++fc_l1;
+          fc = (double)(
+                   count_pairs[c1].c2_count +
+                   count_pairs[c2].c2_count +
+                   count_pairs[c3].c2_count
+               )
+               / 
+               (
+                   count_pairs[c1].c1_count +
+                   count_pairs[c2].c1_count +
+                  count_pairs[c3].c1_count
+               );
+          if ( fc >= observed_fc ) ++fc_ge;
+          else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+          if ( fc > 1 ) ++fc_g1;
+          else if ( fc < 1 ) ++fc_l1;
           ++count;
       }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -90,35 +109,47 @@ unsigned long   fc_ge3(double fc_list[], unsigned long fc_count,
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge4(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge4(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 1, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2, c3, c4;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1; c2 < fc_count; c2 += increment)
-      for (c3 = c2 + 1; c3 < fc_count; c3 += increment)
-       for (c4 = c3 + 1; c4 < fc_count; c4 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
+       for (c4 = c3 + 1; c4 < pair_count; c4 += increment)
        {
-           fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3] + fc_list[c4]) / 4;
-           if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-           else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-           if ( fc_mean > 1 ) ++fc_g1;
-           else if ( fc_mean < 1 ) ++fc_l1;
+           fc = (double)(
+                    count_pairs[c1].c2_count +
+                    count_pairs[c2].c2_count +
+                    count_pairs[c3].c2_count +
+                    count_pairs[c4].c2_count
+                )
+                / 
+                (
+                    count_pairs[c1].c1_count +
+                    count_pairs[c2].c1_count +
+                    count_pairs[c3].c1_count +
+                  count_pairs[c4].c1_count
+                );
+           if ( fc >= observed_fc ) ++fc_ge;
+           else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+           if ( fc > 1 ) ++fc_g1;
+           else if ( fc < 1 ) ++fc_l1;
            ++count;
        }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -130,36 +161,50 @@ unsigned long   fc_ge4(double fc_list[], unsigned long fc_count,
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge5(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge5(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 1, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2, c3, c4, c5;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1; c2 < fc_count; c2 += increment)
-      for (c3 = c2 + 1; c3 < fc_count; c3 += increment)
-       for (c4 = c3 + 1; c4 < fc_count; c4 += increment)
-        for (c5 = c4 + 1; c5 < fc_count; c5 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
+       for (c4 = c3 + 1; c4 < pair_count; c4 += increment)
+        for (c5 = c4 + 1; c5 < pair_count; c5 += increment)
         {
-            fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3] + fc_list[c4] + fc_list[c5]) / 5;
-            if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-            else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-            if ( fc_mean > 1 ) ++fc_g1;
-            else if ( fc_mean < 1 ) ++fc_l1;
+            fc = (double)(
+                     count_pairs[c1].c2_count +
+                     count_pairs[c2].c2_count +
+                     count_pairs[c3].c2_count +
+                     count_pairs[c4].c2_count +
+                     count_pairs[c5].c2_count
+                 )
+                 / 
+                 (
+                     count_pairs[c1].c1_count +
+                     count_pairs[c2].c1_count +
+                     count_pairs[c3].c1_count +
+                     count_pairs[c4].c1_count +
+                  count_pairs[c5].c1_count
+                 );
+            if ( fc >= observed_fc ) ++fc_ge;
+            else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+            if ( fc > 1 ) ++fc_g1;
+            else if ( fc < 1 ) ++fc_l1;
             ++count;
         }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -171,37 +216,53 @@ unsigned long   fc_ge5(double fc_list[], unsigned long fc_count,
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge6(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge6(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 2, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < fc_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < fc_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < fc_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < fc_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < fc_count; c6 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
          {
-             fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3] + fc_list[c4] + fc_list[c5] + fc_list[c6]) / 6;
-             if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-             else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-             if ( fc_mean > 1 ) ++fc_g1;
-             else if ( fc_mean < 1 ) ++fc_l1;
+             fc = (double)(
+                      count_pairs[c1].c2_count +
+                      count_pairs[c2].c2_count +
+                      count_pairs[c3].c2_count +
+                      count_pairs[c4].c2_count +
+                      count_pairs[c5].c2_count +
+                      count_pairs[c6].c2_count
+                  )
+                  / 
+                  (
+                      count_pairs[c1].c1_count +
+                      count_pairs[c2].c1_count +
+                      count_pairs[c3].c1_count +
+                      count_pairs[c4].c1_count +
+                      count_pairs[c5].c1_count +
+                  count_pairs[c6].c1_count
+                  );
+             if ( fc >= observed_fc ) ++fc_ge;
+             else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+             if ( fc > 1 ) ++fc_g1;
+             else if ( fc < 1 ) ++fc_l1;
              ++count;
          }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -213,38 +274,56 @@ unsigned long   fc_ge6(double fc_list[], unsigned long fc_count,
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge7(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge7(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 4, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < fc_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < fc_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < fc_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < fc_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < fc_count; c6 += increment)
-          for (c7 = c6 + 1 + random() % increment; c7 < fc_count; c7 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+          for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
           {
-              fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3] + fc_list[c4] + fc_list[c5] + fc_list[c6] + fc_list[c7]) / 7;
-              if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-              else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-              if ( fc_mean > 1 ) ++fc_g1;
-              else if ( fc_mean < 1 ) ++fc_l1;
+              fc = (double)(
+                       count_pairs[c1].c2_count +
+                       count_pairs[c2].c2_count +
+                       count_pairs[c3].c2_count +
+                       count_pairs[c4].c2_count +
+                       count_pairs[c5].c2_count +
+                       count_pairs[c6].c2_count +
+                       count_pairs[c7].c2_count
+                   )
+                   / 
+                   (
+                       count_pairs[c1].c1_count +
+                       count_pairs[c2].c1_count +
+                       count_pairs[c3].c1_count +
+                       count_pairs[c4].c1_count +
+                       count_pairs[c5].c1_count +
+                       count_pairs[c6].c1_count +
+                  count_pairs[c7].c1_count
+                   );
+              if ( fc >= observed_fc ) ++fc_ge;
+              else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+              if ( fc > 1 ) ++fc_g1;
+              else if ( fc < 1 ) ++fc_l1;
               ++count;
           }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -256,39 +335,59 @@ unsigned long   fc_ge7(double fc_list[], unsigned long fc_count,
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge8(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge8(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 6, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < fc_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < fc_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < fc_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < fc_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < fc_count; c6 += increment)
-          for (c7 = c6 + 1 + random() % increment; c7 < fc_count; c7 += increment)
-           for (c8 = c7 + 1 + random() % increment; c8 < fc_count; c8 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+          for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
+           for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
            {
-               fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3] + fc_list[c4] + fc_list[c5] + fc_list[c6] + fc_list[c7] + fc_list[c8]) / 8;
-               if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-               else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-               if ( fc_mean > 1 ) ++fc_g1;
-               else if ( fc_mean < 1 ) ++fc_l1;
+               fc = (double)(
+                        count_pairs[c1].c2_count +
+                        count_pairs[c2].c2_count +
+                        count_pairs[c3].c2_count +
+                        count_pairs[c4].c2_count +
+                        count_pairs[c5].c2_count +
+                        count_pairs[c6].c2_count +
+                        count_pairs[c7].c2_count +
+                        count_pairs[c8].c2_count
+                    )
+                    / 
+                    (
+                        count_pairs[c1].c1_count +
+                        count_pairs[c2].c1_count +
+                        count_pairs[c3].c1_count +
+                        count_pairs[c4].c1_count +
+                        count_pairs[c5].c1_count +
+                        count_pairs[c6].c1_count +
+                        count_pairs[c7].c1_count +
+                  count_pairs[c8].c1_count
+                    );
+               if ( fc >= observed_fc ) ++fc_ge;
+               else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+               if ( fc > 1 ) ++fc_g1;
+               else if ( fc < 1 ) ++fc_l1;
                ++count;
            }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -300,40 +399,62 @@ unsigned long   fc_ge8(double fc_list[], unsigned long fc_count,
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge9(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge9(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 10, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < fc_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < fc_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < fc_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < fc_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < fc_count; c6 += increment)
-          for (c7 = c6 + 1 + random() % increment; c7 < fc_count; c7 += increment)
-           for (c8 = c7 + 1 + random() % increment; c8 < fc_count; c8 += increment)
-            for (c9 = c8 + 1 + random() % increment; c9 < fc_count; c9 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+          for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
+           for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
+            for (c9 = c8 + 1 + random() % increment; c9 < pair_count; c9 += increment)
             {
-                fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3] + fc_list[c4] + fc_list[c5] + fc_list[c6] + fc_list[c7] + fc_list[c8] + fc_list[c9]) / 9;
-                if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-                else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-                if ( fc_mean > 1 ) ++fc_g1;
-                else if ( fc_mean < 1 ) ++fc_l1;
+                fc = (double)(
+                         count_pairs[c1].c2_count +
+                         count_pairs[c2].c2_count +
+                         count_pairs[c3].c2_count +
+                         count_pairs[c4].c2_count +
+                         count_pairs[c5].c2_count +
+                         count_pairs[c6].c2_count +
+                         count_pairs[c7].c2_count +
+                         count_pairs[c8].c2_count +
+                         count_pairs[c9].c2_count
+                     )
+                     / 
+                     (
+                         count_pairs[c1].c1_count +
+                         count_pairs[c2].c1_count +
+                         count_pairs[c3].c1_count +
+                         count_pairs[c4].c1_count +
+                         count_pairs[c5].c1_count +
+                         count_pairs[c6].c1_count +
+                         count_pairs[c7].c1_count +
+                         count_pairs[c8].c1_count +
+                  count_pairs[c9].c1_count
+                     );
+                if ( fc >= observed_fc ) ++fc_ge;
+                else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+                if ( fc > 1 ) ++fc_g1;
+                else if ( fc < 1 ) ++fc_l1;
                 ++count;
             }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -345,58 +466,80 @@ unsigned long   fc_ge9(double fc_list[], unsigned long fc_count,
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge10(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge10(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = 15, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9, c10;
 
-    for (c1 = 0; c1 < fc_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < fc_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < fc_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < fc_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < fc_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < fc_count; c6 += increment)
-          for (c7 = c6 + 1 + random() % increment; c7 < fc_count; c7 += increment)
-           for (c8 = c7 + 1 + random() % increment; c8 < fc_count; c8 += increment)
-            for (c9 = c8 + 1 + random() % increment; c9 < fc_count; c9 += increment)
-             for (c10 = c9 + 1 + random() % increment; c10 < fc_count; c10 += increment)
+    for (c1 = 0; c1 < pair_count; c1 += increment)
+     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+          for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
+           for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
+            for (c9 = c8 + 1 + random() % increment; c9 < pair_count; c9 += increment)
+             for (c10 = c9 + 1 + random() % increment; c10 < pair_count; c10 += increment)
              {
-                 fc_mean = (fc_list[c1] + fc_list[c2] + fc_list[c3] + fc_list[c4] + fc_list[c5] + fc_list[c6] + fc_list[c7] + fc_list[c8] + fc_list[c9] + fc_list[c10]) / 10;
-                 if ( fc_mean >= observed_fc_mean ) ++fc_ge;
-                 else if ( fc_mean <= observed_fci_mean ) ++fc_le;
-                 if ( fc_mean > 1 ) ++fc_g1;
-                 else if ( fc_mean < 1 ) ++fc_l1;
+                 fc = (double)(
+                          count_pairs[c1].c2_count +
+                          count_pairs[c2].c2_count +
+                          count_pairs[c3].c2_count +
+                          count_pairs[c4].c2_count +
+                          count_pairs[c5].c2_count +
+                          count_pairs[c6].c2_count +
+                          count_pairs[c7].c2_count +
+                          count_pairs[c8].c2_count +
+                          count_pairs[c9].c2_count +
+                          count_pairs[c10].c2_count
+                      )
+                      / 
+                      (
+                          count_pairs[c1].c1_count +
+                          count_pairs[c2].c1_count +
+                          count_pairs[c3].c1_count +
+                          count_pairs[c4].c1_count +
+                          count_pairs[c5].c1_count +
+                          count_pairs[c6].c1_count +
+                          count_pairs[c7].c1_count +
+                          count_pairs[c8].c1_count +
+                          count_pairs[c9].c1_count +
+                  count_pairs[c10].c1_count
+                      );
+                 if ( fc >= observed_fc ) ++fc_ge;
+                 else if ( fc <= 1.0 / observed_fc ) ++fc_le;
+                 if ( fc > 1 ) ++fc_g1;
+                 else if ( fc < 1 ) ++fc_l1;
                  ++count;
              }
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
 
-unsigned long   fc_ge_count(double fc_list[], unsigned long fc_count,
-		      unsigned long replicates, double observed_fc_mean,
-		      double observed_fci_mean,
-		      unsigned long *fc_mean_count)
+unsigned long   fc_ge_count(count_pair_t count_pairs[], unsigned long pair_count,
+		      unsigned long replicates, double observed_fc,
+		      unsigned long *fc_count)
 
 {
-    static unsigned long (*fc_ge_funcs[])(double fc_list[],
-				    unsigned long fc_count,
-				    double observed_fc_mean,
-				    double observed_fci_mean,
-				    unsigned long *fc_mean_count) =
+    static unsigned long (*fc_ge_funcs[])(count_pair_t count_pairs[],
+				    unsigned long pair_count,
+				    double observed_fc,
+				    unsigned long *fc_count) =
     {
         fc_ge2,
         fc_ge3,
@@ -411,7 +554,6 @@ unsigned long   fc_ge_count(double fc_list[], unsigned long fc_count,
     unsigned long  func_index = replicates - 2;
     
     srandom(time(NULL));
-    return fc_ge_funcs[func_index](fc_list, fc_count,
-				   observed_fc_mean, observed_fci_mean,
-				   fc_mean_count);
+    return fc_ge_funcs[func_index](count_pairs, pair_count,
+				   observed_fc, fc_count);
 }

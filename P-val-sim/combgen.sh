@@ -103,16 +103,16 @@ gen_loop()
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge$k(double fc_list[], unsigned long fc_count,
-			double observed_fc_mean, double observed_fci_mean,
-			unsigned long *fc_mean_count)
+unsigned long   fc_ge$k(count_pair_t count_pairs[], unsigned long pair_count,
+			double observed_fc,
+			unsigned long *fc_count)
 
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0, increment = $increment, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
-    double          fc_mean;
+    double          fc;
     
 EOM
     # Variable defs
@@ -123,13 +123,13 @@ EOM
     printf "c%d;\n\n" $k
     
     # Nested loop
-    printf "    for (c1 = 0; c1 < fc_count; c1 += increment)\n"
+    printf "    for (c1 = 0; c1 < pair_count; c1 += increment)\n"
     for c in $(seq 2 $k); do
 	print_indent $c
 	if [ $increment -gt 1 ]; then
-	    printf "    for (c$c = c$((c - 1)) + 1 + random() %% increment; c$c < fc_count; c$c += increment)\n"
+	    printf "    for (c$c = c$((c - 1)) + 1 + random() %% increment; c$c < pair_count; c$c += increment)\n"
 	else
-	    printf "    for (c$c = c$((c - 1)) + 1; c$c < fc_count; c$c += increment)\n"
+	    printf "    for (c$c = c$((c - 1)) + 1; c$c < pair_count; c$c += increment)\n"
 	fi
     done
     
@@ -137,23 +137,38 @@ EOM
     print_indent $c
     printf "    {\n"
     print_indent $c
-    printf "        fc_mean = ("
+    printf "        fc = (double)(\n"
     for c2 in $(seq 1 $((k - 1))); do
-	printf "fc_list[c$c2] + "
+	print_indent $c
+	printf "                 count_pairs[c$c2].c2_count +\n"
     done
-    printf "fc_list[c$k]) / $k;\n"
-    # P-value is prob of all events of equal or lesser likelihood
-    # FIXME: What is equally likely to fc_mean >= observed_fc_mean?
-    # fc_mean <= 1.0 / observed_fc_mean is about half as likely
     print_indent $c
-    printf "        if ( fc_mean >= observed_fc_mean ) ++fc_ge;\n"
+    printf "                 count_pairs[c$k].c2_count\n"
     print_indent $c
-    printf "        else if ( fc_mean <= observed_fci_mean ) ++fc_le;\n"
+    printf "             )\n"
+    print_indent $c
+    printf "             / \n"
+    print_indent $c
+    printf "             (\n"
+    for c2 in $(seq 1 $((k - 1))); do
+	print_indent $c
+	printf "                 count_pairs[c$c2].c1_count +\n"
+    done
+    printf "                  count_pairs[c$k].c1_count\n"
+    print_indent $c
+    printf "             );\n"
+
+    #print_indent $c
+    #printf '        printf("FC = %%0.5f\\n", fc);\n'
+    print_indent $c
+    printf "        if ( fc >= observed_fc ) ++fc_ge;\n"
+    print_indent $c
+    printf "        else if ( fc <= 1.0 / observed_fc ) ++fc_le;\n"
 
     print_indent $c
-    printf "        if ( fc_mean > 1 ) ++fc_g1;\n"
+    printf "        if ( fc > 1 ) ++fc_g1;\n"
     print_indent $c
-    printf "        else if ( fc_mean < 1 ) ++fc_l1;\n"
+    printf "        else if ( fc < 1 ) ++fc_l1;\n"
     
     print_indent $c
     printf "        ++count;\n"
@@ -162,10 +177,10 @@ EOM
     
     # Closing braces
     cat << EOM
-    printf("FC means > 1 = %-5lu           FC means < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FC means > %0.5f = %-5lu     FC means < %0.5f = %-5lu\n",
-	    observed_fc_mean, fc_ge, observed_fci_mean, fc_le);
-    *fc_mean_count = count;
+    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    *fc_count = count;
     
     // FIXME: Is this correct?
     return fc_ge + fc_le;
@@ -186,6 +201,7 @@ cat << EOM
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "pval.h"
 
 EOM
 # FC-count choose 11 overflows a 64-bit integer
@@ -197,17 +213,15 @@ done
 cat << EOM
 
 
-unsigned long   fc_ge_count(double fc_list[], unsigned long fc_count,
-		      unsigned long replicates, double observed_fc_mean,
-		      double observed_fci_mean,
-		      unsigned long *fc_mean_count)
+unsigned long   fc_ge_count(count_pair_t count_pairs[], unsigned long pair_count,
+		      unsigned long replicates, double observed_fc,
+		      unsigned long *fc_count)
 
 {
-    static unsigned long (*fc_ge_funcs[])(double fc_list[],
-				    unsigned long fc_count,
-				    double observed_fc_mean,
-				    double observed_fci_mean,
-				    unsigned long *fc_mean_count) =
+    static unsigned long (*fc_ge_funcs[])(count_pair_t count_pairs[],
+				    unsigned long pair_count,
+				    double observed_fc,
+				    unsigned long *fc_count) =
     {
 EOM
 
@@ -220,8 +234,7 @@ cat << EOM
     unsigned long  func_index = replicates - 2;
     
     srandom(time(NULL));
-    return fc_ge_funcs[func_index](fc_list, fc_count,
-				   observed_fc_mean, observed_fci_mean,
-				   fc_mean_count);
+    return fc_ge_funcs[func_index](count_pairs, pair_count,
+				   observed_fc, fc_count);
 }
 EOM
