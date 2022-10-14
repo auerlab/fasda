@@ -3,7 +3,7 @@
 run_1000()
 {
     for c in $(seq 1 1000); do
-	./pval 100 100 .3 3 | fgrep 'FC count' \
+	./pval 200 200 .3 3 | fgrep 'FC count' \
 	    | awk '$14 <= 0.05 { print $14 }'
     done
 }

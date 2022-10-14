@@ -31,7 +31,7 @@ int     main(int argc,char *argv[])
 {
     unsigned long   c, c1, c2, replicates,
 		    less, more, equal, *counts,
-		    count1_mean, count2_mean, temp, pair_count, samples, fc_ge,
+		    count1_mean, count2_mean, temp, pair_count, samples, extreme_fcs,
 		    half_pair_count;
     double  c1_sum, c2_sum, max_deviation, observed_fc;
     count_pair_t    *count_pairs;
@@ -87,6 +87,8 @@ int     main(int argc,char *argv[])
      */
     
     observed_fc = c2_sum / c1_sum;
+    printf("Observed: FC = %0.5f  1 / Observed FC = %0.5f\n",
+	    observed_fc, 1.0 / observed_fc);
     
     /*
      *  Compute fold-change for every possible pairing.
@@ -107,7 +109,7 @@ int     main(int argc,char *argv[])
      *  so that the distribution of FCs covers both cases.
      */
     
-    c = fc_ge = less = more = equal = 0;
+    c = extreme_fcs = less = more = equal = 0;
     for (c1 = 0; c1 < replicates * 2; ++c1)
     {
 	for (c2 = c1 + 1; c2 < replicates * 2; ++c2)
@@ -146,7 +148,7 @@ void    fc_mean_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 			    size_t replicates, double observed_fc)
 
 {
-    unsigned long   fc_count, fc_ge, c, actual_fc_count;
+    unsigned long   fc_count, extreme_fcs, c, actual_fc_count;
 
     if ( replicates <= 10 )
     {
@@ -157,21 +159,26 @@ void    fc_mean_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     else
 	printf("\nfc_mean_count > 2^64 for replicates > 10.\n");
 
-    printf("Observed FC = %0.5f  1 / Observed FC = %0.5f\n",
-	    observed_fc, 1.0 / observed_fc);
     printf("\nP-value: Likelihood of FC from %lu pairs >= %0.5f or <= %0.5f\n",
 	    replicates, observed_fc, 1.0 / observed_fc);
 
     // Run 10 reps for down-sampled FCs to check stability
     for (c = 0; c < (replicates > 5 ? 5 : 1); ++c)
     {
-	fc_ge = fc_ge_count(count_pairs, pair_count, replicates,
+	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
 			    observed_fc, &actual_fc_count);
-	printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
-	printf("Observed: fc = %0.5f  Observed 1/fc = %0.5f\n",
-		observed_fc, 1.0 / observed_fc);
-	printf("FC count = %lu  FC >= %0.5f = %lu  P(FC >= %0.5f) = %0.5f\n\n",
-		fc_count, observed_fc, fc_ge, observed_fc,
-		(double)fc_ge / fc_count);
+	
+	// Sanity check
+	if ( actual_fc_count != fc_count )
+	{
+	    fprintf(stderr, "FC counf mismatch: %lu != %lu\n",
+		    actual_fc_count, fc_count);
+	    exit(EX_SOFTWARE);
+	}
+	
+	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
+	printf("FC count = %lu  P-value = %lu / %lu = %0.5f\n\n",
+		actual_fc_count, extreme_fcs, fc_count,
+		(double)extreme_fcs / fc_count);
     }
 }

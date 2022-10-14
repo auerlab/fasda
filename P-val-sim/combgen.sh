@@ -103,7 +103,7 @@ gen_loop()
  *  k lists for any n and k.
  */
 
-unsigned long   fc_ge$k(count_pair_t count_pairs[], unsigned long pair_count,
+unsigned long   extreme_fcs$k(count_pair_t count_pairs[], unsigned long pair_count,
 			double observed_fc,
 			unsigned long *fc_count)
 
@@ -177,7 +177,7 @@ EOM
     
     # Closing braces
     cat << EOM
-    printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
@@ -213,12 +213,12 @@ done
 cat << EOM
 
 
-unsigned long   fc_ge_count(count_pair_t count_pairs[], unsigned long pair_count,
+unsigned long   extreme_fcs_count(count_pair_t count_pairs[], unsigned long pair_count,
 		      unsigned long replicates, double observed_fc,
 		      unsigned long *fc_count)
 
 {
-    static unsigned long (*fc_ge_funcs[])(count_pair_t count_pairs[],
+    static unsigned long (*extreme_fcs_funcs[])(count_pair_t count_pairs[],
 				    unsigned long pair_count,
 				    double observed_fc,
 				    unsigned long *fc_count) =
@@ -226,15 +226,15 @@ unsigned long   fc_ge_count(count_pair_t count_pairs[], unsigned long pair_count
 EOM
 
 for c in $(seq 2 $((max_reps - 1))); do
-    printf "        fc_ge$c,\n"
+    printf "        extreme_fcs$c,\n"
 done
-printf "        fc_ge$max_reps\n    };\n"
+printf "        extreme_fcs$max_reps\n    };\n"
 
 cat << EOM
     unsigned long  func_index = replicates - 2;
     
     srandom(time(NULL));
-    return fc_ge_funcs[func_index](count_pairs, pair_count,
+    return extreme_fcs_funcs[func_index](count_pairs, pair_count,
 				   observed_fc, fc_count);
 }
 EOM
