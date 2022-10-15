@@ -61,8 +61,8 @@ int     main(int argc,char *argv[])
     {
 	gettimeofday(&time, NULL);
 	srandom(time.tv_usec);
-	if ( i % 100 == 0 )
-	    fprintf(stderr, "%lu\r", i);
+	//if ( i % 100 == 0 )
+	//    fprintf(stderr, "%lu\r", i);
 	
 	puts("Cond1 Cond2 FC      1/FC");
     
