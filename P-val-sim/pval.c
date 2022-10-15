@@ -137,7 +137,7 @@ int     main(int argc,char *argv[])
 		    count_pairs[c].c1_count, count_pairs[c].c2_count,
 		    (double)count_pairs[c].c1_count / count_pairs[c].c2_count);
 	
-	fc_mean_exact_p_val(count_pairs, pair_count, replicates, observed_fc);
+	fc_exact_p_val(count_pairs, pair_count, replicates, observed_fc);
     }
     return EX_OK;
 }
@@ -148,7 +148,7 @@ int     main(int argc,char *argv[])
  *  Count the number of means >= observed mean
  */
 
-void    fc_mean_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
+void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 			    size_t replicates, double observed_fc)
 
 {
@@ -161,7 +161,7 @@ void    fc_mean_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	    pair_count, replicates, fc_count, replicates);
     }
     else
-	printf("\nfc_mean_count > 2^64 for replicates > 10.\n");
+	printf("\nfc_count > 2^64 for replicates > 10.\n");
 
     printf("\nP-value: Likelihood of FC from %lu pairs >= %0.5f or <= %0.5f\n",
 	    replicates, observed_fc, 1.0 / observed_fc);

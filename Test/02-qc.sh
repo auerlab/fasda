@@ -13,6 +13,6 @@ for dir in Raw-renamed 01-trim; do
 	    fastqc --outdir $report_dir $file
 	fi
     done
-    multiqc --outdir $report_dir $report_dir
-    firefox $report_dir/multiqc_report.html || true
+    #multiqc --outdir $report_dir $report_dir
+    #firefox $report_dir/multiqc_report.html || true
 done
