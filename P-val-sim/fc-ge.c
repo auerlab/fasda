@@ -168,17 +168,17 @@ unsigned long   extreme_fcs5(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 1, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 2, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     
     unsigned long  c1, c2, c3, c4, c5;
 
     for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
-       for (c4 = c3 + 1; c4 < pair_count; c4 += increment)
-        for (c5 = c4 + 1; c5 < pair_count; c5 += increment)
+     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
         {
             fc = (double)(
                      count_pairs[c1].c2_count +
@@ -223,7 +223,7 @@ unsigned long   extreme_fcs6(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 2, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 4, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     
@@ -281,7 +281,7 @@ unsigned long   extreme_fcs7(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 4, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 6, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     
@@ -342,7 +342,7 @@ unsigned long   extreme_fcs8(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 6, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 8, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     
@@ -406,7 +406,7 @@ unsigned long   extreme_fcs9(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 10, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 11, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     

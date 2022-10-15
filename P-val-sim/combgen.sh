@@ -75,17 +75,20 @@ gen_loop()
     # each FC can be computed in a fraction of a second.  Incements were
     # determined by trial and error.
     case $k in
-    6)
+    5)
 	increment=2
 	;;
-    7)
+    6)
 	increment=4
 	;;
-    8)
+    7)
 	increment=6
 	;;
+    8)
+	increment=8
+	;;
     9)
-	increment=10
+	increment=11
 	;;
     10)
 	increment=15
