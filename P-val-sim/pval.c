@@ -90,7 +90,7 @@ int     main(int argc,char *argv[])
 	observed_fc = c2_sum / c1_sum;
 	if ( observed_fc < 1.0 )
 	    observed_fc = 1.0 / observed_fc;
-	printf("Observed: FC = %0.5f  1 / Observed FC = %0.5f\n",
+	printf("Observed: FC = %0.3f  1 / Observed FC = %0.3f\n",
 		observed_fc, 1.0 / observed_fc);
 	
 	/*
@@ -133,7 +133,7 @@ int     main(int argc,char *argv[])
 	}
 	
 	for (c = 0; c < pair_count; ++c)
-	    printf("%2lu %3lu, %3lu   FC = %0.5f\n", c,
+	    printf("%2lu %3lu, %3lu   FC = %0.3f\n", c,
 		    count_pairs[c].c1_count, count_pairs[c].c2_count,
 		    (double)count_pairs[c].c1_count / count_pairs[c].c2_count);
 	
@@ -163,13 +163,14 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     else
 	printf("\nfc_count > 2^64 for replicates > 10.\n");
 
-    printf("\nP-value: Likelihood of FC from %lu pairs >= %0.5f or <= %0.5f\n",
+    printf("\nP-value: Likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n",
 	    replicates, observed_fc, 1.0 / observed_fc);
 
     // Run 10 reps with the same fold-changes for down-sampled FCs
     // to check stability
-    for (c = 0; c < (replicates > 5 ? 1 : 1); ++c)
+    for (c = 0; c < (replicates >= 5 ? 10 : 1); ++c)
     {
+	printf("%lu %lu\n", c, replicates);
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
 			    observed_fc, &actual_fc_count);
 	
@@ -184,7 +185,7 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	*/
 	
 	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
-	printf("FC count = %lu  P-value = %lu / %lu = %0.5f\n\n",
+	printf("FC count = %lu  P-value = %lu / %lu = %0.3f\n\n",
 		actual_fc_count, extreme_fcs, actual_fc_count,
 		(double)extreme_fcs / actual_fc_count);
     }

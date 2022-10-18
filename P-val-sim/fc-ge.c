@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include "pval.h"
 
 
@@ -46,7 +45,7 @@ unsigned long   extreme_fcs2(count_pair_t count_pairs[], unsigned long pair_coun
          ++count;
      }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -95,7 +94,7 @@ unsigned long   extreme_fcs3(count_pair_t count_pairs[], unsigned long pair_coun
           ++count;
       }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -147,7 +146,7 @@ unsigned long   extreme_fcs4(count_pair_t count_pairs[], unsigned long pair_coun
            ++count;
        }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -202,7 +201,7 @@ unsigned long   extreme_fcs5(count_pair_t count_pairs[], unsigned long pair_coun
             ++count;
         }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -260,7 +259,7 @@ unsigned long   extreme_fcs6(count_pair_t count_pairs[], unsigned long pair_coun
              ++count;
          }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -281,7 +280,7 @@ unsigned long   extreme_fcs7(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 6, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 7, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     
@@ -321,7 +320,7 @@ unsigned long   extreme_fcs7(count_pair_t count_pairs[], unsigned long pair_coun
               ++count;
           }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -342,7 +341,7 @@ unsigned long   extreme_fcs8(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 8, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 11, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     
@@ -385,7 +384,7 @@ unsigned long   extreme_fcs8(count_pair_t count_pairs[], unsigned long pair_coun
                ++count;
            }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -406,7 +405,7 @@ unsigned long   extreme_fcs9(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 11, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 16, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     
@@ -452,7 +451,7 @@ unsigned long   extreme_fcs9(count_pair_t count_pairs[], unsigned long pair_coun
                 ++count;
             }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -473,7 +472,7 @@ unsigned long   extreme_fcs10(count_pair_t count_pairs[], unsigned long pair_cou
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 15, count = 0,
+    unsigned long   fc_ge = 0, fc_le = 0, increment = 21, count = 0,
 		    fc_g1 = 0, fc_l1 = 0;
     double          fc;
     
@@ -522,7 +521,7 @@ unsigned long   extreme_fcs10(count_pair_t count_pairs[], unsigned long pair_cou
                  ++count;
              }
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -553,7 +552,6 @@ unsigned long   extreme_fcs_count(count_pair_t count_pairs[], unsigned long pair
     };
     unsigned long  func_index = replicates - 2;
     
-    srandom(time(NULL));
     return extreme_fcs_funcs[func_index](count_pairs, pair_count,
 				   observed_fc, fc_count);
 }

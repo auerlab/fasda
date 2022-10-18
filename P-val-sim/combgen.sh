@@ -72,26 +72,26 @@ gen_loop()
     local k=$1
     
     # Downsample set of all possible means for replicates > 5 so that
-    # each FC can be computed in a fraction of a second.  Incements were
-    # determined by trial and error.
+    # 10 P-values can be computed in under 0.2 seconds.  Increments were
+    # determined by trial and error with ./pval 100 120 .3 N 1
     case $k in
     5)
-	increment=2
+	increment=2 # 2: p-values mostly stable to 2 decimal places
 	;;
     6)
-	increment=4
+	increment=4 # 4: p-values mostly stable to 2 decimal places
 	;;
     7)
-	increment=6
+	increment=7 # 7: p-values mostly stable to 2 decimal places
 	;;
     8)
-	increment=8
+	increment=11 # 11: p-values mostly stable to 2 decimal places
 	;;
     9)
-	increment=11
+	increment=16 # 16: p-values not stable to 2 decimal places
 	;;
     10)
-	increment=15
+	increment=21 # 21: p-values not stable to 2 decimal places
 	;;
     *)
 	increment=1
@@ -162,7 +162,7 @@ EOM
     printf "             );\n"
 
     #print_indent $c
-    #printf '        printf("FC = %%0.5f\\n", fc);\n'
+    #printf '        printf("FC = %%0.3f\\n", fc);\n'
     print_indent $c
     printf "        if ( fc >= observed_fc ) ++fc_ge;\n"
     print_indent $c
@@ -181,7 +181,7 @@ EOM
     # Closing braces
     cat << EOM
     // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
-    printf("FCs > %0.5f = %-5lu     FCs < %0.5f = %-5lu\n",
+    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
@@ -203,7 +203,6 @@ cat << EOM
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include "pval.h"
 
 EOM
@@ -236,7 +235,6 @@ printf "        extreme_fcs$max_reps\n    };\n"
 cat << EOM
     unsigned long  func_index = replicates - 2;
     
-    srandom(time(NULL));
     return extreme_fcs_funcs[func_index](count_pairs, pair_count,
 				   observed_fc, fc_count);
 }
