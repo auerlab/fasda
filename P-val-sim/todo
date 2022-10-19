@@ -1,5 +1,1 @@
-
-Recompute fold-changes as (c2 + c2 + c2) / (c1 + c1 + c1)
-
-Sanity check: Run large number of simulations and verify that
-P < .05 happens < 5% of the time
+Compare near-exact and Mann-Whitney P-values
