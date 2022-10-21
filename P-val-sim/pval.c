@@ -18,7 +18,6 @@
 #include <sys/time.h>
 #include "pval.h"
 
-
 void    usage(char *argv[])
 
 {
@@ -31,11 +30,9 @@ void    usage(char *argv[])
 int     main(int argc,char *argv[])
 
 {
-    unsigned long   c, c1, c2, replicates, less, more, equal,
-		    count1_mean, count2_mean, pair_count, samples,
-		    extreme_fcs, half_pair_count, iterations, i;
-    double  c1_sum, c2_sum, max_deviation, observed_fc, *counts, fc;
-    count_pair_t    *count_pairs;
+    unsigned long   i, c, replicates, iterations,
+		    count1_mean, count2_mean;
+    double          max_deviation, *counts1, *counts2;
     struct timeval  time;
 
     if ( argc != 6 )
@@ -47,8 +44,8 @@ int     main(int argc,char *argv[])
     replicates = atoi(argv[4]);
     iterations = atoi(argv[5]);
     
-    samples = replicates * 2;
-    counts = malloc(samples * sizeof(*counts));
+    counts1 = malloc(replicates * sizeof(*counts1));
+    counts2 = malloc(replicates * sizeof(*counts2));
     
     /*
      *  Generate samples random counts with FC around count2 / count1
@@ -62,79 +59,26 @@ int     main(int argc,char *argv[])
     {
 	gettimeofday(&time, NULL);
 	srandom(time.tv_usec);
+	//if ( i % 100 == 0 )
+	//    fprintf(stderr, "%lu\r", i);
+	
+	puts("Cond1 Cond2 FC      1/FC");
     
-	// FC = sigma(c2) / sigma(c1), not mean of FCs for each condition
-	puts("Cond1 Cond2     FC   1/FC");
-	c1_sum = c2_sum = 0.0;
+	// mean FC = sigma(c2) / sigma(c1), not averages of FCs for each condition
+	// P. Auer
+	// Comment this out to get the same counts repeatedly
 	for (c = 0; c < replicates; ++c)
 	{
-	    counts[c] = count1_mean
-		     + random() % (int)(count1_mean * max_deviation * 2)
+	    counts1[c] = count1_mean
+		     + random() % (unsigned long)(count1_mean * max_deviation * 2)
 		     - count1_mean * max_deviation;
-	    counts[c + replicates] = count2_mean
-		     + random() % (int)(count2_mean * max_deviation * 2)
+	    counts2[c] = count2_mean
+		     + random() % (unsigned long)(count2_mean * max_deviation * 2)
 		     - count2_mean * max_deviation;
-	    fc = counts[c + replicates] / counts[c];
-	    printf("%5.0f %5.0f %6.3f %6.3f\n",
-		    counts[c], counts[c + replicates], fc, 1.0 / fc);
-	    c1_sum += counts[c];
-	    c2_sum += counts[c + replicates];
+	    printf("%5.0f %5.0f\n", counts1[c], counts2[c]);
 	}
 	
-	/*
-	 *  Compute mean and stddev for "observed" values
-	 */
-	
-	observed_fc = c2_sum / c1_sum;
-	if ( observed_fc < 1.0 )
-	    observed_fc = 1.0 / observed_fc;
-	printf("Overall observed FC = %0.3f  1 / Observed FC = %0.3f\n",
-		observed_fc, 1.0 / observed_fc);
-	
-	/*
-	 *  Compute fold-change for every possible pairing.
-	 *  #samples choose 2 * 2 (FC and 1/FC), since this affects
-	 *  the distribution of means of N samples
-	 *  Satisfies the null hypothesis P(n1 > n2) = P(n1 < N2)
-	 */
-	
-	half_pair_count = xt_n_choose_k(samples, 2);
-	pair_count = half_pair_count * 2;   // FC and 1/FC
-	printf("\n%lu choose 2 = %lu combinations of counts  %lu ordered pairs\n",
-		samples, half_pair_count, pair_count);
-	count_pairs = malloc(pair_count * sizeof(*count_pairs));
-	
-	/*
-	 *  Include both FC and 1/FC for each count combination in the set
-	 *  so that the distribution of FCs covers both cases.
-	 */
-	
-	c = extreme_fcs = less = more = equal = 0;
-	for (c1 = 0; c1 < replicates * 2; ++c1)
-	{
-	    for (c2 = c1 + 1; c2 < replicates * 2; ++c2)
-	    {
-		count_pairs[c].c1_count = counts[c1];
-		count_pairs[c].c2_count = counts[c2];
-		count_pairs[c + half_pair_count].c1_count = counts[c2];
-		count_pairs[c + half_pair_count].c2_count = counts[c1];
-		++c;
-	    }
-	}
-	
-	// Check for program bugs
-	if ( c != half_pair_count )
-	{
-	    printf("%lu != %lu\n", c, half_pair_count);
-	    return 1;
-	}
-	
-	for (c = 0; c < pair_count; ++c)
-	    printf("%2lu %3.0f, %3.0f   FC = %0.3f\n", c,
-		    count_pairs[c].c1_count, count_pairs[c].c2_count,
-		    (double)count_pairs[c].c1_count / count_pairs[c].c2_count);
-	
-	fc_exact_p_val(count_pairs, pair_count, replicates, observed_fc);
+	near_exact_p_val(counts1, counts2, replicates);
     }
     return EX_OK;
 }
@@ -163,7 +107,7 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     printf("\nP-value: Likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n",
 	    replicates, observed_fc, 1.0 / observed_fc);
 
-    // Run several reps with the same fold-changes for down-sampled FCs
+    // Run 10 reps with the same fold-changes for down-sampled FCs
     // to check stability
     for (c = 0; c < (replicates >= 5 ? 10 : 1); ++c)
     {
@@ -171,8 +115,136 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
 			    observed_fc, &actual_fc_count);
 	
+	// Sanity check
+	/* Does not apply when down sampling
+	if ( actual_fc_count != fc_count )
+	{
+	    fprintf(stderr, "FC counf mismatch: %lu != %lu\n",
+		    actual_fc_count, fc_count);
+	    exit(EX_SOFTWARE);
+	}
+	*/
+	
+	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
 	printf("FC count = %lu  P-value = %lu / %lu = %0.3f\n\n",
 		actual_fc_count, extreme_fcs, actual_fc_count,
 		(double)extreme_fcs / actual_fc_count);
     }
+}
+
+
+/***************************************************************************
+ *  Use auto-c2man to generate a man page from this comment
+ *
+ *  Library:
+ *      #include <>
+ *      -l
+ *
+ *  Description:
+ *      Compute exact or near-exact P-value for paired lists
+ *      counts1 and counts2.  Must accept lists in the same format as
+ *      mann_whitney_p-val().
+ *  
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  Examples:
+ *
+ *  Files:
+ *
+ *  Environment
+ *
+ *  See also:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-10-19  Jason Bacon Begin
+ ***************************************************************************/
+
+double  near_exact_p_val(double counts1[], double counts2[],
+			   size_t replicates)
+
+{
+    unsigned long   c, c1, c2, pair_count, samples, extreme_fcs,
+		    half_pair_count;
+
+    double  c1_sum, c2_sum, observed_fc, *counts;
+    count_pair_t    *count_pairs;
+    if ( replicates > 10 )
+    {
+	fprintf(stderr, "near_exact_p_val(): Use mann_whitney_p_val() for reps > 10.\n");
+	return 1.0;
+    }
+
+    c1_sum = c2_sum = 0;
+    for (c = 0; c < replicates; ++c)
+    {
+	c1_sum += counts1[c];
+	c2_sum += counts2[c];
+    }
+    observed_fc = c2_sum / c1_sum;
+    if ( observed_fc < 1.0 )
+	observed_fc = 1.0 / observed_fc;
+    printf("Observed: FC = %0.3f  1 / Observed FC = %0.3f\n",
+	    observed_fc, 1.0 / observed_fc);
+	
+    /*
+     *  Compute fold-change for every possible pairing.
+     *  #samples choose 2 * 2 (FC and 1/FC), since this affects
+     *  the distribution of means of N samples
+     *  Satisfies the null hypothesis P(n1 > n2) = P(n1 < N2)
+     */
+    
+    samples = replicates * 2;
+    printf("\n%lu choose %d = %lu combinations of counts\n",
+	    samples, 2, xt_n_choose_k(samples, 2));
+    puts("2 ordered pairs for each combination:");
+    half_pair_count = xt_n_choose_k(samples, 2);
+    pair_count = half_pair_count * 2;   // FC and 1/FC
+    count_pairs = malloc(pair_count * sizeof(*count_pairs));
+    
+    /*
+     *  Include both FC and 1/FC for each count combination in the set
+     *  so that the distribution of FCs covers both cases.
+     */
+    
+    counts = malloc(replicates * 2 * sizeof(*counts));
+    for (c = 0; c < replicates; ++c)
+    {
+	counts[c] = counts1[c];
+	counts[c + replicates] = counts2[c];
+    }
+    for (c = 0; c < replicates * 2; ++c)
+	printf("%f\n", counts[c]);
+
+    c = extreme_fcs = 0;
+    for (c1 = 0; c1 < replicates * 2; ++c1)
+    {
+	for (c2 = c1 + 1; c2 < replicates * 2; ++c2)
+	{
+	    count_pairs[c].c1_count = counts[c1];
+	    count_pairs[c].c2_count = counts[c2];
+	    count_pairs[c + half_pair_count].c1_count = counts[c2];
+	    count_pairs[c + half_pair_count].c2_count = counts[c1];
+	    ++c;
+	}
+    }
+
+    
+    // Check for program bugs
+    if ( c != half_pair_count )
+    {
+	printf("%lu != %lu\n", c, half_pair_count);
+	return 1;
+    }
+    
+    for (c = 0; c < pair_count; ++c)
+	printf("%2lu %3.0f, %3.0f   FC = %0.3f\n", c,
+		count_pairs[c].c1_count, count_pairs[c].c2_count,
+		(double)count_pairs[c].c1_count / count_pairs[c].c2_count);
+    
+    fc_exact_p_val(count_pairs, pair_count, replicates, observed_fc);
+    
+    return 1.0;
 }
