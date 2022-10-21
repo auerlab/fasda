@@ -1,7 +1,7 @@
 typedef struct
 {
-    unsigned long   c1_count;
-    unsigned long   c2_count;
+    double  c1_count;
+    double  c2_count;
 }   count_pair_t;
 
 unsigned long   extreme_fcs_count(count_pair_t count_pairs[], unsigned long pair_count,

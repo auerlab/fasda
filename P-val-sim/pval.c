@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include "pval.h"
 
+
 void    usage(char *argv[])
 
 {
@@ -26,14 +27,14 @@ void    usage(char *argv[])
     exit(EX_USAGE);
 }
 
+
 int     main(int argc,char *argv[])
 
 {
-    unsigned long   c, c1, c2, replicates,
-		    less, more, equal, *counts,
-		    count1_mean, count2_mean, pair_count, samples, extreme_fcs,
-		    half_pair_count, iterations, i;
-    double  c1_sum, c2_sum, max_deviation, observed_fc;
+    unsigned long   c, c1, c2, replicates, less, more, equal,
+		    count1_mean, count2_mean, pair_count, samples,
+		    extreme_fcs, half_pair_count, iterations, i;
+    double  c1_sum, c2_sum, max_deviation, observed_fc, *counts, fc;
     count_pair_t    *count_pairs;
     struct timeval  time;
 
@@ -61,14 +62,9 @@ int     main(int argc,char *argv[])
     {
 	gettimeofday(&time, NULL);
 	srandom(time.tv_usec);
-	//if ( i % 100 == 0 )
-	//    fprintf(stderr, "%lu\r", i);
-	
-	puts("Cond1 Cond2 FC      1/FC");
     
-	// mean FC = sigma(c2) / sigma(c1), not averages of FCs for each condition
-	// P. Auer
-	// Comment this out to get the same counts repeatedly
+	// FC = sigma(c2) / sigma(c1), not mean of FCs for each condition
+	puts("Cond1 Cond2     FC   1/FC");
 	c1_sum = c2_sum = 0.0;
 	for (c = 0; c < replicates; ++c)
 	{
@@ -78,7 +74,9 @@ int     main(int argc,char *argv[])
 	    counts[c + replicates] = count2_mean
 		     + random() % (int)(count2_mean * max_deviation * 2)
 		     - count2_mean * max_deviation;
-	    printf("%5lu %5lu\n", counts[c], counts[c + replicates]);
+	    fc = counts[c + replicates] / counts[c];
+	    printf("%5.0f %5.0f %6.3f %6.3f\n",
+		    counts[c], counts[c + replicates], fc, 1.0 / fc);
 	    c1_sum += counts[c];
 	    c2_sum += counts[c + replicates];
 	}
@@ -90,7 +88,7 @@ int     main(int argc,char *argv[])
 	observed_fc = c2_sum / c1_sum;
 	if ( observed_fc < 1.0 )
 	    observed_fc = 1.0 / observed_fc;
-	printf("Observed: FC = %0.3f  1 / Observed FC = %0.3f\n",
+	printf("Overall observed FC = %0.3f  1 / Observed FC = %0.3f\n",
 		observed_fc, 1.0 / observed_fc);
 	
 	/*
@@ -100,11 +98,10 @@ int     main(int argc,char *argv[])
 	 *  Satisfies the null hypothesis P(n1 > n2) = P(n1 < N2)
 	 */
 	
-	printf("\n%lu choose %d = %lu combinations of counts\n",
-		samples, 2, xt_n_choose_k(samples, 2));
-	puts("2 ordered pairs for each combination:");
 	half_pair_count = xt_n_choose_k(samples, 2);
 	pair_count = half_pair_count * 2;   // FC and 1/FC
+	printf("\n%lu choose 2 = %lu combinations of counts  %lu ordered pairs\n",
+		samples, half_pair_count, pair_count);
 	count_pairs = malloc(pair_count * sizeof(*count_pairs));
 	
 	/*
@@ -133,7 +130,7 @@ int     main(int argc,char *argv[])
 	}
 	
 	for (c = 0; c < pair_count; ++c)
-	    printf("%2lu %3lu, %3lu   FC = %0.3f\n", c,
+	    printf("%2lu %3.0f, %3.0f   FC = %0.3f\n", c,
 		    count_pairs[c].c1_count, count_pairs[c].c2_count,
 		    (double)count_pairs[c].c1_count / count_pairs[c].c2_count);
 	
@@ -166,7 +163,7 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     printf("\nP-value: Likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n",
 	    replicates, observed_fc, 1.0 / observed_fc);
 
-    // Run 10 reps with the same fold-changes for down-sampled FCs
+    // Run several reps with the same fold-changes for down-sampled FCs
     // to check stability
     for (c = 0; c < (replicates >= 5 ? 10 : 1); ++c)
     {
@@ -174,17 +171,6 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
 			    observed_fc, &actual_fc_count);
 	
-	// Sanity check
-	/* Does not apply when down sampling
-	if ( actual_fc_count != fc_count )
-	{
-	    fprintf(stderr, "FC counf mismatch: %lu != %lu\n",
-		    actual_fc_count, fc_count);
-	    exit(EX_SOFTWARE);
-	}
-	*/
-	
-	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
 	printf("FC count = %lu  P-value = %lu / %lu = %0.3f\n\n",
 		actual_fc_count, extreme_fcs, actual_fc_count,
 		(double)extreme_fcs / actual_fc_count);
