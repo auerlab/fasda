@@ -58,7 +58,7 @@ BINS    = ${BIN} ${LIBEXEC}
 OBJS_FASDA          = fasda.o alignment-stats-mutators.o
 OBJS_ABUNDANCE      = abundance.o
 OBJS_NORMALIZE      = normalize.o
-OBJS_FOLD_CHANGE    = fold-change.o
+OBJS_FOLD_CHANGE    = fold-change.o mann-whitney.o
 OBJS                = ${OBJS_FASDA} ${OBJS_ABUNDANCE} ${OBJS_NORMALIZE} \
 		      ${OBJS_FOLD_CHANGE}
 

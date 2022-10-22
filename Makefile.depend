@@ -14,6 +14,9 @@ fasda.o: fasda.c
 fold-change.o: fold-change.c fold-change.h fold-change-protos.h
 	${CC} -c ${CFLAGS} fold-change.c
 
+mann-whitney.o: mann-whitney.c
+	${CC} -c ${CFLAGS} mann-whitney.c
+
 normalize.o: normalize.c normalize.h fasda.h normalize-protos.h
 	${CC} -c ${CFLAGS} normalize.c
 

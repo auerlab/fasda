@@ -79,6 +79,8 @@ int     main(int argc,char *argv[])
 	}
 	
 	near_exact_p_val(counts1, counts2, replicates);
+	printf("Mann-Whitney = %0.4f\n",
+		mann_whitney_p_val(counts1, counts2, replicates, replicates));
     }
     return EX_OK;
 }
@@ -104,14 +106,14 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     else
 	printf("\nfc_count > 2^64 for replicates > 10.\n");
 
-    printf("\nP-value: Likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n",
+    printf("P-value = likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n\n",
 	    replicates, observed_fc, 1.0 / observed_fc);
 
-    // Run 10 reps with the same fold-changes for down-sampled FCs
+    // Run several reps with the same fold-changes for down-sampled FCs
     // to check stability
-    for (c = 0; c < (replicates >= 5 ? 10 : 1); ++c)
+    for (c = 0; c < (replicates >= 5 ? 5 : 1); ++c)
     {
-	printf("%lu %lu\n", c, replicates);
+	// printf("%lu %lu\n", c, replicates);
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
 			    observed_fc, &actual_fc_count);
 	
@@ -126,7 +128,7 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	*/
 	
 	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
-	printf("FC count = %lu  P-value = %lu / %lu = %0.3f\n\n",
+	printf("FCs sampled = %lu  P-value = %lu / %lu = %0.4f\n\n",
 		actual_fc_count, extreme_fcs, actual_fc_count,
 		(double)extreme_fcs / actual_fc_count);
     }

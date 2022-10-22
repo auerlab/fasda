@@ -53,7 +53,7 @@ BIN     = pval
 ############################################################################
 # List object files that comprise BIN.
 
-OBJS    = pval.o fc-ge.o
+OBJS    = pval.o fc-ge.o mann-whitney.o
 
 ############################################################################
 # Compile, link, and install options
@@ -98,7 +98,7 @@ RANLIB      ?= ranlib
 INCLUDES    += -isystem ${PREFIX}/include -isystem ${LOCALBASE}/include
 CFLAGS      += ${INCLUDES}
 LDFLAGS     += -L${PREFIX}/lib -Wl,-rpath,${PREFIX}/lib \
-	       -L${LOCALBASE}/lib -Wl,-rpath,${LOCALBASE}/lib -lxtend
+	       -L${LOCALBASE}/lib -Wl,-rpath,${LOCALBASE}/lib -lxtend -lm
 
 ############################################################################
 # Assume first command in PATH.  Override with full pathnames if necessary.

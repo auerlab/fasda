@@ -11,4 +11,6 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 			    size_t replicates, double observed_fc);
 double  near_exact_p_val(double rep_counts1[], double rep_counts2[],
 			   size_t replicates);
+double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
+			   size_t num_reps1, size_t num_reps2);
 
