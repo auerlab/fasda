@@ -79,7 +79,7 @@ int     main(int argc,char *argv[])
 	}
 	
 	near_exact_p_val(counts1, counts2, replicates);
-	printf("Mann-Whitney = %0.4f\n",
+	printf("Mann-Whitney = %0.3f\n",
 		mann_whitney_p_val(counts1, counts2, replicates, replicates));
     }
     return EX_OK;
@@ -128,7 +128,7 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	*/
 	
 	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
-	printf("FCs sampled = %lu  P-value = %lu / %lu = %0.4f\n\n",
+	printf("FCs sampled = %lu  P-value = %lu / %lu = %0.3f\n\n",
 		actual_fc_count, extreme_fcs, actual_fc_count,
 		(double)extreme_fcs / actual_fc_count);
     }

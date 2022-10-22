@@ -113,8 +113,7 @@ unsigned long   extreme_fcs$k(count_pair_t count_pairs[], unsigned long pair_cou
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = $increment, count = 0,
-		    fc_g1 = 0, fc_l1 = 0;
+    unsigned long   fc_ge = 0, fc_le = 0, increment = $increment, count = 0;
     double          fc;
     
 EOM
@@ -140,7 +139,7 @@ EOM
     print_indent $c
     printf "    {\n"
     print_indent $c
-    printf "        fc = (double)(\n"
+    printf "        fc = (\n"
     for c2 in $(seq 1 $((k - 1))); do
 	print_indent $c
 	printf "                 count_pairs[c$c2].c2_count +\n"
@@ -168,10 +167,10 @@ EOM
     print_indent $c
     printf "        else if ( fc <= 1.0 / observed_fc ) ++fc_le;\n"
 
-    print_indent $c
-    printf "        if ( fc > 1 ) ++fc_g1;\n"
-    print_indent $c
-    printf "        else if ( fc < 1 ) ++fc_l1;\n"
+    #print_indent $c
+    #printf "        if ( fc > 1 ) ++fc_g1;\n"
+    #print_indent $c
+    #printf "        else if ( fc < 1 ) ++fc_l1;\n"
     
     print_indent $c
     printf "        ++count;\n"
@@ -180,7 +179,7 @@ EOM
     
     # Closing braces
     cat << EOM
-    // printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
+    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
