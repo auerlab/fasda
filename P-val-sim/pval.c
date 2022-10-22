@@ -233,12 +233,25 @@ double  near_exact_p_val(double counts1[], double counts2[],
 	}
     }
 
-    
     // Check for program bugs
     if ( c != half_pair_count )
     {
 	printf("%lu != %lu\n", c, half_pair_count);
 	return 1;
+    }
+    
+    // Shuffle
+    // Down-sampled P-values come up light without shuffling, but average
+    // very close to exact with this shuffling.  Why?
+    for (c = 0; c < pair_count - 1; ++c)
+    {
+	count_pair_t    temp;
+	
+	c1 = c + 1 + random() % (pair_count - c - 1);
+	printf("Swapping %lu with %lu\n", c, c1);
+	temp = count_pairs[c];
+	count_pairs[c] = count_pairs[c1];
+	count_pairs[c1] = temp;
     }
     
     for (c = 0; c < pair_count; ++c)

@@ -20,33 +20,33 @@ unsigned long   extreme_fcs2(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 1, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 1, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
-     {
-         fc = (
-                  count_pairs[c1].c2_count +
-                  count_pairs[c2].c2_count
-              )
-              / 
-              (
-                  count_pairs[c1].c1_count +
-                  count_pairs[c2].c1_count
-              );
+    for (pass = 0; pass < 1; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
+      {
+          fc = (
+                   count_pairs[c1].c2_count +
+                   count_pairs[c2].c2_count
+               )
+               / 
+               (
+                   count_pairs[c1].c1_count +
+                   count_pairs[c2].c1_count
+               );
          if ( fc >= observed_fc ) ++fc_ge;
          else if ( fc <= 1.0 / observed_fc ) ++fc_le;
          ++count;
      }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
@@ -63,36 +63,36 @@ unsigned long   extreme_fcs3(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 1, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 1, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2, c3;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
-      {
-          fc = (
-                   count_pairs[c1].c2_count +
-                   count_pairs[c2].c2_count +
-                   count_pairs[c3].c2_count
-               )
-               / 
-               (
-                   count_pairs[c1].c1_count +
-                   count_pairs[c2].c1_count +
-                  count_pairs[c3].c1_count
-               );
+    for (pass = 0; pass < 1; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
+       for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
+       {
+           fc = (
+                    count_pairs[c1].c2_count +
+                    count_pairs[c2].c2_count +
+                    count_pairs[c3].c2_count
+                )
+                / 
+                (
+                    count_pairs[c1].c1_count +
+                    count_pairs[c2].c1_count +
+                    count_pairs[c3].c1_count
+                );
           if ( fc >= observed_fc ) ++fc_ge;
           else if ( fc <= 1.0 / observed_fc ) ++fc_le;
           ++count;
       }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
@@ -109,39 +109,39 @@ unsigned long   extreme_fcs4(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 1, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 1, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2, c3, c4;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
-       for (c4 = c3 + 1; c4 < pair_count; c4 += increment)
-       {
-           fc = (
-                    count_pairs[c1].c2_count +
-                    count_pairs[c2].c2_count +
-                    count_pairs[c3].c2_count +
-                    count_pairs[c4].c2_count
-                )
-                / 
-                (
-                    count_pairs[c1].c1_count +
-                    count_pairs[c2].c1_count +
-                    count_pairs[c3].c1_count +
-                  count_pairs[c4].c1_count
-                );
+    for (pass = 0; pass < 1; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
+       for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
+        for (c4 = c3 + 1; c4 < pair_count; c4 += increment)
+        {
+            fc = (
+                     count_pairs[c1].c2_count +
+                     count_pairs[c2].c2_count +
+                     count_pairs[c3].c2_count +
+                     count_pairs[c4].c2_count
+                 )
+                 / 
+                 (
+                     count_pairs[c1].c1_count +
+                     count_pairs[c2].c1_count +
+                     count_pairs[c3].c1_count +
+                     count_pairs[c4].c1_count
+                 );
            if ( fc >= observed_fc ) ++fc_ge;
            else if ( fc <= 1.0 / observed_fc ) ++fc_le;
            ++count;
        }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
@@ -158,42 +158,42 @@ unsigned long   extreme_fcs5(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 2, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 2, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2, c3, c4, c5;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
-        {
-            fc = (
-                     count_pairs[c1].c2_count +
-                     count_pairs[c2].c2_count +
-                     count_pairs[c3].c2_count +
-                     count_pairs[c4].c2_count +
-                     count_pairs[c5].c2_count
-                 )
-                 / 
-                 (
-                     count_pairs[c1].c1_count +
-                     count_pairs[c2].c1_count +
-                     count_pairs[c3].c1_count +
-                     count_pairs[c4].c1_count +
-                  count_pairs[c5].c1_count
-                 );
+    for (pass = 0; pass < 3; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+       for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+        for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+         for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+         {
+             fc = (
+                      count_pairs[c1].c2_count +
+                      count_pairs[c2].c2_count +
+                      count_pairs[c3].c2_count +
+                      count_pairs[c4].c2_count +
+                      count_pairs[c5].c2_count
+                  )
+                  / 
+                  (
+                      count_pairs[c1].c1_count +
+                      count_pairs[c2].c1_count +
+                      count_pairs[c3].c1_count +
+                      count_pairs[c4].c1_count +
+                      count_pairs[c5].c1_count
+                  );
             if ( fc >= observed_fc ) ++fc_ge;
             else if ( fc <= 1.0 / observed_fc ) ++fc_le;
             ++count;
         }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
@@ -210,45 +210,45 @@ unsigned long   extreme_fcs6(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 4, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 4, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
-         {
-             fc = (
-                      count_pairs[c1].c2_count +
-                      count_pairs[c2].c2_count +
-                      count_pairs[c3].c2_count +
-                      count_pairs[c4].c2_count +
-                      count_pairs[c5].c2_count +
-                      count_pairs[c6].c2_count
-                  )
-                  / 
-                  (
-                      count_pairs[c1].c1_count +
-                      count_pairs[c2].c1_count +
-                      count_pairs[c3].c1_count +
-                      count_pairs[c4].c1_count +
-                      count_pairs[c5].c1_count +
-                  count_pairs[c6].c1_count
-                  );
+    for (pass = 0; pass < 6; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+       for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+        for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+         for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+          for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+          {
+              fc = (
+                       count_pairs[c1].c2_count +
+                       count_pairs[c2].c2_count +
+                       count_pairs[c3].c2_count +
+                       count_pairs[c4].c2_count +
+                       count_pairs[c5].c2_count +
+                       count_pairs[c6].c2_count
+                   )
+                   / 
+                   (
+                       count_pairs[c1].c1_count +
+                       count_pairs[c2].c1_count +
+                       count_pairs[c3].c1_count +
+                       count_pairs[c4].c1_count +
+                       count_pairs[c5].c1_count +
+                       count_pairs[c6].c1_count
+                   );
              if ( fc >= observed_fc ) ++fc_ge;
              else if ( fc <= 1.0 / observed_fc ) ++fc_le;
              ++count;
          }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
@@ -265,48 +265,48 @@ unsigned long   extreme_fcs7(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 7, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 6, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
-          for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
-          {
-              fc = (
-                       count_pairs[c1].c2_count +
-                       count_pairs[c2].c2_count +
-                       count_pairs[c3].c2_count +
-                       count_pairs[c4].c2_count +
-                       count_pairs[c5].c2_count +
-                       count_pairs[c6].c2_count +
-                       count_pairs[c7].c2_count
-                   )
-                   / 
-                   (
-                       count_pairs[c1].c1_count +
-                       count_pairs[c2].c1_count +
-                       count_pairs[c3].c1_count +
-                       count_pairs[c4].c1_count +
-                       count_pairs[c5].c1_count +
-                       count_pairs[c6].c1_count +
-                  count_pairs[c7].c1_count
-                   );
+    for (pass = 0; pass < 3; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+       for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+        for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+         for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+          for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+           for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
+           {
+               fc = (
+                        count_pairs[c1].c2_count +
+                        count_pairs[c2].c2_count +
+                        count_pairs[c3].c2_count +
+                        count_pairs[c4].c2_count +
+                        count_pairs[c5].c2_count +
+                        count_pairs[c6].c2_count +
+                        count_pairs[c7].c2_count
+                    )
+                    / 
+                    (
+                        count_pairs[c1].c1_count +
+                        count_pairs[c2].c1_count +
+                        count_pairs[c3].c1_count +
+                        count_pairs[c4].c1_count +
+                        count_pairs[c5].c1_count +
+                        count_pairs[c6].c1_count +
+                        count_pairs[c7].c1_count
+                    );
               if ( fc >= observed_fc ) ++fc_ge;
               else if ( fc <= 1.0 / observed_fc ) ++fc_le;
               ++count;
           }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
@@ -323,51 +323,51 @@ unsigned long   extreme_fcs8(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 11, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 9, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
-          for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
-           for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
-           {
-               fc = (
-                        count_pairs[c1].c2_count +
-                        count_pairs[c2].c2_count +
-                        count_pairs[c3].c2_count +
-                        count_pairs[c4].c2_count +
-                        count_pairs[c5].c2_count +
-                        count_pairs[c6].c2_count +
-                        count_pairs[c7].c2_count +
-                        count_pairs[c8].c2_count
-                    )
-                    / 
-                    (
-                        count_pairs[c1].c1_count +
-                        count_pairs[c2].c1_count +
-                        count_pairs[c3].c1_count +
-                        count_pairs[c4].c1_count +
-                        count_pairs[c5].c1_count +
-                        count_pairs[c6].c1_count +
-                        count_pairs[c7].c1_count +
-                  count_pairs[c8].c1_count
-                    );
+    for (pass = 0; pass < 4; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+       for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+        for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+         for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+          for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+           for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
+            for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
+            {
+                fc = (
+                         count_pairs[c1].c2_count +
+                         count_pairs[c2].c2_count +
+                         count_pairs[c3].c2_count +
+                         count_pairs[c4].c2_count +
+                         count_pairs[c5].c2_count +
+                         count_pairs[c6].c2_count +
+                         count_pairs[c7].c2_count +
+                         count_pairs[c8].c2_count
+                     )
+                     / 
+                     (
+                         count_pairs[c1].c1_count +
+                         count_pairs[c2].c1_count +
+                         count_pairs[c3].c1_count +
+                         count_pairs[c4].c1_count +
+                         count_pairs[c5].c1_count +
+                         count_pairs[c6].c1_count +
+                         count_pairs[c7].c1_count +
+                         count_pairs[c8].c1_count
+                     );
                if ( fc >= observed_fc ) ++fc_ge;
                else if ( fc <= 1.0 / observed_fc ) ++fc_le;
                ++count;
            }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
@@ -384,54 +384,54 @@ unsigned long   extreme_fcs9(count_pair_t count_pairs[], unsigned long pair_coun
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 16, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 16, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
-          for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
-           for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
-            for (c9 = c8 + 1 + random() % increment; c9 < pair_count; c9 += increment)
-            {
-                fc = (
-                         count_pairs[c1].c2_count +
-                         count_pairs[c2].c2_count +
-                         count_pairs[c3].c2_count +
-                         count_pairs[c4].c2_count +
-                         count_pairs[c5].c2_count +
-                         count_pairs[c6].c2_count +
-                         count_pairs[c7].c2_count +
-                         count_pairs[c8].c2_count +
-                         count_pairs[c9].c2_count
-                     )
-                     / 
-                     (
-                         count_pairs[c1].c1_count +
-                         count_pairs[c2].c1_count +
-                         count_pairs[c3].c1_count +
-                         count_pairs[c4].c1_count +
-                         count_pairs[c5].c1_count +
-                         count_pairs[c6].c1_count +
-                         count_pairs[c7].c1_count +
-                         count_pairs[c8].c1_count +
-                  count_pairs[c9].c1_count
-                     );
+    for (pass = 0; pass < 5; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+       for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+        for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+         for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+          for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+           for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
+            for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
+             for (c9 = c8 + 1 + random() % increment; c9 < pair_count; c9 += increment)
+             {
+                 fc = (
+                          count_pairs[c1].c2_count +
+                          count_pairs[c2].c2_count +
+                          count_pairs[c3].c2_count +
+                          count_pairs[c4].c2_count +
+                          count_pairs[c5].c2_count +
+                          count_pairs[c6].c2_count +
+                          count_pairs[c7].c2_count +
+                          count_pairs[c8].c2_count +
+                          count_pairs[c9].c2_count
+                      )
+                      / 
+                      (
+                          count_pairs[c1].c1_count +
+                          count_pairs[c2].c1_count +
+                          count_pairs[c3].c1_count +
+                          count_pairs[c4].c1_count +
+                          count_pairs[c5].c1_count +
+                          count_pairs[c6].c1_count +
+                          count_pairs[c7].c1_count +
+                          count_pairs[c8].c1_count +
+                          count_pairs[c9].c1_count
+                      );
                 if ( fc >= observed_fc ) ++fc_ge;
                 else if ( fc <= 1.0 / observed_fc ) ++fc_le;
                 ++count;
             }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 
@@ -448,57 +448,57 @@ unsigned long   extreme_fcs10(count_pair_t count_pairs[], unsigned long pair_cou
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = 21, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = 20, pass, count = 0;
     double          fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9, c10;
 
-    for (c1 = 0; c1 < pair_count; c1 += increment)
-     for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
-      for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
-       for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
-        for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
-         for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
-          for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
-           for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
-            for (c9 = c8 + 1 + random() % increment; c9 < pair_count; c9 += increment)
-             for (c10 = c9 + 1 + random() % increment; c10 < pair_count; c10 += increment)
-             {
-                 fc = (
-                          count_pairs[c1].c2_count +
-                          count_pairs[c2].c2_count +
-                          count_pairs[c3].c2_count +
-                          count_pairs[c4].c2_count +
-                          count_pairs[c5].c2_count +
-                          count_pairs[c6].c2_count +
-                          count_pairs[c7].c2_count +
-                          count_pairs[c8].c2_count +
-                          count_pairs[c9].c2_count +
-                          count_pairs[c10].c2_count
-                      )
-                      / 
-                      (
-                          count_pairs[c1].c1_count +
-                          count_pairs[c2].c1_count +
-                          count_pairs[c3].c1_count +
-                          count_pairs[c4].c1_count +
-                          count_pairs[c5].c1_count +
-                          count_pairs[c6].c1_count +
-                          count_pairs[c7].c1_count +
-                          count_pairs[c8].c1_count +
-                          count_pairs[c9].c1_count +
-                  count_pairs[c10].c1_count
-                      );
+    for (pass = 0; pass < 7; ++pass)
+     for (c1 = 0; c1 < pair_count; c1 += increment)
+      for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
+       for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
+        for (c4 = c3 + 1 + random() % increment; c4 < pair_count; c4 += increment)
+         for (c5 = c4 + 1 + random() % increment; c5 < pair_count; c5 += increment)
+          for (c6 = c5 + 1 + random() % increment; c6 < pair_count; c6 += increment)
+           for (c7 = c6 + 1 + random() % increment; c7 < pair_count; c7 += increment)
+            for (c8 = c7 + 1 + random() % increment; c8 < pair_count; c8 += increment)
+             for (c9 = c8 + 1 + random() % increment; c9 < pair_count; c9 += increment)
+              for (c10 = c9 + 1 + random() % increment; c10 < pair_count; c10 += increment)
+              {
+                  fc = (
+                           count_pairs[c1].c2_count +
+                           count_pairs[c2].c2_count +
+                           count_pairs[c3].c2_count +
+                           count_pairs[c4].c2_count +
+                           count_pairs[c5].c2_count +
+                           count_pairs[c6].c2_count +
+                           count_pairs[c7].c2_count +
+                           count_pairs[c8].c2_count +
+                           count_pairs[c9].c2_count +
+                           count_pairs[c10].c2_count
+                       )
+                       / 
+                       (
+                           count_pairs[c1].c1_count +
+                           count_pairs[c2].c1_count +
+                           count_pairs[c3].c1_count +
+                           count_pairs[c4].c1_count +
+                           count_pairs[c5].c1_count +
+                           count_pairs[c6].c1_count +
+                           count_pairs[c7].c1_count +
+                           count_pairs[c8].c1_count +
+                           count_pairs[c9].c1_count +
+                           count_pairs[c10].c1_count
+                       );
                  if ( fc >= observed_fc ) ++fc_ge;
                  else if ( fc <= 1.0 / observed_fc ) ++fc_le;
                  ++count;
              }
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 

@@ -76,25 +76,32 @@ gen_loop()
     # determined by trial and error with ./pval 100 120 .3 N 1
     case $k in
     5)
-	increment=2 # 2: p-values mostly stable to 2 decimal places
+	increment=2 # 2, 3: p-values mostly stable to 2 decimal places
+	passes=3
 	;;
     6)
-	increment=4 # 4: p-values mostly stable to 2 decimal places
+	increment=4 # 4, 6: p-values mostly stable to 2 decimal places
+	passes=6
 	;;
     7)
-	increment=7 # 7: p-values mostly stable to 2 decimal places
+	increment=6 # 6, 3: p-values mostly stable to 2 decimal places
+	passes=3
 	;;
     8)
-	increment=11 # 11: p-values mostly stable to 2 decimal places
+	increment=9 # 9, 4: p-values mostly stable to 2 decimal places
+	passes=4
 	;;
     9)
-	increment=16 # 16: p-values not stable to 2 decimal places
+	increment=16 # 16, 5: p-values not stable to 2 decimal places
+	passes=5
 	;;
     10)
-	increment=21 # 21: p-values not stable to 2 decimal places
+	increment=20 # 20, 7: p-values not stable to 2 decimal places
+	passes=7
 	;;
     *)
 	increment=1
+	passes=1
 	;;
     esac
     
@@ -113,7 +120,8 @@ unsigned long   extreme_fcs$k(count_pair_t count_pairs[], unsigned long pair_cou
 {
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
-    unsigned long   fc_ge = 0, fc_le = 0, increment = $increment, count = 0;
+    unsigned long   fc_ge = 0, fc_le = 0,
+		    increment = $increment, pass, count = 0;
     double          fc;
     
 EOM
@@ -125,53 +133,50 @@ EOM
     printf "c%d;\n\n" $k
     
     # Nested loop
-    printf "    for (c1 = 0; c1 < pair_count; c1 += increment)\n"
+    printf "    for (pass = 0; pass < $passes; ++pass)\n"
+    printf "     for (c1 = 0; c1 < pair_count; c1 += increment)\n"
     for c in $(seq 2 $k); do
 	print_indent $c
 	if [ $increment -gt 1 ]; then
-	    printf "    for (c$c = c$((c - 1)) + 1 + random() %% increment; c$c < pair_count; c$c += increment)\n"
+	    printf "     for (c$c = c$((c - 1)) + 1 + random() %% increment; c$c < pair_count; c$c += increment)\n"
 	else
-	    printf "    for (c$c = c$((c - 1)) + 1; c$c < pair_count; c$c += increment)\n"
+	    printf "     for (c$c = c$((c - 1)) + 1; c$c < pair_count; c$c += increment)\n"
 	fi
     done
     
     # Body
     print_indent $c
-    printf "    {\n"
+    printf "     {\n"
     print_indent $c
-    printf "        fc = (\n"
+    printf "         fc = (\n"
     for c2 in $(seq 1 $((k - 1))); do
 	print_indent $c
-	printf "                 count_pairs[c$c2].c2_count +\n"
+	printf "                  count_pairs[c$c2].c2_count +\n"
     done
     print_indent $c
-    printf "                 count_pairs[c$k].c2_count\n"
+    printf "                  count_pairs[c$k].c2_count\n"
     print_indent $c
-    printf "             )\n"
+    printf "              )\n"
     print_indent $c
-    printf "             / \n"
+    printf "              / \n"
     print_indent $c
-    printf "             (\n"
+    printf "              (\n"
     for c2 in $(seq 1 $((k - 1))); do
 	print_indent $c
-	printf "                 count_pairs[c$c2].c1_count +\n"
+	printf "                  count_pairs[c$c2].c1_count +\n"
     done
+    print_indent $c
     printf "                  count_pairs[c$k].c1_count\n"
     print_indent $c
-    printf "             );\n"
+    printf "              );\n"
+    # print_indent $c
+    # printf '             if ( count %% 100000000 == 0 ) fprintf(stderr, "%%lu\\r", count);\n'
 
-    #print_indent $c
-    #printf '        printf("FC = %%0.3f\\n", fc);\n'
     print_indent $c
     printf "        if ( fc >= observed_fc ) ++fc_ge;\n"
     print_indent $c
     printf "        else if ( fc <= 1.0 / observed_fc ) ++fc_le;\n"
 
-    #print_indent $c
-    #printf "        if ( fc > 1 ) ++fc_g1;\n"
-    #print_indent $c
-    #printf "        else if ( fc < 1 ) ++fc_l1;\n"
-    
     print_indent $c
     printf "        ++count;\n"
     print_indent $c
@@ -179,12 +184,10 @@ EOM
     
     # Closing braces
     cat << EOM
-    //printf("FCs > 1 = %-5lu           FCs < 1 = %-5lu\n", fc_g1, fc_l1);
     printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
 	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
-    // FIXME: Is this correct?
     return fc_ge + fc_le;
 }
 EOM
