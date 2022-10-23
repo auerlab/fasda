@@ -13,4 +13,5 @@ double  near_exact_p_val(double rep_counts1[], double rep_counts2[],
 			   size_t replicates);
 double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
 			   size_t num_reps1, size_t num_reps2);
+void    xt_shuffle(void *base, size_t count, size_t size);
 
