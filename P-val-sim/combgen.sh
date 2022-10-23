@@ -77,15 +77,15 @@ gen_loop()
     case $k in
     5)
 	increment=2 # 2, 3: p-values mostly stable to 2 decimal places
-	passes=3
+	passes=3    # Exact P-value (inc=1, no srandom) = 0.393 ~1 sec
 	;;
     6)
 	increment=4 # 4, 6: p-values mostly stable to 2 decimal places
-	passes=6
+	passes=6    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
 	;;
     7)
 	increment=6 # 6, 3: p-values mostly stable to 2 decimal places
-	passes=3
+	passes=3    # Exact P-value (inc=1, no srandom) = 0.048 several hours
 	;;
     8)
 	increment=9 # 9, 4: p-values mostly stable to 2 decimal places

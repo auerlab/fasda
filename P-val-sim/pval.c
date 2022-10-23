@@ -240,15 +240,19 @@ double  near_exact_p_val(double counts1[], double counts2[],
 	return 1;
     }
     
-    // Shuffle
+    // Fisher-Yates shuffle
     // Down-sampled P-values come up light without shuffling, but average
     // very close to exact with this shuffling.  Why?
     for (c = 0; c < pair_count - 1; ++c)
     {
 	count_pair_t    temp;
 	
-	c1 = c + 1 + random() % (pair_count - c - 1);
-	printf("Swapping %lu with %lu\n", c, c1);
+	// c <= c1 < pair_count
+	// Yes, we want the possibility of swapping an element with itself
+	// Leaving it in place should have the same probability as
+	// every other possibility
+	c1 = c + random() % (pair_count - c);
+	// printf("Swapping %lu with %lu\n", c, c1);
 	temp = count_pairs[c];
 	count_pairs[c] = count_pairs[c1];
 	count_pairs[c1] = temp;
