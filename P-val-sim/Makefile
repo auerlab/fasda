@@ -48,12 +48,12 @@
 ############################################################################
 # Installed targets
 
-BIN     = pval
+BIN     = pval-sim
 
 ############################################################################
 # List object files that comprise BIN.
 
-OBJS    = pval.o fc-ge.o mann-whitney.o
+OBJS    = pval-sim.o fc-ge.o mann-whitney.o exact-p-val.o
 
 ############################################################################
 # Compile, link, and install options
@@ -171,7 +171,7 @@ realclean: clean
 install: all
 	${MKDIR} -p ${DESTDIR}${PREFIX}/bin ${DESTDIR}${MANDIR}/man1
 	${INSTALL} -s -m 0555 ${BIN} ${DESTDIR}${PREFIX}/bin
-	${INSTALL} -m 0444 Man/*.1 ${DESTDIR}${MANDIR}/man1
+	#${INSTALL} -m 0444 Man/*.1 ${DESTDIR}${MANDIR}/man1
 
 install-strip: install
 	${STRIP} ${DESTDIR}${PREFIX}/bin/${BIN}
