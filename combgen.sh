@@ -208,7 +208,7 @@ cat << EOM
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "pval.h"
+#include "exact-p-val.h"
 
 EOM
 # FC-count choose 11 overflows a 64-bit integer

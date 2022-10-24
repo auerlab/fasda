@@ -1,12 +1,3 @@
-exact-p-val.o: exact-p-val.c pval.h
+exact-p-val.o: exact-p-val.c exact-p-val.h
 	${CC} -c ${CFLAGS} exact-p-val.c
-
-fc-ge.o: fc-ge.c pval.h
-	${CC} -c ${CFLAGS} fc-ge.c
-
-mann-whitney.o: mann-whitney.c
-	${CC} -c ${CFLAGS} mann-whitney.c
-
-pval-sim.o: pval-sim.c pval.h
-	${CC} -c ${CFLAGS} pval-sim.c
 

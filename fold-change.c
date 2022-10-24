@@ -19,6 +19,7 @@
 #include <xtend/mem.h>
 #include <xtend/math.h>     // XT_MAX()
 #include "fold-change.h"
+#include "exact-p-val.h"
 
 int     main(int argc,char *argv[])
 
@@ -263,7 +264,9 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 		p_val = mann_whitney_p_val(rep_counts[c1], rep_counts[c2],
 					     num_reps[c1], num_reps[c2]);
 	    else
-		p_val = 0.0; //exact_pval();
+		// num_reps[c1] must equal num_reps[c2
+		p_val = near_exact_p_val(rep_counts[c1], rep_counts[c2],
+					num_reps[c1]);
 	    fprintf(diff_stream," %0.4f", p_val);
 	}
     }

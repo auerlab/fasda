@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <sysexits.h>
 #include <sys/time.h>
-#include "pval.h"
+#include "exact-p-val.h"
 
 void    usage(char *argv[])
 

@@ -8,6 +8,9 @@ alignment-stats-mutators.o: alignment-stats-mutators.c alignment-stats.h \
   alignment-stats-mutators.h
 	${CC} -c ${CFLAGS} alignment-stats-mutators.c
 
+exact-p-val.o: exact-p-val.c exact-p-val.h
+	${CC} -c ${CFLAGS} exact-p-val.c
+
 fasda.o: fasda.c
 	${CC} -c ${CFLAGS} fasda.c
 

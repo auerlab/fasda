@@ -2,7 +2,7 @@
 #include <xtend/math.h>
 #include <xtend/array.h>
 #include <xtend/mem.h>
-#include "pval.h"
+#include "exact-p-val.h"
 
 /*
  *  Find all possible means of fold-change triplets
