@@ -10,7 +10,7 @@ for p_val in 0.05 0.01; do
 	runs=10000
 	;;
     esac
-    rm tmp*.txt
+    rm -f tmp*.txt
     for replicates in $(seq 3 10); do
 	# Run expensive P-value computations in parallel
 	seq 1 4 | parallel ./pval 100 100 .5 $replicates $runs '>' tmp{}.txt
