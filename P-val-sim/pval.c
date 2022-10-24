@@ -80,8 +80,8 @@ int     main(int argc,char *argv[])
 	    printf("%5.0f %5.0f\n", counts1[c], counts2[c]);
 	}
 	
-	near_exact_p_val(counts1, counts2, replicates);
-	printf("Mann-Whitney = %0.3f\n",
+	printf("Exact P-value = %0.3f  Mann-Whitney = %0.3f\n",
+		near_exact_p_val(counts1, counts2, replicates),
 		mann_whitney_p_val(counts1, counts2, replicates, replicates));
     }
     return EX_OK;
@@ -93,11 +93,12 @@ int     main(int argc,char *argv[])
  *  Count the number of means >= observed mean
  */
 
-void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
+double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 			    size_t replicates, double observed_fc)
 
 {
     unsigned long   fc_count, extreme_fcs, actual_fc_count, c;
+    double          p_val, p_val_sum;
 
     if ( replicates <= 10 )
     {
@@ -113,27 +114,21 @@ void    fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 
     // Run several reps with the same fold-changes for down-sampled FCs
     // to check stability
-    for (c = 0; c < (replicates >= 5 ? 5 : 1); ++c)
+    p_val_sum = 0.0;
+    for (c = 0; c < (replicates >= 5 ? 1 : 1); ++c)
     {
 	// printf("%lu %lu\n", c, replicates);
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
 			    observed_fc, &actual_fc_count);
 	
-	// Sanity check
-	/* Does not apply when down sampling
-	if ( actual_fc_count != fc_count )
-	{
-	    fprintf(stderr, "FC counf mismatch: %lu != %lu\n",
-		    actual_fc_count, fc_count);
-	    exit(EX_SOFTWARE);
-	}
-	*/
-	
+	p_val = (double)extreme_fcs / actual_fc_count;
 	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
 	printf("FCs sampled = %lu  P-value = %lu / %lu = %0.3f\n\n",
-		actual_fc_count, extreme_fcs, actual_fc_count,
-		(double)extreme_fcs / actual_fc_count);
+		actual_fc_count, extreme_fcs, actual_fc_count, p_val);
+	p_val_sum += p_val;
     }
+    
+    return p_val_sum / c;
 }
 
 
@@ -249,7 +244,5 @@ double  near_exact_p_val(double counts1[], double counts2[],
 		count_pairs[c].c1_count, count_pairs[c].c2_count,
 		(double)count_pairs[c].c1_count / count_pairs[c].c2_count);
     
-    fc_exact_p_val(count_pairs, pair_count, replicates, observed_fc);
-    
-    return 1.0;
+    return fc_exact_p_val(count_pairs, pair_count, replicates, observed_fc);
 }
