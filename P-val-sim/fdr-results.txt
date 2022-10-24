@@ -1,0 +1,75 @@
+P-value: 0.05  Replicates: 3  Expected false positives = 50.00
+Exact P-val counts for each run of 1000 trials: 50 45 50 45
+Exact P-val average of 4 x 1000 trials: 47
+
+P-value: 0.05  Replicates: 4  Expected false positives = 50.00
+Exact P-val counts for each run of 1000 trials: 50 57 54 31
+Exact P-val average of 4 x 1000 trials: 48
+
+P-value: 0.05  Replicates: 5  Expected false positives = 50.00
+Exact P-val counts for each run of 1000 trials: 47 52 53 52
+Exact P-val average of 4 x 1000 trials: 51
+
+P-value: 0.05  Replicates: 6  Expected false positives = 50.00
+Exact P-val counts for each run of 1000 trials: 48 53 48 51
+Exact P-val average of 4 x 1000 trials: 50
+
+P-value: 0.05  Replicates: 7  Expected false positives = 50.00
+Exact P-val counts for each run of 1000 trials: 54 59 50 60
+Exact P-val average of 4 x 1000 trials: 55
+
+P-value: 0.05  Replicates: 8  Expected false positives = 50.00
+Exact P-val counts for each run of 1000 trials: 41 70 55 48
+Exact P-val average of 4 x 1000 trials: 53
+Mann-Whitney counts for each run of 1000 trials: 33 65 56 50
+Mann-Whitney average of 4 x 1000 trials: 51
+
+P-value: 0.05  Replicates: 9  Expected false positives = 50.00
+Exact P-val counts for each run of 1000 trials: 63 52 47 49
+Exact P-val average of 4 x 1000 trials: 52
+Mann-Whitney counts for each run of 1000 trials: 57 44 35 46
+Mann-Whitney average of 4 x 1000 trials: 45
+
+P-value: 0.05  Replicates: 10  Expected false positives = 50.00
+Exact P-val counts for each run of 1000 trials: 39 51 65 59
+Exact P-val average of 4 x 1000 trials: 53
+Mann-Whitney counts for each run of 1000 trials: 39 41 57 56
+Mann-Whitney average of 4 x 1000 trials: 48
+
+P-value: 0.01  Replicates: 3  Expected false positives = 100.00
+Exact P-val counts for each run of 10000 trials: 0 0 0 0
+Exact P-val average of 4 x 10000 trials: 0
+
+P-value: 0.01  Replicates: 4  Expected false positives = 100.00
+Exact P-val counts for each run of 10000 trials: 39 34 50 44
+Exact P-val average of 4 x 10000 trials: 41
+
+P-value: 0.01  Replicates: 5  Expected false positives = 100.00
+Exact P-val counts for each run of 10000 trials: 66 73 68 68
+Exact P-val average of 4 x 10000 trials: 68
+
+P-value: 0.01  Replicates: 6  Expected false positives = 100.00
+Exact P-val counts for each run of 10000 trials: 96 69 86 84
+Exact P-val average of 4 x 10000 trials: 83
+
+P-value: 0.01  Replicates: 7  Expected false positives = 100.00
+Exact P-val counts for each run of 10000 trials: 71 92 91 81
+Exact P-val average of 4 x 10000 trials: 83
+
+P-value: 0.01  Replicates: 8  Expected false positives = 100.00
+Exact P-val counts for each run of 10000 trials: 86 78 77 89
+Exact P-val average of 4 x 10000 trials: 82
+Mann-Whitney counts for each run of 10000 trials: 68 61 56 74
+Mann-Whitney average of 4 x 10000 trials: 64
+
+P-value: 0.01  Replicates: 9  Expected false positives = 100.00
+Exact P-val counts for each run of 10000 trials: 83 105 85 84
+Exact P-val average of 4 x 10000 trials: 89
+Mann-Whitney counts for each run of 10000 trials: 65 84 69 73
+Mann-Whitney average of 4 x 10000 trials: 72
+
+P-value: 0.01  Replicates: 10  Expected false positives = 100.00
+Exact P-val counts for each run of 10000 trials: 103 88 86 96
+Exact P-val average of 4 x 10000 trials: 93
+Mann-Whitney counts for each run of 10000 trials: 91 75 77 84
+Mann-Whitney average of 4 x 10000 trials: 81
