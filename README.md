@@ -41,8 +41,11 @@ differential analysis tools suffer from a high
 false discovery rate (FDR) regardless of sample size (biological replicates):
 [https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
 
-For computing P-values,
-FASDA implements the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test),
+For computing P-values, FASDA computes exact P-values for experiments with
+fewer than 5 replicates, near-exact P-values for 5 to 7 replicates
+(possible count pairs are down-sampled to control run time, but resulting
+P-values are generally stable to 2 decimal places).  For 8 or more replicates,
+we use the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test),
 a non-parametric test that provides high stability and low FDR.  The main
 limitation of Mann-Whitney is that it requires a minimum sample size of
 about 8 to achieve reasonable statistical power.  As a result, it is not
@@ -56,15 +59,11 @@ under-served niche of high sample studies with a tool that is fast and
 produces more stable results.  Additional use cases including
 data with fewer replicates may be addressed at a later date.
 
+Counts are normalized using Mean Ratios Normalization (MRN).
+
 ## Status
 
-FASDA is ready for alpha-testing.  It currently computes exact P-values
-for less than 5 replicates, near-exact P-values for 5 to 7 replicates
-(the combinations of counts pairs are randomly down-sampled to control
-run time, but resulting P-values are generally accurate to 2 decimal places).
-For 8 or more replicates, the Mann-Whitney U-test is used to estimate P-values.
-
-Counts are normalized using Mean Ratios Normalization (MRN).
+FASDA is ready for alpha-testing.
 
 Currently the kallisto abundance.tsv file format is used as input for
 computing fold-change and P-values.  "fasda abundance" can compute abundances
