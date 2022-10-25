@@ -125,7 +125,7 @@ unsigned long   extreme_fcs$k(count_pair_t count_pairs[], unsigned long pair_cou
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0,
 		    increment = $increment, pass, count = 0;
-    double          fc;
+    double          c2_sum, c1_sum, fc;
     
 EOM
     # Variable defs
@@ -151,39 +151,35 @@ EOM
     print_indent $c
     printf "     {\n"
     print_indent $c
-    printf "         fc = (\n"
+    printf "         c2_sum =\n"
     for c2 in $(seq 1 $((k - 1))); do
 	print_indent $c
-	printf "                  count_pairs[c$c2].c2_count +\n"
+	printf "             count_pairs[c$c2].c2_count +\n"
     done
     print_indent $c
-    printf "                  count_pairs[c$k].c2_count\n"
+    printf "             count_pairs[c$k].c2_count;\n"
     print_indent $c
-    printf "              )\n"
-    print_indent $c
-    printf "              / \n"
-    print_indent $c
-    printf "              (\n"
+    printf "         c1_sum =\n"
     for c2 in $(seq 1 $((k - 1))); do
 	print_indent $c
-	printf "                  count_pairs[c$c2].c1_count +\n"
+	printf "             count_pairs[c$c2].c1_count +\n"
     done
     print_indent $c
-    printf "                  count_pairs[c$k].c1_count\n"
+    printf "             count_pairs[c$k].c1_count;\n"
     print_indent $c
-    printf "              );\n"
+    printf "         fc = c2_sum / c1_sum;\n"
     # print_indent $c
     # printf '             if ( count %% 100000000 == 0 ) fprintf(stderr, "%%lu\\r", count);\n'
 
     print_indent $c
-    printf "        if ( fc >= observed_fc ) ++fc_ge;\n"
+    printf "         if ( fc >= observed_fc ) ++fc_ge;\n"
     print_indent $c
-    printf "        else if ( fc <= 1.0 / observed_fc ) ++fc_le;\n"
+    printf "         else if ( fc <= 1.0 / observed_fc ) ++fc_le;\n"
 
     print_indent $c
-    printf "        ++count;\n"
+    printf "         ++count;\n"
     print_indent $c
-    printf "    }\n"
+    printf "     }\n"
     
     # Closing braces
     cat << EOM

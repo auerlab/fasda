@@ -49,7 +49,7 @@
 # Installed targets
 
 BIN     = fasda
-LIBEXEC = abundance normalize fold-change Pval-sim/pval-sim
+LIBEXEC = abundance normalize fold-change pval-sim
 BINS    = ${BIN} ${LIBEXEC}
 
 ############################################################################
@@ -59,6 +59,7 @@ OBJS_FASDA          = fasda.o alignment-stats-mutators.o
 OBJS_ABUNDANCE      = abundance.o
 OBJS_NORMALIZE      = normalize.o
 OBJS_FOLD_CHANGE    = fold-change.o mann-whitney.o exact-p-val.o fc-ge.o
+OBJS_PVAL_SIM       = pval-sim.o fc-ge.o mann-whitney.o exact-p-val.o
 OBJS                = ${OBJS_FASDA} ${OBJS_ABUNDANCE} ${OBJS_NORMALIZE} \
 		      ${OBJS_FOLD_CHANGE}
 
@@ -154,9 +155,9 @@ normalize: ${OBJS_NORMALIZE}
 fold-change: ${OBJS_FOLD_CHANGE}
 	${LD} -o fold-change ${OBJS_FOLD_CHANGE} ${LDFLAGS}
 
-Pval-sim/pval-sim:
-	(cd Pval-sim && make)
-	
+pval-sim:   ${OBJS_PVAL_SIM}
+	${LD} -o pval-sim ${OBJS_PVAL_SIM} ${LDFLAGS}
+
 fc-ge.c:    combgen.sh
 	./combgen.sh > fc-ge.c
 
@@ -189,7 +190,6 @@ depend:
 
 clean:
 	rm -f ${OBJS} ${BINS} *.nr README.html Utils/log-or-not
-	cd Pval-sim && make clean
 
 # Keep backup files during normal clean, but provide an option to remove them
 realclean: clean

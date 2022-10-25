@@ -14,7 +14,11 @@ exact-p-val.o: exact-p-val.c exact-p-val.h
 fasda.o: fasda.c
 	${CC} -c ${CFLAGS} fasda.c
 
-fold-change.o: fold-change.c fold-change.h fold-change-protos.h
+fc-ge.o: fc-ge.c exact-p-val.h
+	${CC} -c ${CFLAGS} fc-ge.c
+
+fold-change.o: fold-change.c fold-change.h fold-change-protos.h \
+  exact-p-val.h
 	${CC} -c ${CFLAGS} fold-change.c
 
 mann-whitney.o: mann-whitney.c
@@ -22,4 +26,7 @@ mann-whitney.o: mann-whitney.c
 
 normalize.o: normalize.c normalize.h fasda.h normalize-protos.h
 	${CC} -c ${CFLAGS} normalize.c
+
+pval-sim.o: pval-sim.c exact-p-val.h
+	${CC} -c ${CFLAGS} pval-sim.c
 

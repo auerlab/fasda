@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-make
+(cd .. && make)
 for p_val in 0.05 0.01; do
     case $p_val in
     0.10|0.05)
@@ -17,7 +17,7 @@ for p_val in 0.05 0.01; do
 	    $(printf "$p_val * $trials\nquit\n" | bc -l)
 	
 	# Run expensive P-value computations in parallel
-	seq 1 4 | parallel ./pval-sim 100 100 .5 $replicates $trials '>' tmp{}.txt
+	seq 1 4 | parallel ../pval-sim 100 100 .5 $replicates $trials '>' tmp{}.txt
 	
 	for run in $(seq 1 4); do
 	    awk '$1 == "Exact" && $4 <= '$p_val' { print $4 }' tmp$run.txt \

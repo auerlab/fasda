@@ -1,3 +1,0 @@
-exact-p-val.o: exact-p-val.c exact-p-val.h
-	${CC} -c ${CFLAGS} exact-p-val.c
-

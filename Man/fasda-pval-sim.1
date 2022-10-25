@@ -1,0 +1,45 @@
+.TH FASDA-PVAL-SIM 1
+.SH NAME    \" Section header
+.PP
+
+fasda pval-sim - Generate simulated counts and compute P-values
+
+\" Convention:
+\" Underline anything that is typed verbatim - commands, etc.
+.SH SYNOPSIS
+.PP
+.nf 
+.na 
+fasda pval-sim count1-mean count2-mean max-deviation replicates trials
+.ad
+.fi
+
+.SH "DESCRIPTION"
+
+The
+.B blt pval-sim
+command attempts generates random counts based on count1-mean,
+count2-mean, max-deviation, and replicates.  The first set of counts is
+in the range count1-mean +/- count1-mean * max-deviation, with a uniform
+random distribution.  The second sets of counts is count2-mean +/-
+count2-mean * max-deviation.
+
+There will be replicates counts in each set, so a total of 2 * replicates
+counts.
+
+pval-sim then computes the exact (replicates < 5), near-exact
+(5 <= replicates <= 10) and/or Mann-Whitney (replicates >= 8) P-values
+for the generated counts.  If trials > 1, the experiment is repeated
+with new counts.
+
+.SH "SEE ALSO"
+fasda-abundance(1), fasda-fold-change(1), fasda-normalize(1)
+
+.SH BUGS
+Please report bugs to the author and send patches in unified diff format.
+(man diff for more information)
+
+.SH AUTHOR
+.nf
+.na
+J. Bacon
