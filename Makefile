@@ -49,7 +49,7 @@
 # Installed targets
 
 BIN     = fasda
-LIBEXEC = abundance normalize fold-change
+LIBEXEC = abundance normalize fold-change Pval-sim/pval-sim
 BINS    = ${BIN} ${LIBEXEC}
 
 ############################################################################
@@ -153,6 +153,9 @@ normalize: ${OBJS_NORMALIZE}
 	
 fold-change: ${OBJS_FOLD_CHANGE}
 	${LD} -o fold-change ${OBJS_FOLD_CHANGE} ${LDFLAGS}
+
+Pval-sim/pval-sim:
+	(cd Pval-sim && make)
 	
 fc-ge.c:    combgen.sh
 	./combgen.sh > fc-ge.c
@@ -186,6 +189,7 @@ depend:
 
 clean:
 	rm -f ${OBJS} ${BINS} *.nr README.html Utils/log-or-not
+	cd Pval-sim && make clean
 
 # Keep backup files during normal clean, but provide an option to remove them
 realclean: clean
