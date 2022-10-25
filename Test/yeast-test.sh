@@ -56,6 +56,11 @@ fi
 
 export PATH=../../local/bin:$PATH
 dir=Data/05-kallisto-quant
+
+##########################################################################
+#   All samples, should use Mann-Whitney
+##########################################################################
+
 for condition in WT SNF2; do
     printf "Normalizing $condition...\n"
     time fasda normalize --output $condition-all-norm.tsv $dir/$condition-*/abundance.tsv
@@ -65,3 +70,19 @@ printf "Computing fold-change...\n"
 time fasda fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
 pause
 more WT-SNF2-FC.txt
+
+##########################################################################
+#   3 samples, should use exact P-values
+##########################################################################
+
+for condition in WT SNF2; do
+    printf "Normalizing $condition...\n"
+    time fasda normalize --output $condition-all-norm-3.tsv $dir/$condition-[1-3]/abundance.tsv
+done
+
+printf "Computing fold-change...\n"
+time fasda fold-change --output WT-SNF2-FC-3.txt \
+    WT-all-norm-3.tsv SNF2-all-norm-3.tsv
+pause
+more WT-SNF2-FC-3.txt
+
