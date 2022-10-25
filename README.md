@@ -54,10 +54,9 @@ useful for typical RNA-Seq or ATAC-Seq experiments with only 3 replicates.
 Parametric tests used by popular tools can provide reasonable power at very
 low sample sizes, in exchange for high FDR.  However, their high FDR and
 otherwise poor performance for large sample sizes illustrates a need for
-a new approach.  Hence, our first goal with FASDA is to fill an
+a new approach.  Hence, a major goal with FASDA is to fill an
 under-served niche of high sample studies with a tool that is fast and
-produces more stable results.  Additional use cases including
-data with fewer replicates may be addressed at a later date.
+produces more stable results.
 
 Counts are normalized using Mean Ratios Normalization (MRN).
 
@@ -66,7 +65,8 @@ Counts are normalized using Mean Ratios Normalization (MRN).
 FASDA is ready for alpha-testing.
 
 Currently the kallisto abundance.tsv file format is used as input for
-computing fold-change and P-values.  "fasda abundance" can compute abundances
+computing fold-change and P-values.  The "fasda abundance" command
+can compute abundances
 from SAM/BAM/CRAM files and produce a kallisto style abundance file,
 so that RNA-Seq data from other aligners can be used.
 
