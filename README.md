@@ -58,14 +58,19 @@ data with fewer replicates may be addressed at a later date.
 
 ## Status
 
-We're still in the fairly early stages of development.  We are able
-to normalize counts using Mean Ratios Normalization (MRN) and compute
-fold-change and Mann-Whitney P-values for an arbitrary number of conditions.
+FASDA is ready for alpha-testing.  It currently computes exact P-values
+for less than 5 replicates, near-exact P-values for 5 to 7 replicates
+(the combinations of counts pairs are randomly down-sampled to control
+run time, but resulting P-values are generally accurate to 2 decimal places).
+For 8 or more replicates, the Mann-Whitney U-test is used to estimate P-values.
+
+Counts are normalized using Mean Ratios Normalization (MRN).
 
 Currently the kallisto abundance.tsv file format is used as input for
-computing fold-change and P-values.  A tool to compute abundances from
-SAM/BAM/CRAM files and produce a kallisto style abundance file is in the
-works so that RNA-Seq data from other aligners can eventually be used.
+computing fold-change and P-values.  "fasda abundance" can compute abundances
+from SAM/BAM/CRAM files and produce a kallisto style abundance file,
+so that RNA-Seq data from other aligners can be used.
+
 We also plan to eventually support ChIP and ATAC peak data.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
