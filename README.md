@@ -41,7 +41,7 @@ differential analysis tools suffer from a high
 false discovery rate (FDR) regardless of sample size (biological replicates):
 [https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
 
-For computing P-values, FASDA computes exact P-values for experiments with
+FASDA computes exact P-values for experiments with
 fewer than 5 replicates, near-exact P-values for 5 to 7 replicates
 (possible count pairs are down-sampled to control run time, but resulting
 P-values are generally stable to 2 decimal places).  For 8 or more replicates,
