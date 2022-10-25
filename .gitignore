@@ -6,7 +6,7 @@ fold-change
 .*.bak
 Data
 Yeast
-SNF2-all-norm.tsv
-WT-SNF2-FC.txt
-WT-all-norm.tsv
+SNF2-all-norm*.tsv
+WT-SNF2-FC*.txt
+WT-all-norm*.tsv
 pval-sim
