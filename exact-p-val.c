@@ -1,8 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <sysexits.h>
 #include <xtend/math.h>
 #include <xtend/array.h>
 #include <xtend/mem.h>
 #include "exact-p-val.h"
+
+const extern int    Debug;
 
 /*
  *  Find all possible means of fold-change triplets
@@ -17,17 +21,18 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     double          p_val, p_val_sum;
 
     if ( replicates <= 10 )
-    {
 	fc_count = xt_n_choose_k(pair_count, replicates);
+    else
+	fc_count = 0;
+
+    if ( Debug )
+    {
 	printf("\n%zu choose %zu = %lu possible FCs from %lu pairs.\n",
 	    pair_count, replicates, fc_count, replicates);
+	printf("P-value = likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n\n",
+		replicates, observed_fc, 1.0 / observed_fc);
     }
-    else
-	printf("\nfc_count > 2^64 for replicates > 10.\n");
-
-    printf("P-value = likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n\n",
-	    replicates, observed_fc, 1.0 / observed_fc);
-
+    
     // Run several reps with the same fold-changes for down-sampled FCs
     // to check stability
     p_val_sum = 0.0;
@@ -39,8 +44,9 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	
 	p_val = (double)extreme_fcs / actual_fc_count;
 	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
-	printf("FCs sampled = %lu  P-value = %lu / %lu = %0.3f\n\n",
-		actual_fc_count, extreme_fcs, actual_fc_count, p_val);
+	if ( Debug )
+	    printf("FCs sampled = %lu  P-value = %lu / %lu = %0.3f\n\n",
+		    actual_fc_count, extreme_fcs, actual_fc_count, p_val);
 	p_val_sum += p_val;
     }
     
@@ -101,8 +107,9 @@ double  near_exact_p_val(double counts1[], double counts2[],
     observed_fc = c2_sum / c1_sum;
     if ( observed_fc < 1.0 )
 	observed_fc = 1.0 / observed_fc;
-    printf("Observed: FC = %0.3f  1 / Observed FC = %0.3f\n",
-	    observed_fc, 1.0 / observed_fc);
+    if ( Debug )
+	printf("Observed: FC = %0.3f  1 / Observed FC = %0.3f\n",
+		observed_fc, 1.0 / observed_fc);
 	
     /*
      *  Compute fold-change for every possible pairing.
@@ -112,9 +119,12 @@ double  near_exact_p_val(double counts1[], double counts2[],
      */
     
     samples = replicates * 2;
-    printf("\n%lu choose %d = %lu combinations of counts\n",
-	    samples, 2, xt_n_choose_k(samples, 2));
-    puts("2 ordered pairs for each combination:");
+    if ( Debug )
+    {
+	printf("\n%lu choose %d = %lu combinations of counts\n",
+		samples, 2, xt_n_choose_k(samples, 2));
+	puts("2 ordered pairs for each combination:");
+    }
     half_pair_count = xt_n_choose_k(samples, 2);
     pair_count = half_pair_count * 2;   // FC and 1/FC
     count_pairs = xt_malloc(pair_count, sizeof(*count_pairs));
@@ -147,18 +157,21 @@ double  near_exact_p_val(double counts1[], double counts2[],
     // Check for program bugs
     if ( c != half_pair_count )
     {
-	printf("%lu != %lu\n", c, half_pair_count);
-	return 1;
+	fprintf(stderr, "%lu != %lu\n", c, half_pair_count);
+	exit(EX_SOFTWARE);
     }
 
     // Down-sampled P-values come up light without shuffling, but average
     // very close to exact with this shuffling.  Why?
     xt_shuffle(count_pairs, pair_count, sizeof(*count_pairs));
     
-    for (c = 0; c < pair_count; ++c)
-	printf("%2lu %3.0f, %3.0f   FC = %0.3f\n", c,
-		count_pairs[c].c1_count, count_pairs[c].c2_count,
-		(double)count_pairs[c].c1_count / count_pairs[c].c2_count);
+    if ( Debug )
+    {
+	for (c = 0; c < pair_count; ++c)
+	    printf("%2lu %3.0f, %3.0f   FC = %0.3f\n", c,
+		    count_pairs[c].c1_count, count_pairs[c].c2_count,
+		    (double)count_pairs[c].c1_count / count_pairs[c].c2_count);
+    }
     
     return fc_exact_p_val(count_pairs, pair_count, replicates, observed_fc);
 }

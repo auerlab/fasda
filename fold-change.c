@@ -21,6 +21,8 @@
 #include "fold-change.h"
 #include "exact-p-val.h"
 
+const int   Debug = 0;
+
 int     main(int argc,char *argv[])
 
 {

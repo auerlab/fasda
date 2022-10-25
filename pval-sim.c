@@ -14,6 +14,8 @@
 #include <sys/time.h>
 #include "exact-p-val.h"
 
+const int   Debug = 1;
+
 void    usage(char *argv[])
 
 {
