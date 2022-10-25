@@ -7,6 +7,8 @@
 #include "exact-p-val.h"
 
 
+const extern int    Debug;
+
 /*
  *  Generate all combinations n choose 2 and count FCs >= observed.
  *  This is much faster than generic algorithms for generating n choose
@@ -41,12 +43,15 @@ unsigned long   extreme_fcs2(count_pair_t count_pairs[], unsigned long pair_coun
           else if ( fc <= 1.0 / observed_fc ) ++fc_le;
           ++count;
       }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
 }
+
+const extern int    Debug;
 
 /*
  *  Generate all combinations n choose 3 and count FCs >= observed.
@@ -85,12 +90,15 @@ unsigned long   extreme_fcs3(count_pair_t count_pairs[], unsigned long pair_coun
            else if ( fc <= 1.0 / observed_fc ) ++fc_le;
            ++count;
        }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
 }
+
+const extern int    Debug;
 
 /*
  *  Generate all combinations n choose 4 and count FCs >= observed.
@@ -132,12 +140,15 @@ unsigned long   extreme_fcs4(count_pair_t count_pairs[], unsigned long pair_coun
             else if ( fc <= 1.0 / observed_fc ) ++fc_le;
             ++count;
         }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
 }
+
+const extern int    Debug;
 
 /*
  *  Generate all combinations n choose 5 and count FCs >= observed.
@@ -182,12 +193,15 @@ unsigned long   extreme_fcs5(count_pair_t count_pairs[], unsigned long pair_coun
              else if ( fc <= 1.0 / observed_fc ) ++fc_le;
              ++count;
          }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
 }
+
+const extern int    Debug;
 
 /*
  *  Generate all combinations n choose 6 and count FCs >= observed.
@@ -235,12 +249,15 @@ unsigned long   extreme_fcs6(count_pair_t count_pairs[], unsigned long pair_coun
               else if ( fc <= 1.0 / observed_fc ) ++fc_le;
               ++count;
           }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
 }
+
+const extern int    Debug;
 
 /*
  *  Generate all combinations n choose 7 and count FCs >= observed.
@@ -291,12 +308,15 @@ unsigned long   extreme_fcs7(count_pair_t count_pairs[], unsigned long pair_coun
                else if ( fc <= 1.0 / observed_fc ) ++fc_le;
                ++count;
            }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
 }
+
+const extern int    Debug;
 
 /*
  *  Generate all combinations n choose 8 and count FCs >= observed.
@@ -350,12 +370,15 @@ unsigned long   extreme_fcs8(count_pair_t count_pairs[], unsigned long pair_coun
                 else if ( fc <= 1.0 / observed_fc ) ++fc_le;
                 ++count;
             }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
 }
+
+const extern int    Debug;
 
 /*
  *  Generate all combinations n choose 9 and count FCs >= observed.
@@ -412,12 +435,15 @@ unsigned long   extreme_fcs9(count_pair_t count_pairs[], unsigned long pair_coun
                  else if ( fc <= 1.0 / observed_fc ) ++fc_le;
                  ++count;
              }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
 }
+
+const extern int    Debug;
 
 /*
  *  Generate all combinations n choose 10 and count FCs >= observed.
@@ -477,8 +503,9 @@ unsigned long   extreme_fcs10(count_pair_t count_pairs[], unsigned long pair_cou
                   else if ( fc <= 1.0 / observed_fc ) ++fc_le;
                   ++count;
               }
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;

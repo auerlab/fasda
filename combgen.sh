@@ -110,6 +110,8 @@ gen_loop()
     
     cat << EOM
 
+const extern int    Debug;
+
 /*
  *  Generate all combinations n choose $k and count FCs >= observed.
  *  This is much faster than generic algorithms for generating n choose
@@ -183,8 +185,9 @@ EOM
     
     # Closing braces
     cat << EOM
-    printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
-	    observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
+    if ( Debug )
+	printf("FCs > %0.3f = %-5lu     FCs < %0.3f = %-5lu\n",
+		observed_fc, fc_ge, 1.0 / observed_fc, fc_le);
     *fc_count = count;
     
     return fc_ge + fc_le;
