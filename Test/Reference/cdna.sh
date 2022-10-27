@@ -7,6 +7,12 @@ if [ $0 != "$proper_name" ]; then
     exit 1
 fi
 
+if [ $(uname) = Darwin ]; then
+    zcat=gzcat
+else
+    zcat=zcat
+fi
+
 # Need GTF for kallisto quant --genomebam in any case
 Reference/fetch-gtf.sh
 
@@ -27,4 +33,4 @@ else
 fi
 
 set -x
-zcat $cdna | $awk -F : -f ../../Reference/keep-autosomes.awk > $transcriptome
+$zcat $cdna | $awk -F : -f ../../Reference/keep-autosomes.awk > $transcriptome

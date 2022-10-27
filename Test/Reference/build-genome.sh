@@ -9,6 +9,12 @@ EOM
     exit 1
 fi
 
+if [ $(uname) = Darwin ]; then
+    zcat=gzcat
+else
+    zcat=zcat
+fi
+
 fetch=$(Common/find-fetch.sh)
 build=$(Common/genome-build.sh)
 release=$(Common/genome-release.sh)
@@ -28,7 +34,7 @@ if [ ! -e $genome ]; then
     printf "Concatenating chromosome FASTAs...\n"
     for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
 	printf "$chrom "
-	zcat Saccharomyces_cerevisiae.R$build.dna.chromosome.$chrom.fa.gz >> $genome
+	$zcat Saccharomyces_cerevisiae.R$build.dna.chromosome.$chrom.fa.gz >> $genome
     done
     printf "\n"
 else
