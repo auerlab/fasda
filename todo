@@ -1,2 +1,2 @@
 
-Integrate pval-sim into main source dir and Makefile
+Docs: Never make a decision based solely on the p-value and/or fold-change
