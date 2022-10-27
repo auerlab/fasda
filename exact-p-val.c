@@ -104,6 +104,11 @@ double  near_exact_p_val(double counts1[], double counts2[],
 	c1_sum += counts1[c];
 	c2_sum += counts2[c];
     }
+    
+    // Don't waste time doing combinatorics when both counts are 0
+    if ( (c1_sum == 0.0) && (c2_sum == 0.0) )
+	return 1.0;
+    
     observed_fc = c2_sum / c1_sum;
     if ( observed_fc < 1.0 )
 	observed_fc = 1.0 / observed_fc;
