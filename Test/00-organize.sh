@@ -1,6 +1,5 @@
 #!/bin/sh -e
 
-
 ##########################################################################
 #   Function description:
 #       Pause until user presses return
@@ -50,15 +49,17 @@ Sample names are mapped in ERP004763_sample_mapping.tsv.  You can select
 sample names at the link above and download the lot of them as a .zip file.
 
 EOM
-    printf "WT-*:   $(ls WT-* | wc -l)\n"
-    printf "SNF2-*: $(ls SNF2-* | wc -l)\n"
-    
-    printf "\nShowing the first 10 samples of each. "
-    pause
-    
-    awk '$3 == "WT"' ERP004763_sample_mapping.tsv | sort -nk 4 -u | head > list
-    awk '$3 == "SNF2"' ERP004763_sample_mapping.tsv | sort -nk 4 -u | head >> list
-    sort list
-    rm list
     exit 1
 fi
+
+printf "WT-*:   $(ls WT-* | wc -l)\n"
+printf "SNF2-*: $(ls SNF2-* | wc -l)\n"
+
+printf "\nShowing the first 10 samples of each.\n"
+
+awk '$3 == "WT"' ../../ERP004763_sample_mapping.tsv | sort -nk 4 -u | head > list
+awk '$3 == "SNF2"' ../../ERP004763_sample_mapping.tsv | sort -nk 4 -u | head >> list
+sort list
+rm list
+pause
+
