@@ -1,5 +1,10 @@
 #!/bin/sh -e
 
+# Document software versions used for publication
+uname -a
+fastq-trim --version
+pwd
+
 # So gzip can keep up with fastq-trim
 export GZIP=-1
 

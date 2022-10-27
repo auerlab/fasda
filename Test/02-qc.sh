@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+uname -a
+fastqc --version
+pwd
+
 for dir in Raw-renamed 01-trim; do
     report_dir=Data/02-qc/$dir
     mkdir -p $report_dir
@@ -13,6 +17,8 @@ for dir in Raw-renamed 01-trim; do
 	    fastqc --outdir $report_dir $file
 	fi
     done
-    multiqc --outdir $report_dir $report_dir
-    firefox $report_dir/multiqc_report.html || true
+    if which multiqc && which firefox; then
+	multiqc --outdir $report_dir $report_dir
+	firefox $report_dir/multiqc_report.html || true
+    fi
 done
