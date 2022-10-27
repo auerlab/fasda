@@ -8,27 +8,28 @@ and peak calling.  Well-maintained tools such as FastQC, cutadapt, fastq-trim,
 BWA, Bowtie2, HISAT2, samtools, bedtools, and MACS2 make the early stages of
 an RNA-Seq, ATAC-Seq, or ChIP-Seq analysis fairly straightforward.
 
-Data massaging before and after differential analysis is also relatively
-easy using standard Unix tools such as awk, cut, grep, sed, and tr, or
+Data-massaging before and after differential analysis is also relatively
+simple using standard Unix tools such as awk, cut, grep, sed, and tr, or
 simple perl or python scripts.
 
-The differential analysis step itself has until now has been problematic,
+The differential analysis step itself has been problematic,
 however, with few well-developed tools available and many of them requiring
 fairly sophisticated R scripting for basic use.  Code maintenance
 has also been an issue, with even the most popular tools falling into
 disrepair at times and frequently presenting installation issues due to
 incompatibility with the latest version of R or other dependencies.
 
-FASDA aims to provide a fast and simple differential analysis tool that
+FASDA is a fast and simple differential analysis tool that
 just works and does not require any knowledge beyond basic Unix command-line
-skills.  It operates on a simple command-line interface (CLI) analogous
+skills.  It uses a simple command-line interface (CLI) analogous
 to popular tools such as bedtools, BWA, and samtools.
 The code is written entirely in C and built on
-[biolibc](https://github.com/auerlab/biolibc) to maximize efficiency and
-portability.
+[biolibc](https://github.com/auerlab/biolibc) to maximize efficiency,
+portability, and interoperability with other tools.
 
 Starting with kallisto output, computing fold-change and associated P-values
-for two conditions can be done in seconds with three simple commands:
+for two conditions can typically be completed in a few seconds with three
+simple commands:
 
 ```
 fasda normalize --output c1-all-norm.tsv c1-*/abundance.tsv
@@ -38,39 +39,41 @@ fasda fold-change --output FC.txt c1-all-norm.tsv c2-all-norm.tsv
 
 Another issue addressed by FASDA is the fact that most popular
 differential analysis tools suffer from a high
-false discovery rate (FDR) regardless of sample size (biological replicates):
+false discovery rate (FDR):
 [https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
 
 FASDA computes exact P-values for experiments with
-fewer than 5 replicates, near-exact P-values for 5 to 7 replicates
+fewer than 5 replicates and near-exact P-values for 5 to 7 replicates
 (possible count pairs are down-sampled to control run time, but resulting
 P-values are generally stable to 2 decimal places).  For 8 or more replicates,
 we use the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test),
 a non-parametric test that provides high stability and low FDR.  The main
-limitation of Mann-Whitney is that it requires a minimum sample size of
-about 8 to achieve reasonable statistical power.  As a result, it is not
+limitation of Mann-Whitney is that it requires a minimum of 8 samples
+to achieve reasonable statistical power.  As a result, it is not
 useful for typical RNA-Seq or ATAC-Seq experiments with only 3 replicates.
 
 Parametric tests used by popular tools can provide reasonable power at very
-low sample sizes, in exchange for high FDR.  However, their high FDR and
-otherwise poor performance for large sample sizes illustrates a need for
+low sample sizes, in exchange for high FDR when the data do not fit the
+parametric assumptions well.  However, their high FDR and
+poor performance for large sample sizes illustrates a need for
 a new approach.  Hence, a major goal with FASDA is to fill an
-under-served niche of high sample studies with a tool that is fast and
-produces more stable results.
+under-served niche of high-sample studies with a tool that is fast and
+produces stable results.
 
-Counts are normalized using Mean Ratios Normalization (MRN).
+FASDA currently uses Mean Ratios Normalization (MRN) to normalize counts
+prior to computing fold-changes and P-values.
 
 ## Status
 
 FASDA is ready for alpha-testing.
 
-Currently the kallisto abundance.tsv file format is used as input for
-computing fold-change and P-values.  The "fasda abundance" command
-can compute abundances
-from SAM/BAM/CRAM files and produce a kallisto style abundance file,
-so that RNA-Seq data from other aligners can be used.
+Currently, the kallisto abundance.tsv file format is used as input for
+normalization and computing fold-change and P-values.  The "fasda abundance"
+command computes abundances from SAM/BAM/CRAM files and produces a
+kallisto-style abundance file, so that data from other aligners can be used.
 
-We also plan to eventually support ChIP and ATAC peak data.
+We also plan to support ChIP-Seq and ATAC-Seq peak data, but this has
+not yet been tested.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
