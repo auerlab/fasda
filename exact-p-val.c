@@ -17,7 +17,7 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 			    size_t replicates, double observed_fc)
 
 {
-    unsigned long   fc_count, extreme_fcs, actual_fc_count, c;
+    unsigned long   fc_count, extreme_fcs, actual_fc_count, c, passes;
     double          p_val, p_val_sum;
 
     // fc_count is beyond the range of an unsigned long for > 10 replicates
@@ -32,12 +32,15 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	    pair_count, replicates, fc_count, replicates);
 	printf("P-value = likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n\n",
 		replicates, observed_fc, 1.0 / observed_fc);
+	passes = 5;
     }
+    else
+	passes = 1;
     
     // Run several reps with the same fold-changes for down-sampled FCs
     // to check stability
     p_val_sum = 0.0;
-    for (c = 0; c < (replicates >= 5 ? 5 : 1); ++c)
+    for (c = 0; c < (replicates >= 5 ? passes : 1); ++c)
     {
 	// printf("%lu %lu\n", c, replicates);
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,

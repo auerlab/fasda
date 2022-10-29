@@ -76,17 +76,17 @@ gen_loop()
     # determined by trial and error with ./pval 100 120 .3 N 1
     case $k in
     5)
-	increment=3 # 2, 3: p-values mostly stable to 2 decimal places
+	increment=2 # 2, 3: p-values mostly stable to 2 decimal places
 	passes=3    # Exact P-value (inc=1, no srandom) = 0.393 ~1 sec
 		    # 100 200 .7 5 1
 	;;
     6)
-	increment=6 # 4, 6: p-values mostly stable to 2 decimal places
-	passes=5    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
+	increment=4 # 4, 6: p-values mostly stable to 2 decimal places
+	passes=6    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
 		    # 100 200 .7 6 1
 	;;
     7)
-	increment=10 # 6, 3: p-values mostly stable to 2 decimal places
+	increment=6 # 6, 3: p-values mostly stable to 2 decimal places
 	passes=3    # Exact P-value (inc=1, no srandom) = 0.048 several hours
 		    # 100 200 .7 7 1
 	;;

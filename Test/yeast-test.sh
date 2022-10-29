@@ -54,11 +54,13 @@ else
     printf "05-kallisto-quant.sh already done.\n"
 fi
 
-export PATH=../../local/bin:$PATH
 dir=Data/05-kallisto-quant
+PATH=../../local/bin:$PATH
+export PATH
+which fasda
 
 ##########################################################################
-#   All samples, should use Mann-Whitney
+#   All replicates, should use Mann-Whitney
 ##########################################################################
 
 for condition in WT SNF2; do
@@ -72,17 +74,20 @@ pause
 more WT-SNF2-FC.txt
 
 ##########################################################################
-#   3 samples, should use exact P-values
+#   3 - 7 replicates, should use exact P-values
 ##########################################################################
 
-for condition in WT SNF2; do
-    printf "Normalizing $condition...\n"
-    time fasda normalize --output $condition-all-norm-3.tsv $dir/$condition-[1-3]/abundance.tsv
+for replicates in $(seq 3 7); do
+    for condition in WT SNF2; do
+	printf "Normalizing $condition...\n"
+	time fasda normalize --output \
+	    $condition-all-norm-$replicates.tsv \
+	    $dir/$condition-[1-$replicates]/abundance.tsv
+    done
+    
+    printf "Computing fold-change for $replicates replicates...\n"
+    time fasda fold-change --output WT-SNF2-FC-$replicates.txt \
+	WT-all-norm-$replicates.tsv SNF2-all-norm-$replicates.tsv
+    pause
+    more WT-SNF2-FC-$replicates.txt
 done
-
-printf "Computing fold-change...\n"
-time fasda fold-change --output WT-SNF2-FC-3.txt \
-    WT-all-norm-3.tsv SNF2-all-norm-3.tsv
-pause
-more WT-SNF2-FC-3.txt
-
