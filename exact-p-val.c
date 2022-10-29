@@ -20,6 +20,7 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     unsigned long   fc_count, extreme_fcs, actual_fc_count, c;
     double          p_val, p_val_sum;
 
+    // fc_count is beyond the range of an unsigned long for > 10 replicates
     if ( replicates <= 10 )
 	fc_count = xt_n_choose_k(pair_count, replicates);
     else
@@ -36,7 +37,7 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     // Run several reps with the same fold-changes for down-sampled FCs
     // to check stability
     p_val_sum = 0.0;
-    for (c = 0; c < (replicates >= 5 ? 1 : 1); ++c)
+    for (c = 0; c < (replicates >= 5 ? 5 : 1); ++c)
     {
 	// printf("%lu %lu\n", c, replicates);
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
@@ -89,12 +90,14 @@ double  near_exact_p_val(double counts1[], double counts2[],
 {
     unsigned long   c, c1, c2, pair_count, samples, extreme_fcs,
 		    half_pair_count;
-
+    const unsigned long max_reps = 12;
     double  c1_sum, c2_sum, observed_fc, *counts;
     count_pair_t    *count_pairs;
-    if ( replicates > 10 )
+
+    if ( replicates > max_reps )
     {
-	fprintf(stderr, "near_exact_p_val(): Use mann_whitney_p_val() for reps > 10.\n");
+	fprintf(stderr, "near_exact_p_val(): Use mann_whitney_p_val() for reps > %lu.\n",
+		max_reps);
 	return 1.0;
     }
 

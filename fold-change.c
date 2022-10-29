@@ -79,8 +79,6 @@ int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream
 	fprintf(stderr, "fold-change: Must have at least 2 conditions.\n");
 	return EX_DATAERR;
     }
-    
-    print_header(diff_stream, conditions);
 
     // Skip header line if present
     for (condition = 0; condition < conditions; ++condition)
@@ -100,6 +98,8 @@ int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream
 	// Flag need for malloc below
 	rep_counts[condition] = NULL;
     }
+    
+    print_header(diff_stream, conditions);
     
     while ( !feof(condition_streams[0]) )
     {
@@ -216,6 +216,8 @@ void    print_header(FILE *diff_stream, int conditions)
 
 {
     int     c1, c2;
+    // FIXME: Set this depending on algorithm?
+    char    *p_header = "P-val";
     
     fprintf(diff_stream, "%-30s", "Feature");
     for (c1 = 0; c1 < conditions; ++c1)
@@ -223,7 +225,7 @@ void    print_header(FILE *diff_stream, int conditions)
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
-	    fprintf(diff_stream,"  FC %d-%d  P-val", c1 + 1, c2 + 1);
+	    fprintf(diff_stream,"  FC %d-%d   %s", c1 + 1, c2 + 1, p_header);
     }
     putc('\n', diff_stream);
 }
@@ -245,6 +247,7 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 {
     int     c1, c2;
     double  p_val;
+    static unsigned long    count = 0;
     
     fprintf(diff_stream,"%-30s", id);
     
@@ -266,10 +269,11 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 		p_val = mann_whitney_p_val(rep_counts[c1], rep_counts[c2],
 					     num_reps[c1], num_reps[c2]);
 	    else
-		// num_reps[c1] must equal num_reps[c2
 		p_val = near_exact_p_val(rep_counts[c1], rep_counts[c2],
 					num_reps[c1]);
-	    fprintf(diff_stream," %0.4f", p_val);
+	    fprintf(diff_stream,"   %0.3f", p_val);
+	    if ( ++count % 1000 == 0 )
+		fprintf(stderr, "%lu\r", count);
 	}
     }
     putc('\n', diff_stream);

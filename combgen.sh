@@ -72,35 +72,43 @@ gen_loop()
     local k=$1
     
     # Downsample set of all possible means for replicates > 5 so that
-    # 10 P-values can be computed in under 0.2 seconds.  Increments were
+    # 5 P-values can be computed in under 0.1 seconds.  Increments were
     # determined by trial and error with ./pval 100 120 .3 N 1
     case $k in
     5)
-	increment=2 # 2, 3: p-values mostly stable to 2 decimal places
+	increment=3 # 2, 3: p-values mostly stable to 2 decimal places
 	passes=3    # Exact P-value (inc=1, no srandom) = 0.393 ~1 sec
 		    # 100 200 .7 5 1
 	;;
     6)
-	increment=4 # 4, 6: p-values mostly stable to 2 decimal places
-	passes=6    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
+	increment=6 # 4, 6: p-values mostly stable to 2 decimal places
+	passes=5    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
 		    # 100 200 .7 6 1
 	;;
     7)
-	increment=6 # 6, 3: p-values mostly stable to 2 decimal places
+	increment=10 # 6, 3: p-values mostly stable to 2 decimal places
 	passes=3    # Exact P-value (inc=1, no srandom) = 0.048 several hours
 		    # 100 200 .7 7 1
 	;;
     8)
-	increment=9 # 9, 4: p-values mostly stable to 2 decimal places
+	increment=16 # 9, 4: p-values mostly stable to 2 decimal places
 	passes=4
 	;;
     9)
-	increment=16 # 16, 5: p-values not stable to 2 decimal places
-	passes=5
+	increment=21 # 16, 5: p-values not stable to 2 decimal places
+	passes=4
 	;;
     10)
-	increment=20 # 20, 7: p-values not stable to 2 decimal places
+	increment=30 # 20, 7: p-values not stable to 2 decimal places
+	passes=4
+	;;
+    11)
+	increment=30 # 30, 10: p-values almost stable to 2 decimal places
 	passes=7
+	;;
+    12)
+	increment=40 # 30, 10: p-values almost stable to 2 decimal places
+	passes=10
 	;;
     *)
 	increment=1
@@ -211,7 +219,7 @@ cat << EOM
 
 EOM
 # FC-count choose 11 overflows a 64-bit integer
-max_reps=10
+max_reps=12
 for c in $(seq 2 $max_reps); do
     gen_loop $c
 done
