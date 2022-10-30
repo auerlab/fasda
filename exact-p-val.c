@@ -49,8 +49,8 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
 	p_val = (double)extreme_fcs / actual_fc_count;
 	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
 	if ( Debug )
-	    printf("FCs sampled = %lu  P-value = %lu / %lu = %0.3f\n\n",
-		    actual_fc_count, extreme_fcs, actual_fc_count, p_val);
+	    printf("Pass %lu: FCs sampled = %lu  P-value = %lu / %lu = %0.2f\n\n",
+		    c, actual_fc_count, extreme_fcs, actual_fc_count, p_val);
 	p_val_sum += p_val;
     }
     

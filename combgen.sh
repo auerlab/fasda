@@ -75,47 +75,54 @@ gen_loop()
     # run time.  Use the highest increment possible to minimize run time
     # while getting close to stability to 2 decimal places.
     # Gradually increase passes until results are stable to 2 decimal places.
-    # Sample inputs: 100 200 .5 N 1
+    # Inputs chosen to generate P-values that are often > 0.05.  E.g.
+    # with means counts 100, 200, we need a max deviation of about .8.
     # FIXME: What is a good max deviation representative of real data?
+    # Modify fold-change to report stats on counts
     case $k in
     5)
-	increment=2 # 2, 2: p-values mostly stable to 2 decimal places
-	passes=2    # Exact P-value (inc=1, no srandom) = 0.393 ~1 sec
-		    # 100 200 .7 5 1
+	increment=3 # 3, 8: p-values mostly stable to 2 decimal places
+	passes=8    # Exact P-value (inc=1, no srandom) = 0.393 ~1 sec
+		    # 100 200 .8 5 1
 		    # Big difference in P-values between increment 2 and 3
 	;;
     6)
-	increment=4 # 4, 3: p-values mostly stable to 2 decimal places
-	passes=3    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
-		    # 100 200 .7 6 1
+	increment=5 # 4, 3: p-values mostly stable to 2 decimal places
+	passes=8    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
+		    # 100 200 .8 6 1
 	;;
     7)
-	increment=6 # 6, 1: p-values mostly stable to 2 decimal places
-	passes=1    # Exact P-value (inc=1, no srandom) = 0.048 several hours
-		    # 100 200 .7 7 1
+	increment=7 # 6, 1: p-values mostly stable to 2 decimal places
+	passes=4    # 
+		    # 100 200 .8 7 1
 	;;
+    
     8)
-	increment=16 # 9, 4: p-values mostly stable to 2 decimal places
-	passes=4
+	increment=12    # 12, 6: p-values mostly stable to 2 decimal places
+	passes=6        # 
+			# 100 200 .8 8 1
 	;;
     
     9)
-	increment=21 # 16, 5: p-values not stable to 2 decimal places
-	passes=4
+	increment=17    # 17, 12: p-values mostly stable to 2 decimal places
+	passes=12
 	;;
     
     10)
-	increment=30 # 20, 7: p-values not stable to 2 decimal places
+	increment=30
 	passes=4
 	;;
+    
     11)
-	increment=30 # 30, 10: p-values almost stable to 2 decimal places
+	increment=30
 	passes=7
 	;;
+    
     12)
-	increment=40 # 30, 10: p-values almost stable to 2 decimal places
+	increment=40
 	passes=10
 	;;
+
     *)
 	increment=1
 	passes=1
