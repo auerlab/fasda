@@ -164,12 +164,12 @@ unsigned long   extreme_fcs5(count_pair_t count_pairs[], unsigned long pair_coun
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0,
-		    increment = 3, pass, count = 0;
+		    increment = 2, pass, count = 0;
     double          c2_sum, c1_sum, fc;
     
     unsigned long  c1, c2, c3, c4, c5;
 
-    for (pass = 0; pass < 3; ++pass)
+    for (pass = 0; pass < 2; ++pass)
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -217,12 +217,12 @@ unsigned long   extreme_fcs6(count_pair_t count_pairs[], unsigned long pair_coun
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0,
-		    increment = 7, pass, count = 0;
+		    increment = 4, pass, count = 0;
     double          c2_sum, c1_sum, fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6;
 
-    for (pass = 0; pass < 6; ++pass)
+    for (pass = 0; pass < 3; ++pass)
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -273,12 +273,12 @@ unsigned long   extreme_fcs7(count_pair_t count_pairs[], unsigned long pair_coun
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0,
-		    increment = 8, pass, count = 0;
+		    increment = 6, pass, count = 0;
     double          c2_sum, c1_sum, fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7;
 
-    for (pass = 0; pass < 3; ++pass)
+    for (pass = 0; pass < 1; ++pass)
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)

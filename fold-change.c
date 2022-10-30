@@ -272,10 +272,10 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 		p_val = near_exact_p_val(rep_counts[c1], rep_counts[c2],
 					num_reps[c1]);
 	    fprintf(diff_stream,"   %0.3f", p_val);
-	    if ( ++count % 1000 == 0 )
-		fprintf(stderr, "%lu\r", count);
 	}
     }
+    if ( ++count % 100 == 0 )
+	fprintf(stderr, "%lu\r", count);
     putc('\n', diff_stream);
 }
 

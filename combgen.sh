@@ -71,33 +71,39 @@ gen_loop()
 {
     local k=$1
     
-    # Downsample set of all possible means for replicates > 5 so that
-    # 5 P-values can be computed in under 0.1 seconds.  Increments were
-    # determined by trial and error with ./pval 100 120 .3 N 1
+    # Downsample set of all possible means for replicates > 5 to minimize
+    # run time.  Use the highest increment possible to minimize run time
+    # while getting close to stability to 2 decimal places.
+    # Gradually increase passes until results are stable to 2 decimal places.
+    # Sample inputs: 100 200 .5 N 1
+    # FIXME: What is a good max deviation representative of real data?
     case $k in
     5)
-	increment=2 # 2, 3: p-values mostly stable to 2 decimal places
-	passes=3    # Exact P-value (inc=1, no srandom) = 0.393 ~1 sec
+	increment=2 # 2, 2: p-values mostly stable to 2 decimal places
+	passes=2    # Exact P-value (inc=1, no srandom) = 0.393 ~1 sec
 		    # 100 200 .7 5 1
+		    # Big difference in P-values between increment 2 and 3
 	;;
     6)
-	increment=4 # 4, 6: p-values mostly stable to 2 decimal places
-	passes=6    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
+	increment=4 # 4, 3: p-values mostly stable to 2 decimal places
+	passes=3    # Exact P-value (inc=1, no srandom) = 0.117 ~2 min
 		    # 100 200 .7 6 1
 	;;
     7)
-	increment=6 # 6, 3: p-values mostly stable to 2 decimal places
-	passes=3    # Exact P-value (inc=1, no srandom) = 0.048 several hours
+	increment=6 # 6, 1: p-values mostly stable to 2 decimal places
+	passes=1    # Exact P-value (inc=1, no srandom) = 0.048 several hours
 		    # 100 200 .7 7 1
 	;;
     8)
 	increment=16 # 9, 4: p-values mostly stable to 2 decimal places
 	passes=4
 	;;
+    
     9)
 	increment=21 # 16, 5: p-values not stable to 2 decimal places
 	passes=4
 	;;
+    
     10)
 	increment=30 # 20, 7: p-values not stable to 2 decimal places
 	passes=4
