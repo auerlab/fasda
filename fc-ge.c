@@ -527,12 +527,12 @@ unsigned long   extreme_fcs11(count_pair_t count_pairs[], unsigned long pair_cou
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0,
-		    increment = 30, pass, count = 0;
+		    increment = 26, pass, count = 0;
     double          c2_sum, c1_sum, fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11;
 
-    for (pass = 0; pass < 7; ++pass)
+    for (pass = 0; pass < 8; ++pass)
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -598,12 +598,12 @@ unsigned long   extreme_fcs12(count_pair_t count_pairs[], unsigned long pair_cou
     // Using sample++ % sample_rate doesn't produce much gain
     // Go after loop increments instead
     unsigned long   fc_ge = 0, fc_le = 0,
-		    increment = 40, pass, count = 0;
+		    increment = 30, pass, count = 0;
     double          c2_sum, c1_sum, fc;
     
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12;
 
-    for (pass = 0; pass < 10; ++pass)
+    for (pass = 0; pass < 4; ++pass)
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)

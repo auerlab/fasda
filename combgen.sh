@@ -79,6 +79,9 @@ gen_loop()
     # with means counts 100, 200, we need a max deviation of about .8.
     # FIXME: What is a good max deviation representative of real data?
     # Modify fold-change to report stats on counts
+    # Span correlates with P-value.  Span should be < 0.01 when P-values
+    # are near or below 0.05.  (Ballpark guestimate for stable averages
+    # of 5 P-values)
     case $k in
     5)
 	increment=3 # 3, 8: p-values mostly stable to 2 decimal places
@@ -110,19 +113,21 @@ gen_loop()
 	;;
     
     10)
-	increment=22    # 19, 6: p-values mostly stable to 2 decimal places
+	increment=22    # 22, 12: p-values mostly stable to 2 decimal places
 	passes=12
 			# 100 200 .8 10 1
 	;;
     
     11)
-	increment=30
-	passes=7
+	increment=26    # 22, 12: p-values mostly stable to 2 decimal places
+	passes=8
+			# 100 200 1 11 1
 	;;
     
     12)
-	increment=40
-	passes=10
+	increment=30    # 30, 4: p-values mostly stable to 2 decimal places
+	passes=4
+			# 100 200 1 12 1
 	;;
 
     *)
