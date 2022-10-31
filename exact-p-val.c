@@ -58,7 +58,8 @@ double  fc_exact_pval(count_pair_t count_pairs[], size_t pair_count,
 	if ( pval > pval_high ) pval_high = pval;
     }
     
-    printf("P-value span = %0.3f\n\n", pval_high - pval_low);
+    if ( Debug )
+	printf("P-value span = %0.3f\n\n", pval_high - pval_low);
     return pval_sum / c;
 }
 
