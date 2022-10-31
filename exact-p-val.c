@@ -13,12 +13,12 @@ const extern int    Debug;
  *  Count the number of means >= observed mean
  */
 
-double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
+double  fc_exact_pval(count_pair_t count_pairs[], size_t pair_count,
 			    size_t replicates, double observed_fc)
 
 {
     unsigned long   fc_count, extreme_fcs, actual_fc_count, c, passes;
-    double          p_val, p_val_sum;
+    double          pval, pval_sum, pval_low, pval_high;
 
     // fc_count is beyond the range of an unsigned long for > 10 replicates
     if ( replicates <= 10 )
@@ -39,22 +39,27 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
     
     // Run several reps with the same fold-changes for down-sampled FCs
     // to check stability
-    p_val_sum = 0.0;
+    pval_sum = 0.0;
+    pval_low = 1.0;
+    pval_high = 0.0;
     for (c = 0; c < (replicates >= 5 ? passes : 1); ++c)
     {
 	// printf("%lu %lu\n", c, replicates);
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
 			    observed_fc, &actual_fc_count);
 	
-	p_val = (double)extreme_fcs / actual_fc_count;
+	pval = (double)extreme_fcs / actual_fc_count;
 	// printf("\nLower FC, higher stddev, and outlier counts cause higher P-values.\n");
 	if ( Debug )
-	    printf("Pass %lu: FCs sampled = %lu  P-value = %lu / %lu = %0.2f\n\n",
-		    c, actual_fc_count, extreme_fcs, actual_fc_count, p_val);
-	p_val_sum += p_val;
+	    printf("Pass %lu: FCs sampled = %lu  P-value = %lu / %lu = %0.3f\n\n",
+		    c, actual_fc_count, extreme_fcs, actual_fc_count, pval);
+	pval_sum += pval;
+	if ( pval < pval_low ) pval_low = pval;
+	if ( pval > pval_high ) pval_high = pval;
     }
     
-    return p_val_sum / c;
+    printf("P-value span = %0.3f\n\n", pval_high - pval_low);
+    return pval_sum / c;
 }
 
 
@@ -87,7 +92,7 @@ double  fc_exact_p_val(count_pair_t count_pairs[], size_t pair_count,
  *  2022-10-19  Jason Bacon Begin
  ***************************************************************************/
 
-double  near_exact_p_val(double counts1[], double counts2[],
+double  near_exact_pval(double counts1[], double counts2[],
 			   size_t replicates)
 
 {
@@ -99,7 +104,7 @@ double  near_exact_p_val(double counts1[], double counts2[],
 
     if ( replicates > max_reps )
     {
-	fprintf(stderr, "near_exact_p_val(): Use mann_whitney_p_val() for reps > %lu.\n",
+	fprintf(stderr, "near_exact_pval(): Use mann_whitney_pval() for reps > %lu.\n",
 		max_reps);
 	return 1.0;
     }
@@ -184,5 +189,5 @@ double  near_exact_p_val(double counts1[], double counts2[],
 		    (double)count_pairs[c].c1_count / count_pairs[c].c2_count);
     }
     
-    return fc_exact_p_val(count_pairs, pair_count, replicates, observed_fc);
+    return fc_exact_pval(count_pairs, pair_count, replicates, observed_fc);
 }

@@ -77,8 +77,8 @@ int     main(int argc,char *argv[])
 	}
 	
 	printf("Exact P-value = %0.3f  Mann-Whitney = %0.3f\n",
-		near_exact_p_val(counts1, counts2, replicates),
-		mann_whitney_p_val(counts1, counts2, replicates, replicates));
+		near_exact_pval(counts1, counts2, replicates),
+		mann_whitney_pval(counts1, counts2, replicates, replicates));
     }
     return EX_OK;
 }

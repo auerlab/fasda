@@ -106,11 +106,13 @@ gen_loop()
     9)
 	increment=17    # 17, 12: p-values mostly stable to 2 decimal places
 	passes=12
+			# 100 200 .8 9 1
 	;;
     
     10)
-	increment=30
-	passes=4
+	increment=22    # 19, 6: p-values mostly stable to 2 decimal places
+	passes=12
+			# 100 200 .8 10 1
 	;;
     
     11)

@@ -246,7 +246,7 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 
 {
     int     c1, c2;
-    double  p_val;
+    double  pval;
     static unsigned long    count = 0;
     
     fprintf(diff_stream,"%-30s", id);
@@ -266,12 +266,12 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 	    
 	    // Compute p-value
 	    if ( (num_reps[c1] >= 8) && (num_reps[c2] >= 8) )
-		p_val = mann_whitney_p_val(rep_counts[c1], rep_counts[c2],
+		pval = mann_whitney_pval(rep_counts[c1], rep_counts[c2],
 					     num_reps[c1], num_reps[c2]);
 	    else
-		p_val = near_exact_p_val(rep_counts[c1], rep_counts[c2],
+		pval = near_exact_pval(rep_counts[c1], rep_counts[c2],
 					num_reps[c1]);
-	    fprintf(diff_stream,"   %0.3f", p_val);
+	    fprintf(diff_stream,"   %0.3f", pval);
 	}
     }
     if ( ++count % 100 == 0 )

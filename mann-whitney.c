@@ -44,7 +44,7 @@ double  normal_cdf(double x, double mean, double stddev)
  *  2022-05-14  Jason Bacon Begin
  ***************************************************************************/
 
-double  mann_whitney_p_val(double rep_counts1[], double rep_counts2[],
+double  mann_whitney_pval(double rep_counts1[], double rep_counts2[],
 			   size_t num_reps1, size_t num_reps2)
 
 {
