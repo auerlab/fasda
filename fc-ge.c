@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <omp.h>
 #include "exact-p-val.h"
 
 
@@ -30,7 +29,6 @@ unsigned long   extreme_fcs2(count_pair_t count_pairs[], unsigned long pair_coun
     unsigned long  c1, c2;
 
     for (pass = 0; pass < 1; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
       {
@@ -75,7 +73,6 @@ unsigned long   extreme_fcs3(count_pair_t count_pairs[], unsigned long pair_coun
     unsigned long  c1, c2, c3;
 
     for (pass = 0; pass < 1; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
@@ -123,7 +120,6 @@ unsigned long   extreme_fcs4(count_pair_t count_pairs[], unsigned long pair_coun
     unsigned long  c1, c2, c3, c4;
 
     for (pass = 0; pass < 1; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1; c3 < pair_count; c3 += increment)
@@ -174,7 +170,6 @@ unsigned long   extreme_fcs5(count_pair_t count_pairs[], unsigned long pair_coun
     unsigned long  c1, c2, c3, c4, c5;
 
     for (pass = 0; pass < 8; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -228,7 +223,6 @@ unsigned long   extreme_fcs6(count_pair_t count_pairs[], unsigned long pair_coun
     unsigned long  c1, c2, c3, c4, c5, c6;
 
     for (pass = 0; pass < 8; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -285,7 +279,6 @@ unsigned long   extreme_fcs7(count_pair_t count_pairs[], unsigned long pair_coun
     unsigned long  c1, c2, c3, c4, c5, c6, c7;
 
     for (pass = 0; pass < 4; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -345,7 +338,6 @@ unsigned long   extreme_fcs8(count_pair_t count_pairs[], unsigned long pair_coun
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8;
 
     for (pass = 0; pass < 6; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -408,7 +400,6 @@ unsigned long   extreme_fcs9(count_pair_t count_pairs[], unsigned long pair_coun
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9;
 
     for (pass = 0; pass < 12; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -474,7 +465,6 @@ unsigned long   extreme_fcs10(count_pair_t count_pairs[], unsigned long pair_cou
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9, c10;
 
     for (pass = 0; pass < 12; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -543,7 +533,6 @@ unsigned long   extreme_fcs11(count_pair_t count_pairs[], unsigned long pair_cou
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11;
 
     for (pass = 0; pass < 8; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)
@@ -615,7 +604,6 @@ unsigned long   extreme_fcs12(count_pair_t count_pairs[], unsigned long pair_cou
     unsigned long  c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12;
 
     for (pass = 0; pass < 4; ++pass)
-     #pragma omp parallel for
      for (c1 = 0; c1 < pair_count; c1 += increment)
       for (c2 = c1 + 1 + random() % increment; c2 < pair_count; c2 += increment)
        for (c3 = c2 + 1 + random() % increment; c3 < pair_count; c3 += increment)

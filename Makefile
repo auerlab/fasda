@@ -111,10 +111,10 @@ AR          ?= ar
 RANLIB      ?= ranlib
 
 INCLUDES    += -isystem ${PREFIX}/include -isystem ${LOCALBASE}/include
-CFLAGS      += ${INCLUDES} -fopenmp
+CFLAGS      += ${INCLUDES}
 LDFLAGS     += -L${PREFIX}/lib -Wl,-rpath,${PREFIX}/lib \
 	       -L${LOCALBASE}/lib -Wl,-rpath,${LOCALBASE}/lib \
-	       -lbiolibc -lxtend -lm -fopenmp
+	       -lbiolibc -lxtend -lm
 
 ############################################################################
 # Assume first command in PATH.  Override with full pathnames if necessary.
