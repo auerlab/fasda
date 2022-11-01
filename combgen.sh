@@ -167,6 +167,7 @@ EOM
     
     # Nested loop
     printf "    for (pass = 0; pass < $passes; ++pass)\n"
+    printf "     #pragma omp parallel for\n"
     printf "     for (c1 = 0; c1 < pair_count; c1 += increment)\n"
     for c in $(seq 2 $k); do
 	print_indent $c
@@ -235,6 +236,7 @@ cat << EOM
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 #include "exact-p-val.h"
 
 EOM
