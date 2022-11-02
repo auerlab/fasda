@@ -30,6 +30,7 @@ int     main(int argc,char *argv[])
     FILE        *condition_streams[MAX_CONDITIONS],
 		*diff_stream = stdout;
     int         conditions, arg;
+    unsigned    flags = 0;
     
     if ( argc < 3 )
 	usage(argv);
@@ -44,6 +45,10 @@ int     main(int argc,char *argv[])
 			argv[arg], strerror(errno));
 		return EX_CANTCREAT;
 	    }
+	}
+	else if ( strcmp(argv[arg], "--near-exact") == 0 )
+	{
+	    flags |= FC_FLAG_NEAR_EXACT;
 	}
     }
     
@@ -60,11 +65,12 @@ int     main(int argc,char *argv[])
 	}
     }
     
-    return fold_change(condition_streams, conditions, diff_stream);
+    return fold_change(condition_streams, conditions, diff_stream, flags);
 }
 
 
-int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream)
+int     fold_change(FILE *condition_streams[], int conditions,
+		    FILE *diff_stream, unsigned flags)
 
 {
     size_t      condition, c, num_reps[MAX_CONDITIONS];
@@ -192,7 +198,7 @@ int     fold_change(FILE *condition_streams[], int conditions, FILE *diff_stream
 	
 	// Output fold-change and p-value
 	print_fold_change(diff_stream, id, condition_counts, conditions,
-			  rep_counts, num_reps);
+			  rep_counts, num_reps, flags);
     }    
     
     for (condition = 0; condition < conditions; ++condition)
@@ -242,7 +248,8 @@ void    print_header(FILE *diff_stream, int conditions)
 
 void    print_fold_change(FILE *diff_stream, const char *id,
 			  double condition_counts[], int conditions,
-			  double *rep_counts[], size_t num_reps[])
+			  double *rep_counts[], size_t num_reps[],
+			  unsigned flags)
 
 {
     int     c1, c2;
@@ -265,7 +272,8 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 		fprintf(diff_stream," %7s", "*");
 	    
 	    // Compute p-value
-	    if ( (num_reps[c1] >= 8) && (num_reps[c2] >= 8) )
+	    if ( (num_reps[c1] >= 8) && (num_reps[c2] >= 8)
+		 && !(flags & FC_FLAG_NEAR_EXACT) )
 		pval = mann_whitney_pval(rep_counts[c1], rep_counts[c2],
 					     num_reps[c1], num_reps[c2]);
 	    else

@@ -73,6 +73,14 @@ time fasda fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
 pause
 more WT-SNF2-FC.txt
 
+printf "Compute near-exact P-values for all replicates? y/[n] "
+read ne
+if [ 0$ne = 0y ]; then
+    time fasda fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
+    pause
+    more WT-SNF2-FC.txt
+fi
+
 ##########################################################################
 #   3 - 7 replicates, should use exact P-values
 ##########################################################################
