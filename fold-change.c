@@ -272,26 +272,23 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 		fprintf(diff_stream," %7s", "*");
 	    
 	    // Compute p-value
-	    if ( (num_reps[c1] >= 8) && (num_reps[c2] >= 8) )
+	    if ( flags & FC_FLAG_NEAR_EXACT )
 	    {
-		if ( flags & FC_FLAG_NEAR_EXACT )
-		{
-		    if ( num_reps[c1] <= 12  )
-			pval = near_exact_pval(rep_counts[c1], rep_counts[c2],
-					       num_reps[c1]);
-		    else
-		    {
-			fprintf(stderr, "Current limit for near-exact P-values is 12 replicates.\n");
-			exit(EX_USAGE);
-		    }
-		}
+		if ( num_reps[c1] <= 12  )
+		    pval = near_exact_pval(rep_counts[c1], rep_counts[c2],
+					   num_reps[c1]);
 		else
-		    pval = mann_whitney_pval(rep_counts[c1], rep_counts[c2],
-					     num_reps[c1], num_reps[c2]);
+		{
+		    fprintf(stderr, "Current limit for near-exact P-values is 12 replicates.\n");
+		    exit(EX_USAGE);
+		}
 	    }
+	    else if ( (num_reps[c1] >= 8) && (num_reps[c2] >= 8) )
+		pval = mann_whitney_pval(rep_counts[c1], rep_counts[c2],
+					 num_reps[c1], num_reps[c2]);
 	    else
 		pval = near_exact_pval(rep_counts[c1], rep_counts[c2],
-					num_reps[c1]);
+				       num_reps[c1]);
 	    fprintf(diff_stream,"   %0.3f", pval);
 	}
     }

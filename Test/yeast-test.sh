@@ -65,20 +65,28 @@ which fasda
 
 for condition in WT SNF2; do
     printf "Normalizing $condition...\n"
-    time fasda normalize --output $condition-all-norm.tsv $dir/$condition-*/abundance.tsv
+    time fasda normalize --output $condition-all-norm.tsv \
+	$dir/$condition-*/abundance.tsv
 done
 
 printf "Computing fold-change...\n"
-time fasda fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
+time fasda fold-change --output WT-SNF2-FC-MW.txt \
+    WT-all-norm.tsv SNF2-all-norm.tsv
 pause
-more WT-SNF2-FC.txt
+more WT-SNF2-FC-MW.txt
 
 printf "Compute near-exact P-values for all replicates? y/[n] "
 read ne
 if [ 0$ne = 0y ]; then
-    time fasda fold-change --output WT-SNF2-FC.txt WT-all-norm.tsv SNF2-all-norm.tsv
+    which fasda
+    time fasda fold-change --near-exact --output WT-SNF2-FC-NE.txt \
+	WT-all-norm.tsv SNF2-all-norm.tsv
     pause
-    more WT-SNF2-FC.txt
+    more WT-SNF2-FC-NE.txt
+fi
+if [ -e WT-SNF2-FC-NE.txt ]; then
+    head WT-SNF2-FC-MW.txt WT-SNF2-FC-NE.txt
+    pause
 fi
 
 ##########################################################################
@@ -94,8 +102,11 @@ for replicates in $(seq 3 7); do
     done
     
     printf "Computing fold-change for $replicates replicates...\n"
-    time fasda fold-change --output WT-SNF2-FC-$replicates.txt \
+    time fasda fold-change --output WT-SNF2-FC-NE-$replicates.txt \
 	WT-all-norm-$replicates.tsv SNF2-all-norm-$replicates.tsv
     pause
-    more WT-SNF2-FC-$replicates.txt
+    more WT-SNF2-FC-NE-$replicates.txt
+    
+    head WT-SNF2-FC-MW.txt WT-SNF2-FC-NE.txt WT-SNF2-FC-NE-*.txt | more
+    pause
 done
