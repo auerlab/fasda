@@ -60,8 +60,6 @@ OBJS_ABUNDANCE      = abundance.o
 OBJS_NORMALIZE      = normalize.o
 OBJS_FOLD_CHANGE    = fold-change.o mann-whitney.o exact-p-val.o fc-ge.o
 OBJS_PVAL_SIM       = pval-sim.o fc-ge.o mann-whitney.o exact-p-val.o
-OBJS                = ${OBJS_FASDA} ${OBJS_ABUNDANCE} ${OBJS_NORMALIZE} \
-		      ${OBJS_FOLD_CHANGE}
 
 ############################################################################
 # Compile, link, and install options
@@ -187,7 +185,7 @@ depend:
 # Remove generated files (objs and nroff output from man pages)
 
 clean:
-	rm -f ${OBJS} ${BINS} *.nr README.html Utils/log-or-not
+	rm -f *.o ${BINS} *.nr README.html Utils/log-or-not
 
 # Keep backup files during normal clean, but provide an option to remove them
 realclean: clean

@@ -43,6 +43,7 @@ site=http://ftp.ensembl.org/pub/release-106/gff3/$subdir/
 file=$species.GRCm$build.$release-numeric-sort.gff3
 
 # Mus_musculus.GRCm39.106.chromosome.1.gff3.gz
+mkdir -p Data
 cd Data
 for chrom in $(seq 1 $numeric_chroms) X Y; do
     url=$site/$species.GRCm$build.$release.chromosome.$chrom.gff3.gz
