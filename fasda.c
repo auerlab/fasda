@@ -5,7 +5,7 @@
  *      desriptive command names.
  *
  *      This wrapper can be installed under the standard
- *      PATH and used to to execute blt commands installed under a
+ *      PATH and used to to execute fasda commands installed under a
  *      private prefix, without altering PATH, activating a special
  *      environment, opening a container, etc.  This sub-command paradigm
  *      is already familiar to bioinformaticians thanks to other suites
@@ -16,7 +16,7 @@
  *
  *      Example:
  *
- *          blt fastx-derep args
+ *          fasda fastx-derep args
  *
  *      instead of one of the following:
  *
@@ -69,7 +69,7 @@ int     main(int argc,char *argv[])
 	    }
 	    closedir(dp);
 	}
-	fprintf(stderr, "\nRun \"blt subcommand\" or \"man blt-subcommand\" for more details.\n\n");
+	fprintf(stderr, "\nRun \"fasda subcommand\" or \"man fasda-subcommand\" for more details.\n\n");
 	return EX_USAGE;
     }
 

@@ -33,10 +33,10 @@ case $(uname) in
 
 esac
 
-mkdir -p $PREFIX/libexec
+mkdir -p $PREFIX/libexec/fasda
 LIBDIR=$(realpath $PREFIX/lib)
 LDFLAGS="-L. -L$LIBDIR -Wl,-rpath,$LIBDIR:/usr/lib:/lib"
-LIBEXECDIR=$(realpath $PREFIX/libexec)
+LIBEXECDIR=$(realpath $PREFIX/libexec/fasda)
 export PREFIX LOCALBASE LIBEXECDIR LDFLAGS
 make clean
 make install

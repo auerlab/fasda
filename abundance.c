@@ -534,8 +534,9 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
 void    usage(char *argv[])
 
 {
-    fprintf(stderr, "Usage: %s features.gff3 \\\n"
-	    "\t[--show-gene-name] [--map-to-gene]\n"
+    fprintf(stderr, "Usage: %s \\\n"
+	    "\t[--show-gene-name] [--map-to-gene] \\\n"
+	    "\tfeatures.gff3 \\\n"
 	    "\tfile.[sam|bam|cram][.gz|.bz2|.xz] \\\n"
 	    "\t[file.[sam|bam|cram][.gz|.bz2|.xz] ...]\n", argv[0]);
     exit(EX_USAGE);

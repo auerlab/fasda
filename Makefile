@@ -79,7 +79,7 @@ LOCALBASE   ?= ${PREFIX}
 # Allow caller to override either MANPREFIX or MANDIR
 MANPREFIX   ?= ${PREFIX}
 MANDIR      ?= ${MANPREFIX}/man
-# FIXME: Need to realpath this if relative (e.g. ../local) or blt won't
+# FIXME: Need to realpath this if relative (e.g. ../local) or fasda won't
 # find subcommands from arbitrary CWD
 # Currently must use cave-man-install.sh for this until a bmake/gmake
 # portable method is found
