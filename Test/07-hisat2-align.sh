@@ -33,8 +33,7 @@ cd Data/07-hisat2-align
 for sample in ../01-trim/*; do
     gz1=$(ls $sample)
     gzb=$(basename $gz1)
-    bam=${gzb%-R*}.bam
-    
+    bam=${gzb%.*.*}.bam
     set -x
     hisat2 --threads 2 -x ../06-hisat2-index/$genome \
 	-U $gz1 | samtools sort > $bam
