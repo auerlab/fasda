@@ -1,8 +1,7 @@
 #!/bin/sh -e
 
 ##########################################################################
-#   This script should no longer be needed, since kallisto -gtf appears
-#   to work with GFF3.  Use the equivalent gff3 script instead.
+#   GTF is used by kallisto
 ##########################################################################
 
 fetch=$(Common/find-fetch.sh)
@@ -21,5 +20,6 @@ fi
 if [ ! -e $gtf ]; then
     # Filter for autosomes during decompress
     printf "Uncompressing and filtering $gtf...\n"
-    gunzip --stdout $gtf.gz | awk '$1 ~ "^[0-9]"' > $gtf
+    gunzip --stdout $gtf.gz | blt deromanize 1 | awk '$1 ~ "^[0-9]"' > $gtf
 fi
+

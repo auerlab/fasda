@@ -12,13 +12,17 @@ gff=$(Reference/gff-filename.sh)
 # Can't guarantee this file or the chromosome files will always be available.
 # You may need to edit this.
 cd Data/03-reference
-if [ ! -e $gff.gz ]; then
-    printf "Fetching $gff.gz...\n"
-    $fetch ftp://ftp.ensembl.org/pub/release-$release/gff3/saccharomyces_cerevisiae/$gff.gz
-fi
+rm -f $gff
+for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
+    site=http://ftp.ensembl.org/pub/release-$release/gff3/saccharomyces_cerevisiae
+    file=Saccharomyces_cerevisiae.R64-1-1.106.chromosome.$chrom.gff3.gz
+    if [ ! -e $file ]; then
+	printf "Fetching $gff.gz...\n"
+	$fetch $site/$file
+    fi
+    if [ $chrom = I ]; then
+	zcat $file | egrep '^##gff|^#!' > $gff
+    fi
+    zcat $file | egrep -v '^##[a-z]|^#!' | blt deromanize 1 >> $gff
+done
 
-if [ ! -e $gff ]; then
-    # Filter for autosomes during decompress
-    printf "Uncompressing and filtering $gff...\n"
-    gunzip --stdout $gff.gz | awk '$1 ~ "^[0-9]"' > $gff
-fi

@@ -32,9 +32,13 @@ done
 
 if [ ! -e $genome ]; then
     printf "Concatenating chromosome FASTAs...\n"
+    n=1
     for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
 	printf "$chrom "
-	$zcat Saccharomyces_cerevisiae.R$build.dna.chromosome.$chrom.fa.gz >> $genome
+	# Convert Roman chromosome numbers to Arabic
+	$zcat Saccharomyces_cerevisiae.R$build.dna.chromosome.$chrom.fa.gz \
+	    | sed -e "s|^>$chrom|>$n|" -e "s|:$chrom|:$n|" >> $genome
+	n=$((n + 1))
     done
     printf "\n"
 else
