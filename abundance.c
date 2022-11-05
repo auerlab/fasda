@@ -236,6 +236,9 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     printf("Alignments overlapping a feature:  %lu\n",
 	    BL_ALIGNMENT_STATS_OVERLAPPING(&alignment_stats));
     
+    fprintf(stderr, "\nThe fasda abundance command is unfinished.\n"
+		    "Do not trust the abundances.tsv file produced.\n\n");
+
     return EX_OK;
 }
 

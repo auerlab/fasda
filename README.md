@@ -69,8 +69,7 @@ FASDA is ready for alpha-testing.
 
 Currently, the kallisto abundance.tsv file format is used as input for
 normalization and computing fold-change and P-values.  The "fasda abundance"
-command computes abundances from SAM/BAM/CRAM files and produces a
-kallisto-style abundance file, so that data from other aligners can be used.
+command (unfinished) computes abundances from SAM/BAM/CRAM files and produces a kallisto-style abundance file, so that data from other aligners can be used.
 
 We also plan to support ChIP-Seq and ATAC-Seq peak data, but this has
 not yet been tested.
