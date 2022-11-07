@@ -41,7 +41,7 @@ int     main(int argc,char *argv[])
 	{
 	    if ( (diff_stream = fopen(argv[++arg], "w")) == NULL )
 	    {
-		fprintf(stderr, "normalize: Could not open %s for write: %s.\n",
+		fprintf(stderr, "fold-change: Could not open %s for write: %s.\n",
 			argv[arg], strerror(errno));
 		return EX_CANTCREAT;
 	    }
