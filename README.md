@@ -143,6 +143,73 @@ YOL048C_mRNA                      72.43   147.76    2.04 0.0007
 ...
 ```
 
+## Interpreting Results
+
+P-values from any differential analysis tool should never be taken too
+seriously. There are countless uncontrollable biological variables that
+can affect the RNA abundance in a cell.  There are also numerous sources
+of experimental error in sample prep and sequencing that can lead to
+large variations in read counts.  Technical replicates (replicates from
+the same biological sample) and spike-in controls can reveal some of the
+technical issues, but do nothing about biological variations.
+
+In addition, many biology experiments use only 3 replicates.  We simply
+cannot draw high confidence from any statistics based on 3 samples.
+
+Hence, simply assuming that P-values < 0.05 represent significant
+changes while others do not would be foolish.  Rather than try too hard
+to produce adjusted P-values that you can take on faith, we provide simple,
+honest statistics and leave it to you to consider them carefully.
+
+From our preliminary experiments, we have found that P-values
+between 0.05 and 0.20 are often questionable and may warrant a closer look
+at the raw data.  A quick look at the individual read counts for each
+replicate in these cases
+can be enlightening.  You will usually see a high variance in counts across
+individuals, sometimes with up-regulation in some individuals and
+down-regulation in others.
+
+For example, consider the following gene, for which Sleuth reported a
+P-value of 0.0132, while the exact P-value computed by FASDA is 0.116.
+The kallisto estimated counts show that
+one replicate was up-regulated almost 4-fold, another almost 2-fold, and
+the third was slightly down-regulated.  A P-value of 0.01 would not
+likely make anyone suspect this situation.  0.116, on the other hand,
+tells us that it's 88% likely that this is significant, but maybe we
+should take a minute or two to look at the read counts consider the
+biology behind them.  This is a tiny investment that will help us better
+decide whether a costly experimental verification is warranted.
+
+```
+		    FASDA                     Sleuth
+	   Feature   Cond1   Cond2  FC   1-2    SC1    SC2  SFC    SPV
+ENSMUST00000017610  7620.5 16006.7 2.1 0.116  191.4  433.5  2.3 0.0132
+
+Kallisto estimated counts:
+
+	     R1      R2      R3
+Cond1   5382.16  8567.4 6986.43
+Cond2   21519.9 16196.7 6307.52
+```
+Conversely, Sleuth produced a P-value of 0.12 for the following, which
+looks like a slam-dunk given the counts.
+
+```
+		    FASDA                     Sleuth
+	   Feature   Cond1   Cond2  FC   1-2    SC1    SC2  SFC    SPV
+ENSMUST00000036928  1165.0  4064.3 3.5 0.024   70.5  300.4  4.3 0.1203
+
+	     R1      R2      R3
+Cond1   1045.41 942.707 1220.02
+Cond2   2835.7  4167.81 3718.39
+```
+
+The bottom line is, while the 0.05 rule is a good one mathematically, we
+cannot count on experimental and computational results reflecting the
+biology with that much accuracy.  Give the results of any differential
+analysis a generous margin of error, and examine the data more closely for
+anything within that margin.
+
 ## Design and Implementation
 
 The code is organized following basic object-oriented design principals, but
