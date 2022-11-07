@@ -156,6 +156,11 @@ technical issues, but do nothing about biological variations.
 In addition, many biology experiments use only 3 replicates.  We simply
 cannot draw high confidence from any statistics based on 3 samples.
 
+Lastly, a 2-fold change in expression could be hugely significant for one
+gene in under certain conditions and completely meaningless for another
+gene or different conditions.  Statistical routines have no knowledge of
+the biology that determines this.
+
 Hence, simply assuming that P-values < 0.05 represent significant
 changes while others do not would be foolish.  Rather than try too hard
 to produce adjusted P-values that you can take on faith, we provide simple,
