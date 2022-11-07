@@ -110,6 +110,10 @@ double  near_exact_pval(double counts1[], double counts2[],
 	return 1.0;
     }
 
+    // Replace 0 counts with 1/1000 the mean of the other condition
+    // to avoid FCs of 0 or infinity
+    adjust_counts(counts1, counts2, replicates);
+    
     c1_sum = c2_sum = 0;
     for (c = 0; c < replicates; ++c)
     {
@@ -192,3 +196,72 @@ double  near_exact_pval(double counts1[], double counts2[],
     
     return fc_exact_pval(count_pairs, pair_count, replicates, observed_fc);
 }
+
+
+/***************************************************************************
+ *  Use auto-c2man to generate a man page from this comment
+ *
+ *  Library:
+ *      #include <>
+ *      -l
+ *
+ *  Description:
+ *      Counts of produce fold changes of 0 or infinity, causing problems
+ *      for exact P-value computation.  Adjust counts of 0 to at least
+ *      1/1000 the mean of the other condition.
+ *  
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  Examples:
+ *
+ *  Files:
+ *
+ *  Environment
+ *
+ *  See also:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-11-07  Jason Bacon Begin
+ ***************************************************************************/
+
+void    adjust_counts(double counts1[], double counts2[], unsigned long replicates)
+
+{
+    unsigned long   c;
+    double          c1_sum, c2_sum, c1_mean, c2_mean;
+    
+    for (c1_sum = c2_sum = 0.0, c = 0; c < replicates; ++c)
+    {
+	c1_sum += counts1[c];
+	c2_sum += counts2[c];
+    }
+    
+    if ( (c1_sum == 0.0) && (c2_sum == 0.0) )
+    {
+	for (c = 0; c < replicates; ++c)
+	    counts1[c] = counts2[c] = 1.0;
+    }
+    else
+    {
+	c1_mean = c1_sum / replicates;
+	c2_mean = c2_sum / replicates;
+	for (c = 0; c < replicates; ++c)
+	{
+	    if ( counts1[c] == 0.0 )
+		counts1[c] = c2_mean / 1000.0;
+	    if ( counts2[c] == 0.0 )
+		counts2[c] = c1_mean / 1000.0;
+	}
+    }
+    
+    if ( Debug )
+    {
+	puts("Adjusted counts:");
+	for (c = 0; c < replicates; ++c)
+	    printf("%f %f\n", counts1[c], counts2[c]);
+    }
+}
+

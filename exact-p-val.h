@@ -13,4 +13,5 @@ double  near_exact_pval(double rep_counts1[], double rep_counts2[],
 			   size_t replicates);
 double  mann_whitney_pval(double rep_counts1[], double rep_counts2[],
 			   size_t num_reps1, size_t num_reps2);
+void    adjust_counts(double counts1[], double counts2[], unsigned long replicates);
 
