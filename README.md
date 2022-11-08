@@ -149,17 +149,26 @@ P-values from any differential analysis tool should never be taken too
 seriously. There are countless uncontrollable biological variables that
 can affect the RNA abundance in a cell.  There are also numerous sources
 of experimental error in sample prep and sequencing that can lead to
-large variations in read counts.  Technical replicates (replicates from
-the same biological sample) and spike-in controls can reveal some of the
-technical issues, but do nothing about biological variations.
+inaccuracy in read counts.  Technical replicates (replicates from
+the same biological sample) and spike-in controls can reveal some of these
+technical issues, but do not address biological variations.
 
-In addition, many biology experiments use only 3 replicates.  We simply
-cannot draw high confidence from any statistics based on 3 samples.
+Another problem is that many biology experiments use only 3 replicates.
+We simply cannot draw high confidence from any statistics based on 3
+samples.
 
-Lastly, a 2-fold change in expression could be hugely significant for one
-gene in under certain conditions and completely meaningless for another
+P-value calculations typically make the same assumptions about all genes.
+In reality, a 2-fold change in expression could be hugely significant for one
+gene under certain conditions and completely meaningless for a different
 gene or different conditions.  Statistical routines have no knowledge of
 the biology that determines this.
+
+There is huge variability on the computational side as well.
+Well-established differential analysis tools commonly report very different
+sets of genes as differentially expressed.  Li, et al
+(https://doi.org/10.1186/s13059-022-02648-4) reported that 23.71% to 75% of
+the DEGs identified by DESeq2 were missed by edgeR.  In one data set tested,
+DESeq2 and edgeR had only an 8% overlap in the DEGs they identified.
 
 Hence, simply assuming that P-values < 0.05 represent significant
 changes while others do not would be foolish.  Rather than try too hard
@@ -180,8 +189,8 @@ The kallisto estimated counts show that
 one replicate was up-regulated almost 4-fold, another almost 2-fold, and
 the third was slightly down-regulated.  A P-value of 0.01 would not
 likely make anyone suspect this situation.  0.116, on the other hand,
-tells us that it's 88% likely that this is significant, but maybe we
-should take a minute or two to look at the read counts consider the
+tells us that there is a good chance this is significant, but maybe we
+should take a minute or two to look at the read counts and consider the
 biology behind them.  This is a tiny investment that will help us better
 decide whether a costly experimental verification is warranted.
 
