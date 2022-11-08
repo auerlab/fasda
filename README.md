@@ -39,8 +39,8 @@ fasda fold-change --output FC.txt c1-all-norm.tsv c2-all-norm.tsv
 
 Another issue addressed by FASDA is the fact that most popular
 differential analysis tools suffer from a high
-false discovery rate (FDR):
-[https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-022-02648-4)
+false discovery rate (FDR) (Li, et al:
+[https://doi.org/10.1186/s13059-022-02648-4](https://doi.org/10.1186/s13059-022-02648-4))
 
 FASDA computes exact P-values for experiments with
 fewer than 5 replicates and near-exact P-values for 5 to 7 replicates
@@ -155,7 +155,9 @@ technical issues, but do not address biological variations.
 
 Another problem is that many biology experiments use only 3 replicates.
 We simply cannot draw high confidence from any statistics based on 3
-samples.
+samples.  Schurch, et al recommend a minimum of 6 biological replicates,
+12 in order to reliably identify DEGs with fold change less than 4
+([https://doi.org/10.1261%2Frna.053959.115](https://doi.org/10.1261%2Frna.053959.115).
 
 P-value calculations typically make the same assumptions about all genes.
 In reality, a 2-fold change in expression could be hugely significant for one
@@ -166,7 +168,8 @@ the biology that determines this.
 There is huge variability on the computational side as well.
 Well-established differential analysis tools commonly report very different
 sets of genes as differentially expressed.  Li, et al
-(https://doi.org/10.1186/s13059-022-02648-4) reported that 23.71% to 75% of
+([https://doi.org/10.1186/s13059-022-02648-4](https://doi.org/10.1186/s13059-022-02648-4))
+reported that 23.71% to 75% of
 the DEGs identified by DESeq2 were missed by edgeR.  In one data set tested,
 DESeq2 and edgeR had only an 8% overlap in the DEGs they identified.
 
