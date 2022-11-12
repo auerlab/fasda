@@ -227,6 +227,18 @@ biology with that much accuracy.  Give the results of any differential
 analysis a generous margin of error, and examine the data more closely for
 anything within that margin.
 
+The question then becomes how to narrow down the list of differential
+features and identify those of interest.  Our intent is to provide
+additional tools that facilitate examination of the results using
+multiple criteria rather than filtering first by P-value alone.  For
+instance, we might select for genes with a P-value < 0.2, low variance
+in the alignment counts, and known relation to the phenotype being
+studied.  For ChIP-Seq or ATAC-Seq , we might select for peaks with a
+P-value < 0.2, low variance in the counts, and proximity to a gene of
+interest.  Multiple facets must be considered in order to avoid missing
+important features that have a P-value above 0.05 due to experimental
+imprecision rather than a true lack of biological significance.
+
 ## Design and Implementation
 
 The code is organized following basic object-oriented design principals, but
