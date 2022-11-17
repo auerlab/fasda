@@ -8,7 +8,7 @@ pwd
 # So gzip can keep up with fastq-trim
 export GZIP=-1
 
-trimmed_dir=Data/01-trim
+trimmed_dir=Data/02-trim
 mkdir -p $trimmed_dir
 for file in Data/Raw-renamed/*.fastq.gz; do
     base=`basename $file`

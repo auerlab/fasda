@@ -46,7 +46,7 @@ gtf=$(Reference/gtf-filename.sh)
 # The sample number comes after -sample in the filename, e.g.
 # chondro-sample4-rep2-time1-R1.fastq.xz is sample 4
 
-for file in Data/01-trim/*.fastq.gz; do
+for file in Data/02-trim/*.fastq.gz; do
     echo $file
     # kallisto 0.46.1 can't handle xz and will simply seg fault rather than
     # issue an error message.  If your trimmed fastq files are in xz format,
@@ -55,7 +55,7 @@ for file in Data/01-trim/*.fastq.gz; do
     
     # Kallisto requires an output subdirectory for each sample
     stem=$(basename ${file%.fastq.gz})
-    out_dir=Data/05-kallisto-quant/$stem
+    out_dir=Data/06-kallisto-quant/$stem
     mkdir -p $out_dir
     
     # Manual says a GTF is needed.  Kallisto aborts using GFF3.
@@ -64,9 +64,9 @@ for file in Data/01-trim/*.fastq.gz; do
     kallisto quant \
 	--single -l 100 -s 20 \
 	--genomebam \
-	    --gtf=Data/03-reference/$gtf \
-	    --chromosomes=Data/03-reference/chromosome-sizes.tsv \
+	    --gtf=Data/04-reference/$gtf \
+	    --chromosomes=Data/04-reference/chromosome-sizes.tsv \
 	--threads=2 \
-	--index=Data/04-kallisto-index/all-but-xy.index \
+	--index=Data/05-kallisto-index/all-but-xy.index \
 	--output-dir=$out_dir $file
 done

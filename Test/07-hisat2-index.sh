@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Build kallisto index for reference transcriptome.
+#       Build hisat2 index for reference genome.
 #
 #       All necessary tools are assumed to be in PATH.  If this is not
 #       the case, add whatever code is needed here to gain access.
@@ -12,24 +12,28 @@
 #       
 #   History:
 #   Date        Name        Modification
-#   2019-11-??  Jason Bacon Begin
+#   2021-11-24  Jason Bacon Begin
 ##########################################################################
 
 # Document software versions used for publication
 uname -a
-kallisto version
+hisat2 --version
 samtools --version
 pwd
 
-transcriptome=Data/03-reference/$(Reference/transcriptome-filename.sh)
-printf "Using reference $transcriptome...\n"
+# Run hisat2-build on a copy in 15-hisat2-index so it will put the .ht2
+# files there
+genome=$(Reference/genome-filename.sh)
+ln -f Data/04-reference/$genome Data/07-hisat2-index
+genome=Data/07-hisat2-index/$genome
+printf "Using reference $genome...\n"
 
-# Needed for kallisto --genomebam
-if [ ! -e $transcriptome.fai ]; then
-    printf "Building $transcriptome...\n"
-    samtools faidx $transcriptome
+if [ ! -e $genome.8.ht2 ]; then
+    printf "Building $genome.*.ht2...\n"
+    hisat2-build $genome $genome
 fi
-
-printf "Building kallisto index...\n"
-set -x
-kallisto index --index=Data/04-kallisto-index/all-but-xy.index $transcriptome
+if [ ! -e $genome.fai ]; then
+    printf "Building $genome.fai...\n"
+    samtools faidx $genome
+fi
+ls Data/07-hisat2-index

@@ -4,8 +4,8 @@ uname -a
 fastqc --version
 pwd
 
-for dir in Raw-renamed 01-trim; do
-    report_dir=Data/02-qc/$dir
+for dir in Raw-renamed 02-trim; do
+    report_dir=Data/03-qc/$dir
     mkdir -p $report_dir
     for file in Data/$dir/*.fastq.gz; do
 	stem=`basename ${file%.fastq.gz}`

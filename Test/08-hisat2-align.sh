@@ -28,14 +28,14 @@ release=$(Common/genome-release.sh)
 genome=$(Reference/genome-filename.sh)
 
 # samtools sort dumps temp files in CWD
-cd Data/07-hisat2-align
+cd Data/08-hisat2-align
 
-for sample in ../01-trim/*; do
+for sample in ../02-trim/*; do
     gz1=$(ls $sample)
     gzb=$(basename $gz1)
     bam=${gzb%.*.*}.bam
     set -x
-    hisat2 --threads 2 -x ../06-hisat2-index/$genome \
+    hisat2 --threads 2 -x ../07-hisat2-index/$genome \
 	-U $gz1 | samtools sort > $bam
     samtools index $bam
 done

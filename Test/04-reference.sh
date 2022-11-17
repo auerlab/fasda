@@ -47,7 +47,7 @@ Reference/cdna.sh       # Remove XY from Ensembl cdna transcriptome
 # Reference/gtf2fasta.sh  # Construct genome minus XY using Ensembl GFF
 
 # Reference/create-chrom-sizes.sh
-chrom_sizes="Data/03-reference/chromosome-sizes.tsv"
+chrom_sizes="Data/04-reference/chromosome-sizes.tsv"
 printf "Generating $chrom_sizes...\n"
-blt chrom-lens < Data/03-reference/$(Reference/genome-filename.sh) > $chrom_sizes
+blt chrom-lens < Data/04-reference/$(Reference/genome-filename.sh) > $chrom_sizes
 cat $chrom_sizes
