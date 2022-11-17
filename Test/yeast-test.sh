@@ -19,7 +19,8 @@ cd Test
 
 ./00-organize.sh
 
-if [ ! -e Data/Raw-renamed ]; then
+raw_count=$(ls Data/Raw-renamed/*.gz | wc -l)
+if [ $raw_count -lt 8 ]; then
     printf "How many samples would you like to download? [10] "
     read count
     if [ -z "$count" ]; then
@@ -27,7 +28,6 @@ if [ ! -e Data/Raw-renamed ]; then
     fi
     ./01-fetch.sh $count
 fi
-raw_count=$(ls Data/Raw-renamed/*.gz | wc -l)
 
 trimmed_count=$(ls Data/02-trim/*.gz | wc -l)
 if [ $trimmed_count -ne $raw_count ]; then

@@ -13,7 +13,7 @@ pause()
     read junk
 }
 
-mkdir -p Data Logs
+mkdir -p Data/Raw Data/Raw-renamed Logs
 scripts=$(ls 0[1-9]-*) # [1-9][0-9]-*)
 for script in $scripts; do
     stage=${script%.*}
