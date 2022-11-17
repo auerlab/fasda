@@ -11,7 +11,7 @@ gff=$(Reference/gff-filename.sh)
 # GFF
 # Can't guarantee this file or the chromosome files will always be available.
 # You may need to edit this.
-cd Data/03-reference
+cd Data/04-reference
 rm -f $gff
 for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
     site=http://ftp.ensembl.org/pub/release-$release/gff3/saccharomyces_cerevisiae

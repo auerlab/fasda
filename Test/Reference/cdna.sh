@@ -24,7 +24,7 @@ transcriptome=$(Reference/transcriptome-filename.sh)
 
 # Can't guarantee this file will always be available.
 # You may need to edit this.
-cd Data/03-reference
+cd Data/04-reference
 cdna=Saccharomyces_cerevisiae.R$build.cdna.all.fa.gz
 if [ ! -e $cdna ]; then
     $fetch ftp://ftp.ensembl.org/pub/release-$release/fasta/saccharomyces_cerevisiae/cdna/$cdna

@@ -21,8 +21,8 @@ release=$(Common/genome-release.sh)
 genome=$(Reference/genome-filename.sh)
 
 # Chromosome files
-mkdir -p Data/03-reference
-cd Data/03-reference
+mkdir -p Data/04-reference
+cd Data/04-reference
 for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
     file=Saccharomyces_cerevisiae.R$build.dna.chromosome.$chrom.fa.gz
     if [ ! -e $file ]; then
