@@ -9,7 +9,8 @@ pwd
 export GZIP=-1
 
 # Allocate 3 cores per job, if possible
-cores=$(parallel --number-of-cores)
+# FIXME: --number-of-cores reports 2 on unixdev1, should be 16
+cores=$(parallel --number-of-threads)
 jobs=$(($cores / 3))
 if [ $jobs = 0 ]; then
     jobs=1
