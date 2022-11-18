@@ -19,6 +19,6 @@ for dir in Raw-renamed 02-trim; do
     done
     if which multiqc && which firefox; then
 	multiqc --outdir $report_dir $report_dir
-	firefox $report_dir/multiqc_report.html || true
+	# firefox $report_dir/multiqc_report.html || true
     fi
 done
