@@ -44,7 +44,7 @@ double  fc_exact_pval(count_pair_t count_pairs[], size_t pair_count,
     pval_high = 0.0;
     for (c = 0; c < (replicates >= 5 ? passes : 1); ++c)
     {
-	// printf("%lu %lu\n", c, replicates);
+	// fprintf(stderr, "c = %lu replicates = %lu\n", c, replicates);
 	extreme_fcs = extreme_fcs_count(count_pairs, pair_count, replicates,
 			    observed_fc, &actual_fc_count);
 	
@@ -93,8 +93,7 @@ double  fc_exact_pval(count_pair_t count_pairs[], size_t pair_count,
  *  2022-10-19  Jason Bacon Begin
  ***************************************************************************/
 
-double  near_exact_pval(double counts1[], double counts2[],
-			   size_t replicates)
+double  near_exact_pval(double counts1[], double counts2[], size_t replicates)
 
 {
     unsigned long   c, c1, c2, pair_count, samples, extreme_fcs,

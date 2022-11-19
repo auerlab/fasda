@@ -49,4 +49,5 @@ else
     printf "06-kallisto-quant.sh already done.\n"
 fi
 
+./09-fasda.sh
 

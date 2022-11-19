@@ -197,8 +197,8 @@ realclean: clean
 install: all
 	${MKDIR} -p ${DESTDIR}${PREFIX}/bin ${DESTDIR}${LIBEXECDIR} \
 		    ${DESTDIR}${MANDIR}/man1
-	${INSTALL} -s -m 0755 ${BIN} ${DESTDIR}${PREFIX}/bin
-	${INSTALL} -s -m 0755 ${LIBEXEC} ${DESTDIR}${LIBEXECDIR}
+	${INSTALL} -m 0755 ${BIN} ${DESTDIR}${PREFIX}/bin
+	${INSTALL} -m 0755 ${LIBEXEC} ${DESTDIR}${LIBEXECDIR}
 	${INSTALL} -m 0644 Man/*.1 ${DESTDIR}${MANDIR}/man1
 
 install-strip: install

@@ -53,9 +53,13 @@ for replicates in $(seq 3 $max_ne); do
     for condition in WT SNF2; do
 	if [ ! -e $condition-all-norm-$replicates.tsv ]; then
 	    printf "Normalizing $condition: $replicates replicates\n"
+	    files=""
+	    for r in $(seq 1 $replicates); do
+		files="$files $kallisto_dir/$condition-$r/abundance.tsv"
+	    done
+	    printf "%s\n" $files
 	    time fasda normalize --output \
-		$condition-all-norm-$replicates.tsv \
-		$kallisto_dir/$condition-[1-$replicates]/abundance.tsv
+		$condition-all-norm-$replicates.tsv $files
 	fi
     done
     
@@ -77,9 +81,13 @@ for replicates in $(seq 8 $max_ne) `seq $(($max_ne + 1)) 5 $tr`; do
     for condition in WT SNF2; do
 	if [ ! -e $condition-all-norm-$replicates.tsv ]; then
 	    printf "Normalizing $condition: $replicates replicates\n"
+	    files=""
+	    for r in $(seq 1 $replicates); do
+		files="$files $kallisto_dir/$condition-$r/abundance.tsv"
+	    done
+	    printf "%s\n" $files
 	    time fasda normalize --output \
-		$condition-all-norm-$replicates.tsv \
-		$kallisto_dir/$condition-[1-$replicates]/abundance.tsv
+		$condition-all-norm-$replicates.tsv $files
 	fi
     done
     
