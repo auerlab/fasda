@@ -11,7 +11,7 @@
 
 usage()
 {
-    printf "Usage: $0 script.sh\n"
+    printf "Usage: $0 script.sh [args]\n"
     exit 1
 }
 
@@ -20,10 +20,11 @@ usage()
 #   Main
 ##########################################################################
 
-if [ $# != 1 ]; then
+if [ $# -lt 1 ]; then
     usage
 fi
 script=$1
+shift
 
 base=${script%.s*h}
 printf "Remove results from Data/$base? y/[n] "
@@ -39,7 +40,7 @@ if [ 0"$sure" = 0y ]; then
 fi
 
 if [ ${script##*.} = sbatch ]; then
-    sbatch $script
+    sbatch $script "$@"
 else
-    ./$script
+    ./$script "$@"
 fi

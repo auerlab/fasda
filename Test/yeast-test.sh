@@ -1,23 +1,59 @@
 #!/bin/sh -e
 
+##########################################################################
+#   Synopsis:
+#       
+#   Description:
+#       
+#   Arguments:
+#       
+#   Returns:
+#
+#   Examples:
+#
+#   Files:
+#
+#   Environment:
+#
+#   See also:
+#       
+#   History:
+#   Date        Name        Modification
+#   2022-11-19  Jason Bacon Begin
+##########################################################################
+
+usage()
+{
+    printf "Usage: $0 max-replicates\n"
+    exit 1
+}
+
+
+##########################################################################
+#   Main
+##########################################################################
+
+if [ $# != 1 ]; then
+    usage
+fi
+replicates=$1
+
+if [ $replicates -lt 8 ]; then
+    printf "$0: replicates must be at least 8.\n"
+    usage
+fi
+
 cd ..
 ./cave-man-install.sh
 cd Test
 
 ./00-organize.sh
+./01-fetch.sh $replicates
 
+# FIXME: Let 02-trim.sh handle the count check?
 raw_count=$(ls Data/Raw-renamed/*.gz | wc -l)
-if [ $raw_count -lt 8 ]; then
-    printf "How many samples would you like to download? [10] "
-    read count
-    if [ -z "$count" ]; then
-	count=10
-    fi
-    ./01-fetch.sh $count
-fi
-
 trimmed_count=$(ls Data/02-trim/*.gz | wc -l)
-if [ $trimmed_count -ne $raw_count ]; then
+if [ $trimmed_count -lt $raw_count ]; then
     ./02-trim.sh
 else
     printf "02-trim.sh already done.\n"
@@ -49,5 +85,5 @@ else
     printf "06-kallisto-quant.sh already done.\n"
 fi
 
-./09-fasda.sh
+./09-fasda.sh $replicates
 
