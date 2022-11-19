@@ -65,6 +65,7 @@ awk -v samples=$samples -v condition=$condition \
 	    (cd $raw_renamed && ln -s ../Raw/$fq $condition-$num.fastq.gz)
 	fi
     done
+    rm -f $condition.tsv
 done
 ls -l $raw
 ls -l $raw_renamed

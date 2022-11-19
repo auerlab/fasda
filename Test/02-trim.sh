@@ -11,7 +11,7 @@ export GZIP=-1
 # Allocate 3 cores per job, if possible
 # FIXME: --number-of-cores reports 2 on unixdev1, should be 16
 cores=$(parallel --number-of-threads)
-jobs=$(($cores / 3))
+jobs=$(($cores / 2))
 if [ $jobs = 0 ]; then
     jobs=1
 fi
@@ -20,5 +20,5 @@ printf "Cores = $cores  Jobs = $jobs\n"
 trimmed_dir=Data/02-trim
 mkdir -p $trimmed_dir
 ls Data/Raw-renamed/*.fastq.gz \
-    | parallel --max-procs $jobs ./trim1.sh $trimmed_dir
+    | parallel --max-proc $jobs ./trim1.sh $trimmed_dir
 
