@@ -44,8 +44,10 @@ int     main(int argc, const char *argv[])
 
     for (arg = 1; *argv[arg] == '-'; ++arg)
     {
+	// Only mean ratios is supported for now, so ignore
 	if ( strcmp(argv[arg], "--mrn") == 0 )
 	    ;
+	
 	else if ( strcmp(argv[arg], "--output") == 0 )
 	{
 	    if ( (norm_all_stream = fopen(argv[++arg], "w")) == NULL )
@@ -59,6 +61,13 @@ int     main(int argc, const char *argv[])
 	    usage(argv);
     }
     
+    // Remaining arguments are input files
+    if ( argc - arg < 2 )
+    {
+	fprintf(stderr, "%s requires a minimum of two abundance files.\n",
+		argv[0]);
+	usage(argv);
+    }
     return mrn(argv + arg, norm_all_stream);
 }
 
