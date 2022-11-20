@@ -73,7 +73,6 @@ fi
 
 for replicates in $(seq 3 $max_ne); do
     r0=$(printf '%02d' $replicates)
-    printf "r0 = $r0\n"
     for condition in WT SNF2; do
 	if [ ! -e $condition-all-norm-$r0.tsv ]; then
 	    printf "Normalizing $condition: $replicates replicates\n"
@@ -101,7 +100,6 @@ done
 if [ $tr -ge 8 ]; then
     for replicates in $(seq 8 $tr); do
 	r0=$(printf '%02d' $replicates)
-	printf "r0 = $r0\n"
 	for condition in WT SNF2; do
 	    if [ ! -e $condition-all-norm-$r0.tsv ]; then
 		printf "Normalizing $condition: $replicates replicates\n"
