@@ -76,7 +76,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
     size_t      condition, c, num_repls[MAX_REPLICATES];
     double      cond_tot_counts[MAX_CONDITIONS],
 		condition_stddevs[MAX_CONDITIONS],
-		*rep_counts[MAX_REPLICATES];
+		*rep_counts[MAX_REPLICATES];    // 2D conditions x replicates
     dsv_line_t  dsv_line[MAX_REPLICATES];
     // Silence GCC 7 uninit warning, later versions OK
     char        *id = NULL, *new_id = NULL;
@@ -231,8 +231,6 @@ void    print_header(FILE *diff_stream, int conditions)
 
 {
     int     c1, c2;
-    // FIXME: Set this depending on algorithm?
-    char    *p_header = "P-val";
     
     fprintf(diff_stream, "%-20s", "Feature");
     for (c1 = 0; c1 < conditions; ++c1)
@@ -242,7 +240,8 @@ void    print_header(FILE *diff_stream, int conditions)
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
-	    fprintf(diff_stream,"  FC %d-%d   %s", c1 + 1, c2 + 1, p_header);
+	    fprintf(diff_stream,"  %4s  FC %d-%d  %5s",
+		    "%Agr", c1 + 1, c2 + 1, "P-val");
     }
     putc('\n', diff_stream);
 }
@@ -292,14 +291,18 @@ void    print_fold_change(FILE *diff_stream, const char *id,
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
 	{
+	    // Agreement: Is fold-change up/down in all replicates?
+	    fprintf(diff_stream, "  %4u",
+		    agreement(c1, c2, num_repls, rep_counts));
+	    
 	    // Fold-change
 	    if ( (cond_tot_counts[c1] == 0.0) && (cond_tot_counts[c2] == 0.0) )
 		fprintf(diff_stream," %7s", "*");
 	    else
 		fprintf(diff_stream," %7.2f", 
 			cond_tot_counts[c2] / cond_tot_counts[c1]);
-	    
-	    // Compute p-value
+
+	    // P-value
 	    if ( flags & FC_FLAG_NEAR_EXACT )
 	    {
 		if ( num_repls[c1] <= 12  )
@@ -317,10 +320,37 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 	    else
 		pval = near_exact_pval(rep_counts[c1], rep_counts[c2],
 				       num_repls[c1]);
-	    fprintf(diff_stream,"   %0.3f", pval);
+	    
+	    fprintf(diff_stream, "  %5.3f", pval);
 	}
     }
     putc('\n', diff_stream);
+}
+
+
+/***************************************************************************
+ *  Description:
+ *  
+ *  History: 
+ *  Date        Name        Modification
+ *  2022-11-22  Jason Bacon Begin
+ ***************************************************************************/
+
+unsigned agreement(int c1, int c2, size_t num_repls[], double *rep_counts[])
+
+{
+    unsigned    r, c1_higher, c2_higher;
+    
+    for (r = c1_higher = c2_higher = 0;
+	 (r < num_repls[c1]) && (r < num_repls[c2]); ++r)
+    {
+	if ( rep_counts[c1][r] > rep_counts[c2][r] )
+	    ++c1_higher;
+	    
+	if ( rep_counts[c1][r] < rep_counts[c2][r] )
+	    ++c2_higher;
+    }
+    return 100 * MAX(c1_higher, c2_higher) / r;
 }
 
 

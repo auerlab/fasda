@@ -44,16 +44,20 @@ down-sampled to keep run time within reason).
 For each pair of conditions,
 .B fasda fold-change
 reports the mean normalized counts for each condition, the standard
-deviation / mean counts for each condition, the fold-change across the
-conditions, and the P-value for this set of counts across the conditions.
+deviation / mean counts for each condition, the percent agreement across
+replicates as to whether the fold-change is up or down, the fold-change
+using total counts for each condition, and the P-value for this set of counts
+across the two conditions.
 
 .nf
 .na
-Feature                 MNC1    MNC2  SD/C1  SD/C2  FC 1-2   P-val
-YPL071C_mRNA            34.4    52.5    0.4    0.3    1.52   0.220
-YLL050C_mRNA           441.9   912.4    0.4    0.3    2.06   0.070
-YMR172W_mRNA            54.6   111.2    0.4    0.3    2.04   0.059
-YOR185C_mRNA            59.2    94.8    0.2    0.2    1.60   0.044
+Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val
+YPL071C_mRNA            34.4    52.5    0.4    0.3    66    1.52  0.220
+YLL050C_mRNA           441.9   912.4    0.4    0.3   100    2.06  0.070
+YMR172W_mRNA            54.6   111.2    0.4    0.3   100    2.04  0.059
+YOR185C_mRNA            59.2    94.8    0.2    0.2   100    1.60  0.044
+YLL032C_mRNA            33.2    31.9    0.5    0.4    66    0.96  0.918
+YBR225W_mRNA            57.4   103.3    0.4    0.3    66    1.80  0.138
 .ad
 .fi
 
