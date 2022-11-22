@@ -123,7 +123,8 @@ if [ $tr -ge 8 ]; then
 fi
 
 head WT-SNF2-FC-NE-*.txt WT-SNF2-FC-MW-*.txt | more
-printf "%-25s %10s %10s\n" "File" "Features" "P < 0.05"
+printf "\n%-25s %10s %10s\n" "File" "Features" "P < 0.05"
 for file in WT-SNF2-FC-NE-*.txt WT-SNF2-FC-MW-*.txt; do
-    printf "%-25s %10s %10s\n" $file: $(cat $file | wc -l) $(awk '$5 < 0.05' $file | wc -l)
-done
+    printf "%-25s %10s %10s\n" $file: \
+	$(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)
+done | more
