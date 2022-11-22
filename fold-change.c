@@ -344,11 +344,10 @@ unsigned agreement(int c1, int c2, size_t num_repls[], double *rep_counts[])
     for (r = c1_higher = c2_higher = 0;
 	 (r < num_repls[c1]) && (r < num_repls[c2]); ++r)
     {
-	if ( rep_counts[c1][r] > rep_counts[c2][r] )
+	if ( rep_counts[c2][r] > rep_counts[c1][r] )
+	    ++c2_higher;    // Up-regulated
+	else
 	    ++c1_higher;
-	    
-	if ( rep_counts[c1][r] < rep_counts[c2][r] )
-	    ++c2_higher;
     }
     return 100 * MAX(c1_higher, c2_higher) / r;
 }
