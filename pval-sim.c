@@ -13,6 +13,7 @@
 #include <string.h>
 #include <sysexits.h>
 #include <sys/time.h>
+#include "pval-sim.h"
 #include "exact-p-val.h"
 
 const int   Debug = 1;
