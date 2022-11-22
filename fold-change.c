@@ -73,14 +73,15 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		    FILE *diff_stream, unsigned flags)
 
 {
-    size_t      condition, c, num_reps[MAX_REPLICATES];
-    double      condition_counts[MAX_CONDITIONS],
-		condition_stddevs[MAX_CONDITIONS];
+    size_t      condition, c, num_repls[MAX_REPLICATES];
+    double      cond_tot_counts[MAX_CONDITIONS],
+		condition_stddevs[MAX_CONDITIONS],
+		*rep_counts[MAX_REPLICATES];
     dsv_line_t  dsv_line[MAX_REPLICATES];
     // Silence GCC 7 uninit warning, later versions OK
     char        *id = NULL, *new_id = NULL;
     int         delim;
-    static double   *rep_counts[MAX_REPLICATES];
+    unsigned long    count = 0;
     
     if ( conditions < 2 )
     {
@@ -154,9 +155,9 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		
 		if ( rep_counts[condition] == NULL )
 		{
-		    num_reps[condition] = DSV_LINE_NUM_FIELDS(&dsv_line[0]) - 1;
+		    num_repls[condition] = DSV_LINE_NUM_FIELDS(&dsv_line[0]) - 1;
 		    rep_counts[condition] =
-			xt_malloc(num_reps[condition],
+			xt_malloc(num_repls[condition],
 				  sizeof(*rep_counts[condition]));
 		    if ( rep_counts[condition] == NULL )
 		    {
@@ -170,7 +171,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		 *  Also get counts for each replicate for computing p-value.
 		 */
 		
-		condition_counts[condition] =
+		cond_tot_counts[condition] =
 		    dsv_total_counts(&dsv_line[condition],
 				     rep_counts[condition],
 				     &condition_stddevs[condition]);
@@ -201,8 +202,12 @@ int     fold_change(FILE *condition_streams[], int conditions,
 	
 	// Output fold-change and p-value
 	print_fold_change(diff_stream, id,
-			  condition_counts, condition_stddevs, conditions,
-			  rep_counts, num_reps, flags);
+			  cond_tot_counts, condition_stddevs, conditions,
+			  rep_counts, num_repls, flags);
+	
+	// Progress counter
+	if ( ++count % 100 == 0 )
+	    fprintf(stderr, "%lu\r", count);
     }    
     
     for (condition = 0; condition < conditions; ++condition)
@@ -231,9 +236,9 @@ void    print_header(FILE *diff_stream, int conditions)
     
     fprintf(diff_stream, "%-20s", "Feature");
     for (c1 = 0; c1 < conditions; ++c1)
-	fprintf(diff_stream, " %6s%d", "NCNT", c1 + 1);
+	fprintf(diff_stream, " %6s%d", "MNC", c1 + 1);
     for (c1 = 0; c1 < conditions; ++c1)
-	fprintf(diff_stream, " %5s%d", "SDEV", c1 + 1);
+	fprintf(diff_stream, " %5s%d", "SD/C", c1 + 1);
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
@@ -253,58 +258,68 @@ void    print_header(FILE *diff_stream, int conditions)
  ***************************************************************************/
 
 void    print_fold_change(FILE *diff_stream, const char *id,
-			  double condition_counts[],
+			  double cond_tot_counts[],
 			  double condition_stddevs[], int conditions,
-			  double *rep_counts[], size_t num_reps[],
+			  double *rep_counts[], size_t num_repls[],
 			  unsigned flags)
 
 {
     int     c1, c2;
-    double  pval;
-    static unsigned long    count = 0;
+    double  pval, avg_count;
     
     fprintf(diff_stream,"%-20s", id);
     
-    // Report average counts across all reps
+    // Report mean counts across all replicates for each condition
     for (c1 = 0; c1 < conditions; ++c1)
 	fprintf(diff_stream," %7.1f",
-		condition_counts[c1] / num_reps[c1]);
+		cond_tot_counts[c1] / num_repls[c1]);
 
+    // Report mean counts / standard deviation as an estimate of consistency
+    // in the counts across all replicates
     for (c1 = 0; c1 < conditions; ++c1)
-	fprintf(diff_stream," %6.1f", condition_stddevs[c1]);
+    {
+	avg_count = cond_tot_counts[c1] / num_repls[c1];
+	fprintf(diff_stream," %6.1f",
+		avg_count == 0 ? 0 : condition_stddevs[c1] / avg_count);
+    }
+    
+    /*
+     *  Report fold-change for each combination of conditions, i.e.
+     *  1 vs 2, 1 vs 3, 2 vs 3.
+     */
     
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
 	{
-	    if ( (condition_counts[c1] == 0.0) && (condition_counts[c2] == 0.0) )
+	    // Fold-change
+	    if ( (cond_tot_counts[c1] == 0.0) && (cond_tot_counts[c2] == 0.0) )
 		fprintf(diff_stream," %7s", "*");
 	    else
-		fprintf(diff_stream," %7.2f", condition_counts[c2] / condition_counts[c1]);
+		fprintf(diff_stream," %7.2f", 
+			cond_tot_counts[c2] / cond_tot_counts[c1]);
 	    
 	    // Compute p-value
 	    if ( flags & FC_FLAG_NEAR_EXACT )
 	    {
-		if ( num_reps[c1] <= 12  )
+		if ( num_repls[c1] <= 12  )
 		    pval = near_exact_pval(rep_counts[c1], rep_counts[c2],
-					   num_reps[c1]);
+					   num_repls[c1]);
 		else
 		{
 		    fprintf(stderr, "Current limit for near-exact P-values is 12 replicates.\n");
 		    exit(EX_USAGE);
 		}
 	    }
-	    else if ( (num_reps[c1] >= 8) && (num_reps[c2] >= 8) )
+	    else if ( (num_repls[c1] >= 8) && (num_repls[c2] >= 8) )
 		pval = mann_whitney_pval(rep_counts[c1], rep_counts[c2],
-					 num_reps[c1], num_reps[c2]);
+					 num_repls[c1], num_repls[c2]);
 	    else
 		pval = near_exact_pval(rep_counts[c1], rep_counts[c2],
-				       num_reps[c1]);
+				       num_repls[c1]);
 	    fprintf(diff_stream,"   %0.3f", pval);
 	}
     }
-    if ( ++count % 100 == 0 )
-	fprintf(stderr, "%lu\r", count);
     putc('\n', diff_stream);
 }
 

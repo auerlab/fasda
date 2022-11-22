@@ -41,6 +41,29 @@ P-values are computed for 2 to 4 replicates and near-exact P-values for
 5 to 7 replicates (the enormous space of possible count pairs is
 down-sampled to keep run time within reason).
 
+For each pair of conditions,
+.B fasda fold-change
+reports the mean normalized counts for each condition, the standard
+deviation / mean counts for each condition, the fold-change across the
+conditions, and the P-value for this set of counts across the conditions.
+
+.nf
+.na
+Feature                 MNC1    MNC2  SD/C1  SD/C2  FC 1-2   P-val
+YPL071C_mRNA            34.4    52.5    0.4    0.3    1.52   0.220
+YLL050C_mRNA           441.9   912.4    0.4    0.3    2.06   0.070
+YMR172W_mRNA            54.6   111.2    0.4    0.3    2.04   0.059
+YOR185C_mRNA            59.2    94.8    0.2    0.2    1.60   0.044
+.ad
+.fi
+
+P-values will generally be lower when fold-changes are higher, when
+mean normalized counts are higher and when standard deviation is lower.
+We report standard deviation divided by mean normalized counts to provide
+an immediate sense of how variable the counts are across replicates for
+each feature.  E.g. the actual standard deviation for condition 1 in
+YPL071C_mRNA (using rounded output) would be 34.4 * 0.4 = 13.76.
+
 .SH "Interpreting Results"
 
 P-values from any differential analysis tool should never be taken too
@@ -95,14 +118,14 @@ decide whether a costly experimental verification is warranted.
 .nf
 .na
 		    FASDA                     Sleuth
-	   Feature   Cond1   Cond2  FC   1-2    SC1    SC2  SFC    SPV
+	   Feature    MNC1    MNC2  FC   1-2    SC1    SC2  SFC    SPV
 ENSMUST00000017610  7620.5 16006.7 2.1 0.116  191.4  433.5  2.3 0.0132
 
 Kallisto estimated counts:
 
 	     R1      R2      R3
-Cond1   5382.16  8567.4 6986.43
-Cond2   21519.9 16196.7 6307.52
+MNC1    5382.16  8567.4 6986.43
+MNC2    21519.9 16196.7 6307.52
 .ad
 .fi
 
@@ -112,12 +135,12 @@ looks like a slam-dunk given the counts.
 .nf
 .na
 		    FASDA                     Sleuth
-	   Feature   Cond1   Cond2  FC   1-2    SC1    SC2  SFC    SPV
+	   Feature    MNC1    MNC2  FC   1-2    SC1    SC2  SFC    SPV
 ENSMUST00000036928  1165.0  4064.3 3.5 0.024   70.5  300.4  4.3 0.1203
 
 	     R1      R2      R3
-Cond1   1045.41 942.707 1220.02
-Cond2   2835.7  4167.81 3718.39
+MNC1    1045.41 942.707 1220.02
+MNC2    2835.7  4167.81 3718.39
 .ad
 .fi
 
