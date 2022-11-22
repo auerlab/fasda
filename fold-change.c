@@ -73,12 +73,14 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		    FILE *diff_stream, unsigned flags)
 
 {
-    size_t      condition, c, num_reps[MAX_CONDITIONS];
-    double      condition_counts[MAX_CONDITIONS];
-    dsv_line_t  dsv_line[MAX_CONDITIONS];
-    char        *id = NULL; // Silence GCC 7 uninit warning, later versions OK
+    size_t      condition, c, num_reps[MAX_REPLICATES];
+    double      condition_counts[MAX_CONDITIONS],
+		condition_stddevs[MAX_CONDITIONS];
+    dsv_line_t  dsv_line[MAX_REPLICATES];
+    // Silence GCC 7 uninit warning, later versions OK
+    char        *id = NULL, *new_id = NULL;
     int         delim;
-    static double   *rep_counts[MAX_CONDITIONS];
+    static double   *rep_counts[MAX_REPLICATES];
     
     if ( conditions < 2 )
     {
@@ -135,16 +137,16 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		 *  on corresponding lines from each abundances file.
 		 */
 		
-		if ( (condition > 0) &&
-		     (strcmp(DSV_LINE_FIELDS_AE(&dsv_line[condition], 0),
-			    id) != 0) )
+		new_id = DSV_LINE_FIELDS_AE(&dsv_line[condition], 0);
+		if ( (condition > 0) && (strcmp(new_id, id) != 0) )
 		{
 		    fprintf(stderr, "fold-change: Abundances files out of sync: %s %s\n",
 			    id, DSV_LINE_FIELDS_AE(&dsv_line[condition], 0));
 		    return EX_DATAERR;
 		}
+		
 		// Save for comparison with next condition
-		id = DSV_LINE_FIELDS_AE(&dsv_line[condition], 0);
+		id = new_id;
 
 		/*
 		 *  Allocate array of counts for replicates in this condition
@@ -170,7 +172,8 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		
 		condition_counts[condition] =
 		    dsv_total_counts(&dsv_line[condition],
-				     rep_counts[condition]);
+				     rep_counts[condition],
+				     &condition_stddevs[condition]);
 	    }
 	    else
 	    {
@@ -197,7 +200,8 @@ int     fold_change(FILE *condition_streams[], int conditions,
 	}
 	
 	// Output fold-change and p-value
-	print_fold_change(diff_stream, id, condition_counts, conditions,
+	print_fold_change(diff_stream, id,
+			  condition_counts, condition_stddevs, conditions,
 			  rep_counts, num_reps, flags);
     }    
     
@@ -225,9 +229,11 @@ void    print_header(FILE *diff_stream, int conditions)
     // FIXME: Set this depending on algorithm?
     char    *p_header = "P-val";
     
-    fprintf(diff_stream, "%-30s", "Feature");
+    fprintf(diff_stream, "%-20s", "Feature");
     for (c1 = 0; c1 < conditions; ++c1)
-	fprintf(diff_stream, " %7s%d", "Cond", c1 + 1);
+	fprintf(diff_stream, " %6s%d", "NCNT", c1 + 1);
+    for (c1 = 0; c1 < conditions; ++c1)
+	fprintf(diff_stream, " %5s%d", "SDEV", c1 + 1);
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
@@ -247,7 +253,8 @@ void    print_header(FILE *diff_stream, int conditions)
  ***************************************************************************/
 
 void    print_fold_change(FILE *diff_stream, const char *id,
-			  double condition_counts[], int conditions,
+			  double condition_counts[],
+			  double condition_stddevs[], int conditions,
 			  double *rep_counts[], size_t num_reps[],
 			  unsigned flags)
 
@@ -256,20 +263,24 @@ void    print_fold_change(FILE *diff_stream, const char *id,
     double  pval;
     static unsigned long    count = 0;
     
-    fprintf(diff_stream,"%-30s", id);
+    fprintf(diff_stream,"%-20s", id);
     
     // Report average counts across all reps
     for (c1 = 0; c1 < conditions; ++c1)
-	fprintf(diff_stream," %8.2f", condition_counts[c1] / num_reps[c1]);
+	fprintf(diff_stream," %7.1f",
+		condition_counts[c1] / num_reps[c1]);
+
+    for (c1 = 0; c1 < conditions; ++c1)
+	fprintf(diff_stream," %6.1f", condition_stddevs[c1]);
     
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
 	{
-	    if ( (condition_counts[c1] != 0.0) || (condition_counts[c2] != 0.0) )
-		fprintf(diff_stream," %7.2f", condition_counts[c2] / condition_counts[c1]);
-	    else
+	    if ( (condition_counts[c1] == 0.0) && (condition_counts[c2] == 0.0) )
 		fprintf(diff_stream," %7s", "*");
+	    else
+		fprintf(diff_stream," %7.2f", condition_counts[c2] / condition_counts[c1]);
 	    
 	    // Compute p-value
 	    if ( flags & FC_FLAG_NEAR_EXACT )
@@ -324,11 +335,12 @@ void    print_fold_change(FILE *diff_stream, const char *id,
  *  2022-05-16  Jason Bacon Begin
  ***************************************************************************/
 
-double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[])
+double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[],
+			 double *condition_stddevs)
 
 {
     size_t  f;
-    double  total_counts;
+    double  total_counts, mean, sum_sq, variance;
     char    *end;
     
     // All but first field are counts
@@ -345,6 +357,12 @@ double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[])
 	//fprintf(stderr, "total_counts = %f\n", total_counts);
 	//getchar();
     }
+    
+    mean = total_counts / DSV_LINE_NUM_FIELDS(dsv_line);
+    for (f = 1, sum_sq = 0; f < DSV_LINE_NUM_FIELDS(dsv_line); ++f)
+	sum_sq += (rep_counts[f-1] - mean) * (rep_counts[f-1] - mean);
+    variance = sum_sq / DSV_LINE_NUM_FIELDS(dsv_line);
+    *condition_stddevs = sqrt(variance);
     return total_counts;
 }
 
