@@ -17,6 +17,7 @@ pause()
 
 while true; do
     clear
+    # https://www.ascii-art-generator.org/
     cat << EOM
 
 			_________   _____ ____  ___ 
