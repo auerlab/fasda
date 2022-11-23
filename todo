@@ -1,4 +1,7 @@
 
+Mann-Whitney for odd numbers of replicates coming out slightly higher
+than wilcox.test()
+
 Docs: Never make a decision based solely on the p-value and/or fold-change
 
 Report stats on counts, including mean and maximum deviation as % of mean
