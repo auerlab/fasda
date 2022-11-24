@@ -66,8 +66,9 @@ double  mann_whitney_pval(double rep_counts1[], double rep_counts2[],
 	printf("%f ", rep_counts2[c2]);
     puts("\n");
     */
-    
-    for (c1 = 0, w1 = 0.0; c1 < n; ++c1)
+
+    w1 = 0.0;
+    for (c1 = 0; c1 < n; ++c1)
     {
 	for (c2 = 0; c2 < m; ++c2)
 	{
@@ -100,7 +101,7 @@ double  mann_whitney_pval(double rep_counts1[], double rep_counts2[],
     // sample sizes, so maybe compute the p-value combinatorically.
     // (Determine total # of possible rank sums and how many are less
     // (or greater) than this one.
-    z = (w - n * m / 2) / sqrt(n * m * (n + m + 1.0) / 12.0);
+    z = (w - n * m / 2.0) / sqrt(n * m * (n + m + 1.0) / 12.0);
     p = 2.0 * normal_cdf(z, 0.0, 1.0);
     // printf("  z = %f  p = %f  p(-1.96) = %f\n", z, p, normal_cdf(-1.96, 0.0, 1.0));
     return p;
