@@ -1,21 +1,8 @@
 #!/bin/sh -e
 
 ##########################################################################
-#   Synopsis:
-#       
 #   Description:
-#       
-#   Arguments:
-#       
-#   Returns:
-#
-#   Examples:
-#
-#   Files:
-#
-#   Environment:
-#
-#   See also:
+#       Run fasda normalize and fold-change on kallisto abundances
 #       
 #   History:
 #   Date        Name        Modification
@@ -107,7 +94,7 @@ if [ $tr -ge 8 ]; then
 		for r in $(seq 1 $replicates); do
 		    files="$files $kallisto_dir/$condition-$r/abundance.tsv"
 		done
-		printf "%s\n" $files
+		# printf "%s\n" $files
 		time fasda normalize --output \
 		    $condition-all-norm-$r0.tsv $files
 	    fi
