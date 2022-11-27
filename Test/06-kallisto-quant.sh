@@ -46,6 +46,15 @@ gtf=$(Reference/gtf-filename.sh)
 # The sample number comes after -sample in the filename, e.g.
 # chondro-sample4-rep2-time1-R1.fastq.xz is sample 4
 
+# getconf NPROCESSORS_ONLN does not work on Alma8, _NPROCESSORS_ONLN does
+# _NPROCESSORS_ONLN does not work on NetBSD9
+# Both forms work on FreeBSD and macOS
+if [ $(uname) = Linux ]; then
+    threads=$(getconf _NPROCESSORS_ONLN)
+else
+    threads=$(getconf NPROCESSORS_ONLN)
+fi
+
 for file in Data/02-trim/*.fastq.gz; do
     echo $file
     # kallisto 0.46.1 can't handle xz and will simply seg fault rather than
@@ -66,7 +75,7 @@ for file in Data/02-trim/*.fastq.gz; do
 	--genomebam \
 	    --gtf=Data/04-reference/$gtf \
 	    --chromosomes=Data/04-reference/chromosome-sizes.tsv \
-	--threads=2 \
+	--threads=$threads \
 	--index=Data/05-kallisto-index/all-but-xy.index \
 	--output-dir=$out_dir $file
 done
