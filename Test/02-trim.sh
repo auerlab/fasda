@@ -8,17 +8,22 @@ pwd
 # So gzip can keep up with fastq-trim
 export GZIP=-1
 
-# Allocate 3 cores per job, if possible
-# FIXME: --number-of-cores reports 2 on unixdev1, should be 16
-cores=$(parallel --number-of-threads)
-jobs=$(($cores / 2))
+# FIXME: parallel --number-of-cores reports 2 on unixdev1, should be 16
+# getconf is POSIX standard, but does not work on Alma8
+if [ $(uname) = Linux ]; then
+    threads=$(nproc)
+else
+    threads=$(getconf NPROCESSORS_CONF)
+fi
+jobs=$(($threads / 2))
 if [ $jobs = 0 ]; then
     jobs=1
 fi
-printf "Cores = $cores  Jobs = $jobs\n"
+printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
-trimmed_dir=Data/02-trim
-mkdir -p $trimmed_dir
+data_dir=Data/02-trim
+log_dir=Logs/02-trim
+mkdir -p $data_dir $log_dir
 ls Data/Raw-renamed/*.fastq.gz \
-    | parallel --max-proc $jobs ./trim1.sh $trimmed_dir
+    | xargs -n 1 -P $jobs ./trim1.sh $data_dir $log_dir
 

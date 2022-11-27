@@ -24,7 +24,7 @@
 
 usage()
 {
-    printf "Usage: $0 file\n"
+    printf "Usage: $0 data-dir log-dir file\n"
     exit 1
 }
 
@@ -33,11 +33,12 @@ usage()
 #   Main
 ##########################################################################
 
-if [ $# != 2 ]; then
+if [ $# != 3 ]; then
     usage
 fi
 trimmed_dir=$1
-file=$2
+log_dir=$2
+file=$3
 
 base=`basename $file`
 trimmed=$trimmed_dir/$base
@@ -46,6 +47,6 @@ if [ -e $trimmed ]; then
 else
     # Adapter discovered by fastq-scum
     fastq-trim --3p-adapter1 AGATCGGAAGAG --polya-min-length 3 \
-	$file $trimmed
+	$file $trimmed > $log_dir/$base.out 2> $log_dir/$base.err
 fi
 
