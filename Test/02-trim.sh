@@ -9,11 +9,13 @@ pwd
 export GZIP=-1
 
 # FIXME: parallel --number-of-cores reports 2 on unixdev1, should be 16
-# getconf is POSIX standard, but does not work on Alma8
+# getconf NPROCESSORS_ONLN does not work on Alma8, _NPROCESSORS_ONLN does
+# _NPROCESSORS_ONLN does not work on NetBSD9
+# Both forms work on FreeBSD and macOS
 if [ $(uname) = Linux ]; then
-    threads=$(nproc)
+    threads=$(getconf _NPROCESSORS_ONLN)
 else
-    threads=$(getconf NPROCESSORS_CONF)
+    threads=$(getconf NPROCESSORS_ONLN)
 fi
 jobs=$(($threads / 2))
 if [ $jobs = 0 ]; then
