@@ -1,5 +1,28 @@
 #!/bin/sh -e
 
+##########################################################################
+#   Description:
+#       Trim adapters from raw reads
+#       
+#   History:
+#   Date        Name        Modification
+#   2022-05-12  Jason Bacon Adapt from CNC-EMDiff
+##########################################################################
+
+usage()
+{
+    printf "Usage: $0 \n"
+    exit 1
+}
+
+
+##########################################################################
+#   Main
+##########################################################################
+
+if [ $# != 1 ]; then
+    usage
+fi
 # Document software versions used for publication
 uname -a
 fastq-trim --version

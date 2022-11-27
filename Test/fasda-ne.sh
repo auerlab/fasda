@@ -37,8 +37,8 @@ for condition in WT SNF2; do
 	done
 	# printf "%s\n" $files
 	time fasda normalize --output $condition-all-norm-$r0.tsv $files \
-	    > $log_dir/normalize-$condition-$r0-ne.out \
-	    2> $log_dir/normalize-$condition-$r0-ne.err
+	    > $log_dir/normalize-$condition-$r0-NE.out \
+	    2> $log_dir/normalize-$condition-$r0-NE.err
     fi
 done
 
@@ -47,7 +47,7 @@ if [ ! -e WT-SNF2-FC-NE-$r0.txt ]; then
     time fasda fold-change --near-exact \
 	--output WT-SNF2-FC-NE-$r0.txt \
 	WT-all-norm-$r0.tsv SNF2-all-norm-$r0.tsv \
-	> $log_dir/fc-$condition-$r0-ne.out \
-	2> $log_dir/fc-$condition-$r0-ne.err
+	> $log_dir/fc-$condition-$r0-NE.out \
+	2> $log_dir/fc-$condition-$r0-NE.err
 fi
 

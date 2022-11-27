@@ -1,21 +1,8 @@
 #!/bin/sh -e
 
 ##########################################################################
-#   Synopsis:
-#       
 #   Description:
-#       
-#   Arguments:
-#       
-#   Returns:
-#
-#   Examples:
-#
-#   Files:
-#
-#   Environment:
-#
-#   See also:
+#       Fetch Yeast sample data and create symlinks with descriptive names
 #       
 #   History:
 #   Date        Name        Modification
@@ -62,8 +49,8 @@ awk -v samples=$samples -v condition=$condition \
 	    fasterq-dump --progress --force --outdir $raw $sample
 	    printf "Compressing...\n"
 	    gzip $raw/$sample.fastq
-	    (cd $raw_renamed && ln -s ../Raw/$fq $condition-$num.fastq.gz)
 	fi
+	(cd $raw_renamed && ln -fs ../Raw/$fq $condition-$num.fastq.gz)
     done
     rm -f $condition.tsv
 done

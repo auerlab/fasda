@@ -1,21 +1,9 @@
 #!/bin/sh -e
 
 ##########################################################################
-#   Synopsis:
-#       
 #   Description:
-#       
-#   Arguments:
-#       
-#   Returns:
-#
-#   Examples:
-#
-#   Files:
-#
-#   Environment:
-#
-#   See also:
+#       Run all stages of Yeast differential analysis for which
+#       output files do not already exist
 #       
 #   History:
 #   Date        Name        Modification
@@ -36,10 +24,10 @@ usage()
 if [ $# != 1 ]; then
     usage
 fi
-replicates=$1
+max_replicates=$1
 
-if [ $replicates -lt 8 ]; then
-    printf "$0: replicates must be at least 8.\n"
+if [ $max_replicates -lt 8 ]; then
+    printf "$0: max-replicates must be at least 8.\n"
     usage
 fi
 
@@ -48,7 +36,7 @@ cd ..
 cd Test
 
 ./00-organize.sh
-./01-fetch.sh $replicates
+./01-fetch.sh $max_replicates
 
 # FIXME: Let 02-trim.sh handle the count check?
 raw_count=$(ls Data/Raw-renamed/*.gz | wc -l)
@@ -85,5 +73,5 @@ else
     printf "06-kallisto-quant.sh already done.\n"
 fi
 
-./09-fasda.sh $replicates
+./09-fasda.sh $max_replicates
 

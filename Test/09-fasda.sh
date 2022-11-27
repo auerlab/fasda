@@ -71,10 +71,8 @@ if [ $jobs = 0 ]; then
 fi
 printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
-#for replicates in $(seq 3 $max_ne); do
 seq 3 $max_ne | xargs -n 1 -P $jobs \
     ../../fasda-ne.sh $kallisto_dir $log_dir
-#done
 
 ##########################################################################
 #   8 to all replicates, Mann-Whitney P-values
@@ -94,8 +92,8 @@ if [ $tr -ge 8 ]; then
 		# printf "%s\n" $files
 		time fasda normalize --output \
 		    $condition-all-norm-$r0.tsv $files \
-		    > $log_dir/normalize-$condition-$r0-mw.out \
-		    2> $log_dir/normalize-$condition-$r0-mw.err
+		    > $log_dir/normalize-$condition-$r0-MW.out \
+		    2> $log_dir/normalize-$condition-$r0-MW.err
 	    fi
 	done
 	
@@ -104,8 +102,8 @@ if [ $tr -ge 8 ]; then
 	    time fasda fold-change \
 		--output WT-SNF2-FC-MW-$r0.txt \
 		WT-all-norm-$r0.tsv SNF2-all-norm-$r0.tsv \
-		> $log_dir/fc-$condition-$r0-mw.out \
-		2> $log_dir/fc-$condition-$r0-mw.err
+		> $log_dir/fc-$condition-$r0-MW.out \
+		2> $log_dir/fc-$condition-$r0-MW.err
 	fi
     done
 fi
