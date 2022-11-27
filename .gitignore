@@ -5,6 +5,7 @@ normalize
 fold-change
 .*.bak
 Data
+Logs
 Yeast
 SNF2-all-norm*.tsv
 WT-SNF2-FC*.txt
