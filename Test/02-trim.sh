@@ -11,7 +11,7 @@
 
 usage()
 {
-    printf "Usage: $0 \n"
+    printf "Usage: $0\n"
     exit 1
 }
 
@@ -20,9 +20,10 @@ usage()
 #   Main
 ##########################################################################
 
-if [ $# != 1 ]; then
+if [ $# != 0 ]; then
     usage
 fi
+
 # Document software versions used for publication
 uname -a
 fastq-trim --version
