@@ -46,9 +46,16 @@ awk -v samples=$samples -v condition=$condition \
 	fq="$sample.fastq.gz"
 	if [ ! -e $raw/$fq ]; then
 	    printf "Downloading $sample = $condition-$num...\n"
-	    fasterq-dump --progress --force --outdir $raw $sample
-	    printf "Compressing...\n"
-	    gzip $raw/$sample.fastq
+	    if hostname | fgrep -q acadix.biz && ! which fasterq-dump; then
+		# Local test platforms.  May not have sra-tools and pulling
+		# from coral saves a lot of bandwidth.
+		rsync --partial --progress \
+		    coral:Prog/Src/fasda/Test/Data/Raw/$sample.fastq.gz $raw
+	    else
+		fasterq-dump --progress --force --outdir $raw $sample
+		printf "Compressing...\n"
+		gzip $raw/$sample.fastq
+	    fi
 	fi
 	(cd $raw_renamed && ln -fs ../Raw/$fq $condition-$num.fastq.gz)
     done
