@@ -71,15 +71,11 @@ for file in Data/02-trim/*.fastq.gz; do
     # FIXME: Just guessing at fragment len stddev
     # Update blt fastx-stats to report this
     mean=$(blt fastx-stats $file | awk '$1 == "Mean-length:" { print $2 }')
-    stddev=$(blt fastx-stats $file | awk '$1 == "Standard-deviation:" { print $2 }')
+    stddev=$(blt fastx-stats $file | awk '$1 == "Standard-deviation:" { printf("%0.1f", $2) }')
     
-    # kallisto won't accept real numbers
-    mean=${mean%.*}
-    stddev=${stddev%.*}
-
-    # kallisto won't accept stddev of 0
-    if [ $stddev = 0 ]; then
-	stddev=1
+    # kallisto won't accept stddev of 0, so fudge it
+    if [ $stddev = 0.0 ]; then
+	stddev=0.01
     fi
     
     # Manual says a GTF is needed.  Kallisto aborts using GFF3.
