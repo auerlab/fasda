@@ -321,7 +321,7 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 		pval = near_exact_pval(rep_counts[c1], rep_counts[c2],
 				       num_repls[c1]);
 	    
-	    fprintf(diff_stream, "  %5.3f", pval);
+	    fprintf(diff_stream, "  %7.5f", pval);
 	}
     }
     putc('\n', diff_stream);
