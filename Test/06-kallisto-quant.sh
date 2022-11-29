@@ -66,23 +66,13 @@ for file in Data/02-trim/*.fastq.gz; do
     stem=$(basename ${file%.fastq.gz})
     out_dir=Data/06-kallisto-quant/$stem
     mkdir -p $out_dir
-    
-    # Mean length reported by blt-fastx-stats
-    # FIXME: Just guessing at fragment len stddev
-    # Update blt fastx-stats to report this
-    mean=$(blt fastx-stats $file | awk '$1 == "Mean-length:" { print $2 }')
-    stddev=$(blt fastx-stats $file | awk '$1 == "Standard-deviation:" { printf("%0.1f", $2) }')
-    
-    # kallisto won't accept stddev of 0, so fudge it
-    if [ $stddev = 0.0 ]; then
-	stddev=0.01
-    fi
-    
+
     # Manual says a GTF is needed.  Kallisto aborts using GFF3.
+    # Guessing mean and sd for fragment length from typical Illumina
+    # stated in kallisto manual
     set -x
     kallisto quant \
-	--single -l $mean -s $stddev \
-	--plaintext \
+	--single --fragment-length=190 --sd=10
 	--genomebam \
 	    --gtf=Data/04-reference/$gtf \
 	    --chromosomes=Data/04-reference/chromosome-sizes.tsv \

@@ -28,21 +28,25 @@ uname -a
 fastqc --version
 pwd
 
+# getconf NPROCESSORS_ONLN does not work on Alma8, _NPROCESSORS_ONLN does
+# _NPROCESSORS_ONLN does not work on NetBSD9
+# Both forms work on FreeBSD and macOS
+if [ $(uname) = Linux ]; then
+    threads=$(getconf _NPROCESSORS_ONLN)
+else
+    threads=$(getconf NPROCESSORS_ONLN)
+fi
+jobs=$threads
+printf "Hyperthreads = $threads  Jobs = $jobs\n"
+
 for dir in Raw-renamed 02-trim; do
     report_dir=Data/03-qc/$dir
-    mkdir -p $report_dir
-    for file in Data/$dir/*.fastq.gz; do
-	stem=`basename ${file%.fastq.gz}`
-	report=$report_dir/${stem}_fastqc.zip
-	if [ -e $report ]; then
-	    printf "$report already exists.\n"
-	else
-	    printf "Generating $report...\n"
-	    fastqc --outdir $report_dir $file
-	fi
-    done
-    if which multiqc && which firefox; then
+    log_dir=Logs/03-qc/$dir
+    mkdir -p $report_dir $log_dir
+    # Run fastqc jobs in parallel
+    ls Data/$dir/*.fastq.gz \
+	| xargs -n 1 -P $jobs ./qc1.sh $report_dir $log_dir $file
+    if which multiqc; then
 	multiqc --outdir $report_dir $report_dir
-	# firefox $report_dir/multiqc_report.html || true
     fi
 done

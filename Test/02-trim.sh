@@ -29,7 +29,7 @@ uname -a
 fastq-trim --version
 pwd
 
-# So gzip can keep up with fastq-trim
+# Use fastest compression so gzip can keep up with fastq-trim
 export GZIP=-1
 
 # FIXME: parallel --number-of-cores reports 2 on unixdev1, should be 16

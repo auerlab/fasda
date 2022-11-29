@@ -26,8 +26,8 @@ if [ $# != 1 ]; then
 fi
 max_replicates=$1
 
-if [ $max_replicates -lt 8 ]; then
-    printf "$0: max-replicates must be at least 8.\n"
+if [ $max_replicates -lt 3 ]; then
+    printf "$0: max-replicates must be at least 3.\n"
     usage
 fi
 
