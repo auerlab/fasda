@@ -89,4 +89,5 @@ for file in Data/02-trim/*.fastq.gz; do
 	--threads=$threads \
 	--index=Data/05-kallisto-index/all-but-xy.index \
 	--output-dir=$out_dir $file
+    set +x
 done
