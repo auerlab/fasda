@@ -73,7 +73,8 @@ for condition in WT SNF2; do
 	    else
 		fasterq-dump --progress --force --outdir $raw $sample
 		printf "Compressing...\n"
-		gzip $raw/$sample.fastq
+		# Background so next download can start
+		gzip $raw/$sample.fastq &
 	    fi
 	fi
 	(cd $raw_renamed && ln -fs ../Raw/$fq $condition-$biorep.fastq.gz)
