@@ -72,7 +72,7 @@ for file in Data/02-trim/*.fastq.gz; do
     # stated in kallisto manual
     set -x
     kallisto quant \
-	--single --fragment-length=190 --sd=10
+	--single --fragment-length=190 --sd=10 \
 	--genomebam \
 	    --gtf=Data/04-reference/$gtf \
 	    --chromosomes=Data/04-reference/chromosome-sizes.tsv \
