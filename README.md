@@ -154,6 +154,7 @@ The fasda fold-change output shows the mean normalized counts across
 replicates, the standard deviation from that mean (divided by the mean
 to show % deviation rather than absolute), the % agreement among replicates
 as to the direction of the change (up-regulated vs down or no change),
+the fold-change computed from total counts across replicates,
 and the exact, near-exact, or Mann-Whitney P-value for this set of counts.
 
 All of these values, along with any available knowledge of the biology,
