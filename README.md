@@ -173,19 +173,15 @@ samples.  Schurch, et al recommend a minimum of 6 biological replicates,
 12 in order to reliably identify DEGs with fold change less than 4
 ([https://doi.org/10.1261%2Frna.053959.115](https://doi.org/10.1261%2Frna.053959.115).
 
-* Note that higher fold-changes and higher counts
+Note that higher fold-changes and higher counts
 lead to higher statistical significance,
 but this does not necessarily correlate to higher biological significance.
+P-value calculations typically make the same assumptions about all genes.
 A fold-change of 1.5 may be highly significant for one gene while meaningless
 for another for entirely biochemical reasons.  E.g. increasing the abundance
 of a scarce enzyme by 50% could have a profound effect on a cell, while a 50%
 increase in many other proteins has little effect.
-
-P-value calculations typically make the same assumptions about all genes.
-In reality, a 2-fold change in expression could be hugely significant for one
-gene under certain conditions and completely meaningless for a different
-gene or different conditions.  Statistical routines have no knowledge of
-the biology that determines this.
+Statistical routines have no knowledge of the biology that determines this.
 
 There is huge variability on the computational side as well.
 Well-established differential analysis tools commonly report very different
@@ -202,8 +198,8 @@ honest statistics and leave it to you to consider them carefully.
 
 From our preliminary experiments, we have found that P-values
 between 0.05 and 0.20 are often questionable and may warrant a closer look
-at the raw data.  A quick look at the individual read counts for each
-replicate in these cases
+at the raw data.  A quick look at the individual read counts and
+variance for each replicate in these cases
 can be enlightening.  You will usually see a high variance in counts across
 individuals, sometimes with up-regulation in some individuals and
 down-regulation in others.
@@ -216,7 +212,7 @@ the third was slightly down-regulated.  A P-value of 0.01 would not
 likely make anyone suspect this situation.  0.116, on the other hand,
 tells us that there is a good chance this is significant, but maybe we
 should take a minute or two to look at the read counts and consider the
-biology behind them.  This is a tiny investment that will help us better
+biology behind them.  This is a small investment that will help us better
 decide whether a costly experimental verification is warranted.
 
 ```
@@ -231,7 +227,8 @@ Cond1   5382.16  8567.4 6986.43
 Cond2   21519.9 16196.7 6307.52
 ```
 Conversely, Sleuth produced a P-value of 0.12 for the following, which
-looks like a slam-dunk given the counts.
+looks like a slam-dunk given the high counts and strong agreement
+among all replicates.
 
 ```
 		    FASDA                     Sleuth
@@ -243,11 +240,12 @@ Cond1   1045.41 942.707 1220.02
 Cond2   2835.7  4167.81 3718.39
 ```
 
-The bottom line is, while the 0.05 rule is a good one mathematically, we
-cannot count on experimental and computational results reflecting the
+The bottom line is, while the 0.05 rule is a good one mathematically,
+it is only as reliable as the input date.
+We cannot count on experimental and computational results reflecting the
 biology with that much accuracy.  Give the results of any differential
 analysis a generous margin of error, and examine the data more closely for
-anything within that margin.
+anything near that margin.
 
 The question then becomes how to narrow down the list of differential
 features and identify those of interest.  Our intent is to provide
@@ -255,11 +253,15 @@ additional tools that facilitate examination of the results using
 multiple criteria rather than filtering first by P-value alone.  For
 instance, we might select for genes with a P-value < 0.2, low variance
 in the alignment counts, and known relation to the phenotype being
-studied.  For ChIP-Seq or ATAC-Seq , we might select for peaks with a
+studied.  We might also tolerate lower fold-changes for genes whose
+effect is known to be biologically amplified.
+
+For ChIP-Seq or ATAC-Seq , we might select for peaks with a
 P-value < 0.2, low variance in the counts, and proximity to a gene of
 interest.  Multiple facets must be considered in order to avoid missing
 important features that have a P-value above 0.05 due to experimental
-imprecision rather than a true lack of biological significance.
+imprecision rather than a true lack of biological significance.  Likewise,
+we need a multifaceted approach to eliminate false positives.
 
 ## Design and Implementation
 
