@@ -65,14 +65,15 @@ prior to computing fold-changes and P-values.
 
 ## Status
 
-FASDA is ready for alpha-testing.
+FASDA is currently undergoing alpha-testing.
 
-Currently, the kallisto abundance.tsv file format is used as input for
+The kallisto abundance.tsv file format is used as input for
 normalization and computing fold-change and P-values.  The "fasda abundance"
-command (unfinished) computes abundances from SAM/BAM/CRAM files and produces a kallisto-style abundance file, so that data from other aligners can be used.
-
-We also plan to support ChIP-Seq and ATAC-Seq peak data, but this has
-not yet been tested.
+command (unfinished) computes abundances from SAM/BAM/CRAM files and
+produces a kallisto-style abundance file, so that data from other
+aligners can be used.
+This will be used to support output from hisat2 as well as ChIP-Seq and
+ATAC-Seq peak data.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
@@ -128,23 +129,21 @@ Computing fold-change...
 	0.05 real         0.05 user         0.00 sys
 
 Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val
-YPL071C_mRNA            27.3    42.2    0.4    0.3    66    1.55  0.229
-YLL050C_mRNA           362.7   735.7    0.4    0.3   100    2.03  0.077
-YMR172W_mRNA            53.8   111.1    0.3    0.3   100    2.07  0.059
-YOR185C_mRNA            47.0    74.0    0.3    0.2   100    1.57  0.066
-YLL032C_mRNA            31.9    29.0    0.5    0.3    66    0.91  0.801
-YBR225W_mRNA            56.5   102.2    0.4    0.3    66    1.81  0.136
-YEL041W_mRNA            13.6    32.3    0.4    0.3   100    2.37  0.073
-YOR237W_mRNA            13.3    28.4    0.3    0.3   100    2.14  0.076
-YMR027W_mRNA           159.8   278.6    0.3    0.3   100    1.74  0.064
-YBR182C-A_mRNA           0.0     0.0    0.0    0.0   100       *  1.000
-YKL103C_mRNA           148.8   427.5    0.3    0.3   100    2.87  0.027
-YOL048C_mRNA            53.7   129.8    0.4    0.3   100    2.42  0.052
-YIR015W_mRNA            10.4    21.5    0.3    0.3   100    2.06  0.047
-YNR017W_mRNA           182.0   267.3    0.3    0.4    66    1.47  0.236
-YBL055C_mRNA            70.9    89.5    0.4    0.3    66    1.26  0.425
-YML089C_mRNA             0.4     0.4    1.2    1.2    66    0.94  0.826
-YOL144W_mRNA            37.2    34.0    0.4    0.3    66    0.91  0.773
+YPL071C_mRNA            36.1    65.2    0.6    0.7    85    1.80  0.035
+YLL050C_mRNA           486.9   705.4    0.5    0.4    78    1.45  0.048
+YMR172W_mRNA            80.3   157.4    0.6    0.8    78    1.96  0.008
+YOR185C_mRNA            61.9    70.2    0.6    0.5    71    1.13  0.198
+YLL032C_mRNA            42.4    32.8    0.7    0.3    64    0.77  0.335
+YBR225W_mRNA            67.0   122.1    0.6    0.6    85    1.82  0.022
+YEL041W_mRNA            22.6    29.5    0.6    0.4    64    1.30  0.081
+YOR237W_mRNA            17.1    46.4    0.6    0.8    92    2.72  0.000
+YMR027W_mRNA           203.8   294.6    0.5    0.4    71    1.45  0.022
+YBR182C-A_mRNA           0.1     0.2    3.5    2.4    85    3.04  0.713
+YKL103C_mRNA           195.6   388.8    0.5    0.4    92    1.99  0.001
+YOL048C_mRNA            64.0   131.8    0.7    0.4    92    2.06  0.001
+YIR015W_mRNA            13.6    25.7    0.8    0.7    85    1.88  0.009
+YNR017W_mRNA           258.0   257.3    0.5    0.4    57    1.00  0.854
+YBL055C_mRNA           106.7    91.3    0.6    0.3    57    0.86  0.783
 ...
 ```
 
@@ -169,10 +168,18 @@ the same biological sample) and spike-in controls can reveal some of these
 technical issues, but do not address biological variations.
 
 Another problem is that many biology experiments use only 3 replicates.
-We simply cannot draw high confidence from any statistics based on 3
+We simply cannot draw much confidence from any statistics based on 3
 samples.  Schurch, et al recommend a minimum of 6 biological replicates,
 12 in order to reliably identify DEGs with fold change less than 4
 ([https://doi.org/10.1261%2Frna.053959.115](https://doi.org/10.1261%2Frna.053959.115).
+
+* Note that higher fold-changes and higher counts
+lead to higher statistical significance,
+but this does not necessarily correlate to higher biological significance.
+A fold-change of 1.5 may be highly significant for one gene while meaningless
+for another for entirely biochemical reasons.  E.g. increasing the abundance
+of a scarce enzyme by 50% could have a profound effect on a cell, while a 50%
+increase in many other proteins has little effect.
 
 P-value calculations typically make the same assumptions about all genes.
 In reality, a 2-fold change in expression could be hugely significant for one
