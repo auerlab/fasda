@@ -39,12 +39,15 @@ if [ $# != 1 ]; then
 fi
 tr=$1
 
+uname -a
+fasda --version
+pwd
+
 cd Data/09-fasda
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
 export PATH
-which fasda
 
 kallisto_dir=../06-kallisto-quant
 log_dir=../../Logs/09-fasda
@@ -66,9 +69,6 @@ else
     threads=$(getconf NPROCESSORS_ONLN)
 fi
 jobs=$threads
-if [ $jobs = 0 ]; then
-    jobs=1
-fi
 printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
 seq 3 $max_ne | xargs -n 1 -P $jobs \
