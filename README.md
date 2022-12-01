@@ -127,29 +127,43 @@ Normalizing SNF2...
 Computing fold-change...
 	0.05 real         0.05 user         0.00 sys
 
-Feature                           Cond1    Cond2  FC 1-2  P-val
-YPL071C_mRNA                      43.60    81.96    1.88 0.0169
-YLL050C_mRNA                     603.23   865.14    1.43 0.0432
-YMR172W_mRNA                      81.78   157.15    1.92 0.0131
-YOR185C_mRNA                      76.50    88.00    1.15 0.3346
-YLL032C_mRNA                      45.14    35.93    0.80 0.5814
-YBR225W_mRNA                      67.91   121.57    1.79 0.0274
-YEL041W_mRNA                      24.57    33.46    1.36 0.0731
-YOR237W_mRNA                      18.87    48.77    2.58 0.0003
-YMR027W_mRNA                     217.29   312.18    1.44 0.0244
-YBR182C-A_mRNA                     0.22     0.70    3.19 0.1753
-YKL103C_mRNA                     207.99   414.52    1.99 0.0006
-YOL048C_mRNA                      72.43   147.76    2.04 0.0007
+Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val
+YPL071C_mRNA            27.3    42.2    0.4    0.3    66    1.55  0.229
+YLL050C_mRNA           362.7   735.7    0.4    0.3   100    2.03  0.077
+YMR172W_mRNA            53.8   111.1    0.3    0.3   100    2.07  0.059
+YOR185C_mRNA            47.0    74.0    0.3    0.2   100    1.57  0.066
+YLL032C_mRNA            31.9    29.0    0.5    0.3    66    0.91  0.801
+YBR225W_mRNA            56.5   102.2    0.4    0.3    66    1.81  0.136
+YEL041W_mRNA            13.6    32.3    0.4    0.3   100    2.37  0.073
+YOR237W_mRNA            13.3    28.4    0.3    0.3   100    2.14  0.076
+YMR027W_mRNA           159.8   278.6    0.3    0.3   100    1.74  0.064
+YBR182C-A_mRNA           0.0     0.0    0.0    0.0   100       *  1.000
+YKL103C_mRNA           148.8   427.5    0.3    0.3   100    2.87  0.027
+YOL048C_mRNA            53.7   129.8    0.4    0.3   100    2.42  0.052
+YIR015W_mRNA            10.4    21.5    0.3    0.3   100    2.06  0.047
+YNR017W_mRNA           182.0   267.3    0.3    0.4    66    1.47  0.236
+YBL055C_mRNA            70.9    89.5    0.4    0.3    66    1.26  0.425
+YML089C_mRNA             0.4     0.4    1.2    1.2    66    0.94  0.826
+YOL144W_mRNA            37.2    34.0    0.4    0.3    66    0.91  0.773
 ...
 ```
 
 ## Interpreting Results
 
+The fasda fold-change output shows the mean normalized counts across
+replicates, the standard deviation from that mean (divided by the mean
+to show % deviation rather than absolute), the % agreement among replicates
+as to the direction of the change (up-regulated vs down or no change),
+and the exact, near-exact, or Mann-Whitney P-value for this set of counts.
+
+All of these values, along with any available knowledge of the biology,
+should be considered when deciding whether a given change is significant.
+
 P-values from any differential analysis tool should never be taken too
 seriously. There are countless uncontrollable biological variables that
 can affect the RNA abundance in a cell.  There are also numerous sources
-of experimental error in sample prep and sequencing that can lead to
-inaccuracy in read counts.  Technical replicates (replicates from
+of experimental error in sample prep and sequencing that can lead to large
+variations in read counts.  Technical replicates (replicates from
 the same biological sample) and spike-in controls can reveal some of these
 technical issues, but do not address biological variations.
 
