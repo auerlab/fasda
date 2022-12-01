@@ -39,7 +39,7 @@ fi
 
 # Document software versions used for publication
 uname -a
-fasterq-dump --version
+fasterq-dump --version || true
 pwd
 
 raw=Data/Raw
