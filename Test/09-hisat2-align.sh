@@ -35,7 +35,7 @@ for sample in ../02-trim/*; do
     gzb=$(basename $gz1)
     bam=${gzb%.*.*}.bam
     set -x
-    hisat2 --threads 2 -x ../07-hisat2-index/$genome \
+    hisat2 --threads 2 -x ../08-hisat2-index/$genome \
 	-U $gz1 | samtools sort > $bam
     samtools index $bam
 done
