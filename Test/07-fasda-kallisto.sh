@@ -43,14 +43,14 @@ uname -a
 fasda --version
 pwd
 
-cd Data/09-fasda
+cd Data/07-fasda-kallisto
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
 export PATH
 
 kallisto_dir=../06-kallisto-quant
-log_dir=../../Logs/09-fasda
+log_dir=../../Logs/07-fasda-kallisto
 
 ##########################################################################
 #   3 to 12 replicates, [near-]exact P-values

@@ -39,7 +39,7 @@ if [ $# != 0 ]; then
 fi
 
 mkdir -p Data/Raw Data/Raw-renamed Logs
-scripts=$(ls 0[1-9]-*) # [1-9][0-9]-*)
+scripts=$(ls 0[1-9]-* 10-*) # [1-9][0-9]-*)
 for script in $scripts; do
     stage=${script%.*}
     mkdir -p Data/$stage Logs/$stage
