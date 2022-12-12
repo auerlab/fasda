@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Run hisat2 aligner on each RNA sample.
+#       Run hisat aligner on each RNA sample.
 #
 #       All necessary tools are assumed to be in PATH.  If this is not
 #       the case, add whatever code is needed here to gain access.
@@ -16,7 +16,7 @@
 ##########################################################################
 
 ##############################################################################
-# Align with hisat2, which can handle splice junctions in RNA reads
+# Align with hisat, which can handle splice junctions in RNA reads
 
 # Document software versions used for publication
 uname -a
@@ -28,14 +28,19 @@ release=$(Common/genome-release.sh)
 genome=$(Reference/genome-filename.sh)
 
 # samtools sort dumps temp files in CWD
-cd Data/09-hisat2-align
+cd Data/09-hisat-align
 
 for sample in ../02-trim/*; do
     gz1=$(ls $sample)
     gzb=$(basename $gz1)
     bam=${gzb%.*.*}.bam
-    set -x
-    hisat2 --threads 2 -x ../08-hisat2-index/$genome \
-	-U $gz1 | samtools sort > $bam
-    samtools index $bam
+    if [ ! -e $bam ]; then
+	hisat2 --threads 2 -x ../08-hisat-index/$genome \
+	    -U $gz1 | samtools sort > $bam
+    else
+	printf "$bam already exists.\n"
+    fi
+    if [ ! -e $bam.bai ]; then
+	samtools index $bam
+    fi
 done

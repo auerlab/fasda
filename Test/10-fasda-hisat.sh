@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Run fasda normalize and fold-change on kallisto abundances
+#       Run fasda normalize and fold-change on hisat abundances
 #       
 #   History:
 #   Date        Name        Modification
@@ -43,14 +43,19 @@ uname -a
 fasda --version
 pwd
 
-cd Data/07-fasda-kallisto
+if [ ! -e Data/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 ]; then
+    Reference/fetch-gff.sh
+fi
+
+cd Data/10-fasda-hisat
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
 export PATH
 
-kallisto_dir=../06-kallisto-quant
-log_dir=../../Logs/07-fasda-kallisto
+hisat_dir=../09-hisat-align
+reference_dir=../04-reference
+log_dir=../../Logs/10-fasda-hisat
 
 ##########################################################################
 #   3 to 12 replicates, [near-]exact P-values
@@ -63,6 +68,24 @@ else
     max_ne=12
 fi
 
+##########################################################################
+#   Compute abundances
+##########################################################################
+
+for condition in WT SNF2; do
+    for r in $(seq 1 $tr); do
+	file=$condition-$r.bam
+	ab=$hisat_dir/${file%.bam}-abundance.tsv
+	if [ ! -e $ab ]; then
+	    printf "Computing abundances for $condition replicate $r...\n"
+	    fasda abundance \
+		$reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
+		$hisat_dir/$file
+	    head $ab
+	fi
+    done
+done
+
 if [ $(uname) = Linux ]; then
     threads=$(getconf _NPROCESSORS_ONLN)
 else
@@ -72,7 +95,7 @@ jobs=$threads
 printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
 seq 3 $max_ne | xargs -n 1 -P $jobs \
-    ../../fasda-kallisto-ne.sh $kallisto_dir $log_dir
+    ../../fasda-hisat-ne.sh $hisat_dir $log_dir
 
 ##########################################################################
 #   8 to all replicates, Mann-Whitney P-values
@@ -87,7 +110,7 @@ if [ $tr -ge 8 ]; then
 		printf "Normalizing $condition: $replicates replicates\n"
 		files=""
 		for r in $(seq 1 $replicates); do
-		    files="$files $kallisto_dir/$condition-$r/abundance.tsv"
+		    files="$files $hisat_dir/$condition-$r-abundance.tsv"
 		done
 		# printf "%s\n" $files
 		time fasda normalize --output \
@@ -121,3 +144,13 @@ if [ -e WT-SNF2-FC-MW-*.txt ]; then
 	    $(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)
     done | more
 fi
+
+printf "\nHisat:\n"
+for feature in YPL071C_mRNA YLL050C_mRNA YMR172W_mRNA YOR185C_mRNA; do
+    grep -h $feature WT-SNF2-FC-NE-03.txt
+done
+printf "\nKallisto:\n"
+for feature in YPL071C_mRNA YLL050C_mRNA YMR172W_mRNA YOR185C_mRNA; do
+    grep -h $feature ../07-fasda-kallisto/WT-SNF2-FC-NE-03.txt
+done
+

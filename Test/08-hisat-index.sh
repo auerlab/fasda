@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Build hisat2 index for reference genome.
+#       Build hisat index for reference genome.
 #
 #       All necessary tools are assumed to be in PATH.  If this is not
 #       the case, add whatever code is needed here to gain access.
@@ -21,11 +21,14 @@ hisat2 --version
 samtools --version
 pwd
 
-# Run hisat2-build on a copy in 15-hisat2-index so it will put the .ht2
+# Run hisat2-build on a copy in 08-hisat-index so it will put the .ht2
 # files there
+reference_dir=Data/04-reference
+hisat_dir=Data/08-hisat-index
+
 genome=$(Reference/genome-filename.sh)
-ln -f Data/04-reference/$genome Data/08-hisat2-index
-genome=Data/08-hisat2-index/$genome
+ln -f $reference_dir/$genome $hisat_dir
+genome=$hisat_dir/$genome
 printf "Using reference $genome...\n"
 
 if [ ! -e $genome.8.ht2 ]; then
@@ -36,4 +39,4 @@ if [ ! -e $genome.fai ]; then
     printf "Building $genome.fai...\n"
     samtools faidx $genome
 fi
-ls Data/08-hisat2-index
+ls $hisat_dir
