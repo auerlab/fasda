@@ -87,6 +87,8 @@ int     main(int argc,char *argv[])
 	
 	*p = '\0';
 	strlcat(p, "-abundance.tsv", PATH_MAX);
+	fprintf(stderr, "Writing abundances to %s\n",
+	    abundance_files[file_count]);
 	if ( (abundance_streams[file_count] =
 	      fopen(abundance_files[file_count], "w")) == NULL )
 	{
