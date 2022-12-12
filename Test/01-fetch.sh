@@ -42,8 +42,8 @@ uname -a
 fasterq-dump --version || true
 pwd
 
-raw=Data/Raw
-raw_renamed=Data/Raw-renamed
+raw=Data/01-fetch/Raw
+raw_renamed=Data/01-fetch/Raw-renamed
 mkdir -p $raw $raw_renamed
 
 for condition in WT SNF2; do
