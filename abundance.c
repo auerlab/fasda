@@ -160,8 +160,8 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 	    length = 0;
 	    previous_start = 0;
 	    alternate_exons = false;
-	    fprintf(stderr, "Finding exons of %s...\n",
-		    BL_GFF_FEATURE_ID(&feature));
+	    //fprintf(stderr, "Finding exons of %s...\n",
+	    //        BL_GFF_FEATURE_ID(&feature));
 	    while ( ((status = bl_gff_read(&subfeature, feature_stream, GFF_MASK))
 			== BL_READ_OK) &&
 		    (strcmp(BL_GFF_TYPE(&subfeature), "###") != 0) )
@@ -178,11 +178,11 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 		    //        previous_start, BL_GFF_START(&subfeature));
 		    if ( BL_GFF_START(&subfeature) > previous_start )
 		    {
-			fprintf(stderr, "Adding exon %" PRId64 " %" PRId64 " ",
-			    BL_GFF_START(&subfeature), BL_GFF_END(&subfeature));
+			//fprintf(stderr, "Adding exon %" PRId64 " %" PRId64 " ",
+			//    BL_GFF_START(&subfeature), BL_GFF_END(&subfeature));
 			length += BL_GFF_END(&subfeature) -
 			    BL_GFF_START(&subfeature) + 1;
-			fprintf(stderr, "length = %" PRId64 "\n", length);
+			//fprintf(stderr, "length = %" PRId64 "\n", length);
 			previous_start = BL_GFF_START(&subfeature);
 		    }
 		    else
