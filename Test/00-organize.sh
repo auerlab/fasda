@@ -38,7 +38,7 @@ if [ $# != 0 ]; then
     usage
 fi
 
-mkdir -p Data/Raw Data/Raw-renamed Logs
+mkdir -p Data Logs
 scripts=$(ls 0[1-9]-*.sh [1-9][0-9]-*.sh)
 for script in $scripts; do
     echo $script
