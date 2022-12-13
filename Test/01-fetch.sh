@@ -64,13 +64,12 @@ for condition in WT SNF2; do
 	    # Use rsync if possible on local test platforms.  May not have
 	    # sra-tools and pulling from coral saves a lot of bandwidth.
 	    printf "Downloading $sample = $condition-$biorep...\n"
-            rel_path=Prog/Src/fasda/Test/Data/01-fetch/Raw/$fq
+	    rel_path=Prog/Src/fasda/Test/Data/01-fetch/Raw/$fq
 	    coral=$HOME/Coral/$rel_path
 	    if [ -e $coral ]; then
 		rsync -av --partial --progress $coral $raw
 	    elif hostname | fgrep -q acadix.biz && ! which fasterq-dump 2> /dev/null; then
-		rsync --partial --progress \
-		    coral:$rel_path
+		rsync --partial --progress coral:$rel_path $raw
 	    else
 		fasterq-dump --progress --force --outdir $raw $sample
 		printf "Compressing...\n"

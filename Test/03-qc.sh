@@ -45,7 +45,7 @@ fi
 jobs=$threads
 printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
-for dir in Raw-renamed 02-trim; do
+for dir in 01-fetch/Raw-renamed 02-trim; do
     report_dir=Data/03-qc/$dir
     log_dir=Logs/03-qc/$dir
     mkdir -p $report_dir $log_dir
