@@ -8,6 +8,9 @@ fetch=$(Common/find-fetch.sh)
 release=$(Common/genome-release.sh)
 gff=$(Reference/gff-filename.sh)
 
+# macOS zcat looks for .Z extension, while Linux does not have gzcat
+zcat='gunzip -c'
+
 # GFF
 # Can't guarantee this file or the chromosome files will always be available.
 # You may need to edit this.
@@ -21,8 +24,8 @@ for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
 	$fetch $site/$file
     fi
     if [ $chrom = I ]; then
-	zcat $file | egrep '^##gff|^#!' > $gff
+	$zcat $file | egrep '^##gff|^#!' | blt deromanize 1 > $gff
     fi
-    zcat $file | egrep -v '^##[a-z]|^#!' | blt deromanize 1 >> $gff
+    $zcat $file | egrep -v '^##[a-z]|^#!' | blt deromanize 1 >> $gff
 done
 

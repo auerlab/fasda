@@ -7,11 +7,8 @@ if [ $0 != "$proper_name" ]; then
     exit 1
 fi
 
-if [ $(uname) = Darwin ]; then
-    zcat=gzcat
-else
-    zcat=zcat
-fi
+# macOS zcat looks for .Z extension, while Linux does not have gzcat
+zcat='gunzip -c'
 
 # Need GTF for kallisto quant --genomebam in any case
 Reference/fetch-gtf.sh

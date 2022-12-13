@@ -9,11 +9,8 @@ EOM
     exit 1
 fi
 
-if [ $(uname) = Darwin ]; then
-    zcat=gzcat
-else
-    zcat=zcat
-fi
+# macOS zcat looks for .Z extension, while Linux does not have gzcat
+zcat='gunzip -c'
 
 fetch=$(Common/find-fetch.sh)
 build=$(Common/genome-build.sh)
