@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <sysexits.h>
 #include <xtend/math.h>
-#include <xtend/array.h>
+#include <xtend/stdlib.h>
 #include <xtend/mem.h>
 #include "exact-p-val.h"
 
