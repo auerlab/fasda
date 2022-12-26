@@ -44,7 +44,7 @@ int     main(int argc, const char *argv[])
 
     for (arg = 1; *argv[arg] == '-'; ++arg)
     {
-	// Only mean ratios is supported for now, so ignore
+	// Only median ratios is supported for now, so ignore
 	if ( strcmp(argv[arg], "--mrn") == 0 )
 	    ;
 	
