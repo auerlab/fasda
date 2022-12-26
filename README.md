@@ -240,7 +240,8 @@ Cond2   2835.7  4167.81 3718.39
 ```
 
 The bottom line is, while the 0.05 rule is a good one mathematically,
-it is only as reliable as the input data.
+it is only as reliable as the input data and the statistical methods
+used to analyze it..
 We cannot count on experimental and computational results reflecting the
 biology with that much accuracy.  Give the results of any differential
 analysis a generous margin of error, and examine the data more closely for
