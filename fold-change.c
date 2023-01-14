@@ -349,7 +349,9 @@ unsigned agreement(int c1, int c2, size_t num_repls[], double *rep_counts[])
 	else
 	    ++c1_higher;
     }
-    return 100 * (XT_MAX(c1_higher, c2_higher) / r) + 0.5;
+    
+    // Add .5 to round rather than truncate when demoting to unsigned
+    return (100.0 * XT_MAX(c1_higher, c2_higher) / r) + 0.5;
 }
 
 
