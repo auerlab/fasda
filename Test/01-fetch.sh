@@ -33,7 +33,7 @@ fi
 sample_count=$1
 
 if [ $sample_count -lt 3 ]; then
-    printf "Sample count must be at least 3 for Mann-Whitney U-test.\n"
+    printf "Sample count must be at least 3.\n"
     exit 1
 fi
 
