@@ -28,9 +28,9 @@ double  fc_exact_pval(count_pair_t count_pairs[], size_t pair_count,
 
     if ( Debug )
     {
-	printf("\n%zu choose %zu = %lu possible FCs from %lu pairs.\n",
+	printf("\n%zu choose %zu = %lu possible FCs from %zu pairs.\n",
 	    pair_count, replicates, fc_count, replicates);
-	printf("P-value = likelihood of FC from %lu pairs >= %0.3f or <= %0.3f\n\n",
+	printf("P-value = likelihood of FC from %zu pairs >= %0.3f or <= %0.3f\n\n",
 		replicates, observed_fc, 1.0 / observed_fc);
 	passes = 5;
     }
