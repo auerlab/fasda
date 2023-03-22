@@ -43,7 +43,7 @@ uname -a
 fasda --version
 pwd
 
-cd Data/07-fasda-kallisto
+cd Results/07-fasda-kallisto
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH

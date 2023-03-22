@@ -39,7 +39,7 @@ EOM
 	read feature
 	for replicates in $(seq 3 48); do
 	    pr=$(printf "%02s" $replicates)
-	    if [ -e Data/09-fasda/WT-all-norm-$pr.tsv ]; then
+	    if [ -e Results/09-fasda/WT-all-norm-$pr.tsv ]; then
 		./show-counts.sh $feature $replicates | more
 	    fi
 	done
@@ -54,7 +54,7 @@ EOM
 	read fc
 	
 	pr=$(printf "%02s" $replicates)
-	da_file=Data/09-fasda/WT-SNF2-FC-NE-$pr.txt
+	da_file=Results/09-fasda/WT-SNF2-FC-NE-$pr.txt
 	if [ -e $da_file ]; then
 	    awk -v pval=$pval -v fc=$fc \
 		'$8 <= pval && $7 >= fc { print $0 }' \

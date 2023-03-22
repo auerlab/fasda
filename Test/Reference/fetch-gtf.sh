@@ -11,7 +11,7 @@ gtf=$(Reference/gtf-filename.sh)
 # GTF
 # Can't guarantee this file or the chromosome files will always be available.
 # You may need to edit this.
-cd Data/04-reference
+cd Results/04-reference
 if [ ! -e $gtf.gz ]; then
     printf "Fetching $gtf.gz...\n"
     $fetch ftp://ftp.ensembl.org/pub/release-$release/gtf/saccharomyces_cerevisiae/$gtf.gz

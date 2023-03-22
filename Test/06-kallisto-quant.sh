@@ -42,7 +42,7 @@ gtf=$(Reference/gtf-filename.sh)
 # https://github.com/pachterlab/kallisto/issues/197
 # export HDF5_USE_FILE_LOCKING=FALSE
 
-# 6-merge-bams.sbatch relies on sample N being in Data/09-kallisto-quant/N
+# 6-merge-bams.sbatch relies on sample N being in Results/09-kallisto-quant/N
 # The sample number comes after -sample in the filename, e.g.
 # chondro-sample4-rep2-time1-R1.fastq.xz is sample 4
 
@@ -55,7 +55,7 @@ else
     threads=$(getconf NPROCESSORS_ONLN)
 fi
 
-for file in Data/02-trim/*.fastq.gz; do
+for file in Results/02-trim/*.fastq.gz; do
     echo $file
     # kallisto 0.46.1 can't handle xz and will simply seg fault rather than
     # issue an error message.  If your trimmed fastq files are in xz format,
@@ -64,7 +64,7 @@ for file in Data/02-trim/*.fastq.gz; do
     
     # Kallisto requires an output subdirectory for each sample
     stem=$(basename ${file%.fastq.gz})
-    out_dir=Data/06-kallisto-quant/$stem
+    out_dir=Results/06-kallisto-quant/$stem
     mkdir -p $out_dir
 
     # Manual says a GTF is needed.  Kallisto aborts using GFF3.
@@ -74,10 +74,10 @@ for file in Data/02-trim/*.fastq.gz; do
     kallisto quant \
 	--single --fragment-length=190 --sd=10 \
 	--genomebam \
-	    --gtf=Data/04-reference/$gtf \
-	    --chromosomes=Data/04-reference/chromosome-sizes.tsv \
+	    --gtf=Results/04-reference/$gtf \
+	    --chromosomes=Results/04-reference/chromosome-sizes.tsv \
 	--threads=$threads \
-	--index=Data/05-kallisto-index/all-but-xy.index \
+	--index=Results/05-kallisto-index/all-but-xy.index \
 	--output-dir=$out_dir $file
     set +x
 done

@@ -43,11 +43,11 @@ uname -a
 fasda --version
 pwd
 
-if [ ! -e Data/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 ]; then
+if [ ! -e Results/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 ]; then
     Reference/fetch-gff.sh
 fi
 
-cd Data/10-fasda-hisat
+cd Results/10-fasda-hisat
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH

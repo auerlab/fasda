@@ -42,8 +42,8 @@ uname -a
 fasterq-dump --version || true
 pwd
 
-raw=Data/01-fetch/Raw
-raw_renamed=Data/01-fetch/Raw-renamed
+raw=Results/01-fetch/Raw
+raw_renamed=Results/01-fetch/Raw-renamed
 mkdir -p $raw $raw_renamed
 
 for condition in WT SNF2; do
@@ -64,7 +64,7 @@ for condition in WT SNF2; do
 	    # Use rsync if possible on local test platforms.  May not have
 	    # sra-tools and pulling from coral saves a lot of bandwidth.
 	    printf "Downloading $sample = $condition-$biorep...\n"
-	    rel_path=Prog/Src/fasda/Test/Data/01-fetch/Raw/$fq
+	    rel_path=Prog/Src/fasda/Test/Results/01-fetch/Raw/$fq
 	    coral=$HOME/Coral/$rel_path
 	    if [ -e $coral ]; then
 		rsync -av --partial --progress $coral $raw

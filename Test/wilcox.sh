@@ -26,13 +26,13 @@ feature=$1
 replicates=$(printf "%02s" $2)
 
 awk -v feature=$feature '$1 ~ feature { print $0 }' \
-    Data/09-fasda/WT-all-norm-$replicates.tsv | cut -f 2- > c1.tsv
+    Results/09-fasda/WT-all-norm-$replicates.tsv | cut -f 2- > c1.tsv
 
 awk -v feature=$feature '$1 ~ feature { print $0 }' \
-    Data/09-fasda/SNF2-all-norm-$replicates.tsv | cut -f 2- > c2.tsv
+    Results/09-fasda/SNF2-all-norm-$replicates.tsv | cut -f 2- > c2.tsv
 
 ./wilcox.R
 
 awk -v feature=$feature '$1 ~ feature { print $0 }' \
-    Data/09-fasda/WT-SNF2-FC-MW-$replicates.txt
+    Results/09-fasda/WT-SNF2-FC-MW-$replicates.txt
 

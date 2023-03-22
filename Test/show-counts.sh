@@ -41,6 +41,6 @@ replicates=$(printf "%02s" $2)
 
 printf "Replicates = $replicates\n"
 awk -v feature=$feature '$1 == feature { print $0 }' \
-    Data/09-fasda/WT-all-norm-$replicates.tsv \
-    Data/09-fasda/SNF2-all-norm-$replicates.tsv
+    Results/09-fasda/WT-all-norm-$replicates.tsv \
+    Results/09-fasda/SNF2-all-norm-$replicates.tsv
 

@@ -28,7 +28,7 @@ release=$(Common/genome-release.sh)
 genome=$(Reference/genome-filename.sh)
 
 # samtools sort dumps temp files in CWD
-cd Data/09-hisat-align
+cd Results/09-hisat-align
 
 for sample in ../02-trim/*; do
     gz1=$(ls $sample)

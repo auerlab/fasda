@@ -46,11 +46,11 @@ jobs=$threads
 printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
 for dir in 01-fetch/Raw-renamed 02-trim; do
-    report_dir=Data/03-qc/$dir
+    report_dir=Results/03-qc/$dir
     log_dir=Logs/03-qc/$dir
     mkdir -p $report_dir $log_dir
     # Run fastqc jobs in parallel
-    ls Data/$dir/*.fastq.gz \
+    ls Results/$dir/*.fastq.gz \
 	| xargs -n 1 -P $jobs ./qc1.sh $report_dir $log_dir $file
     if which multiqc; then
 	multiqc --outdir $report_dir $report_dir

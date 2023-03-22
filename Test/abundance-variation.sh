@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-cd Data/06-kallisto-quant
+cd Results/06-kallisto-quant
 
 # First ten transcripts
 genes=$(head -n 11 SNF2-1/abundance.tsv | tail -10 | cut -f 1)

@@ -19,7 +19,7 @@ zcat='gunzip -c'
 # gene, etc).
 ##########################################################################
 
-cd Data/04-reference
+cd Results/04-reference
 rm -f $gff
 site=http://ftp.ensembl.org/pub/release-$release/gff3/saccharomyces_cerevisiae
 

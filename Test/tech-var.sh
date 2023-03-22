@@ -25,7 +25,7 @@ if [ $# != 0 ]; then
     usage
 fi
 
-dir=Data/Tech-reps
+dir=Results/Tech-reps
 mkdir -p $dir
 samples=$(awk '$3 == "WT" && $4 == 1 { print $1 }' ERP004763_sample_mapping.tsv)
 for sample in $samples; do
@@ -46,13 +46,13 @@ for file in $dir/ERR*[0-9].fastq.gz; do
     fi
 done
 
-if [ ! -e Data/04-reference/all-but-xy.genome.fa.fai ]; then
+if [ ! -e Results/04-reference/all-but-xy.genome.fa.fai ]; then
     ./04-reference.sh
 else
     printf "04-reference.sh already done.\n"
 fi
 
-if [ ! -e Data/05-kallisto-index/all-but-xy.index ]; then
+if [ ! -e Results/05-kallisto-index/all-but-xy.index ]; then
     ./05-kallisto-index.sh
 else
     printf "05-kallisto-index.sh already done.\n"
@@ -74,10 +74,10 @@ if [ $quant_count -ne $raw_count ]; then
 	    kallisto quant \
 		--single --fragment-length=190 --sd=10 \
 		--genomebam \
-		    --gtf=Data/04-reference/$gtf \
-		    --chromosomes=Data/04-reference/chromosome-sizes.tsv \
+		    --gtf=Results/04-reference/$gtf \
+		    --chromosomes=Results/04-reference/chromosome-sizes.tsv \
 		--threads=$threads \
-		--index=Data/05-kallisto-index/all-but-xy.index \
+		--index=Results/05-kallisto-index/all-but-xy.index \
 		--output-dir=$out_dir/$sample $file
 	    set +x
 	else

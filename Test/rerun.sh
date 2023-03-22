@@ -27,10 +27,10 @@ script=$1
 shift
 
 base=${script%.s*h}
-printf "Remove results from Data/$base? y/[n] "
+printf "Remove results from Results/$base? y/[n] "
 read sure
 if [ 0"$sure" = 0y ]; then
-    rm -rf Data/$base/*
+    rm -rf Results/$base/*
 fi
 
 printf "Remove logs from Logs/$base? y/[n] "

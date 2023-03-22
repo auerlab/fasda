@@ -23,8 +23,8 @@ pwd
 
 # Run hisat2-build on a copy in 08-hisat-index so it will put the .ht2
 # files there
-reference_dir=Data/04-reference
-hisat_dir=Data/08-hisat-index
+reference_dir=Results/04-reference
+hisat_dir=Results/08-hisat-index
 
 genome=$(Reference/genome-filename.sh)
 ln -f $reference_dir/$genome $hisat_dir

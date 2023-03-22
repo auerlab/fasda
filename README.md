@@ -74,6 +74,11 @@ produces a kallisto-style abundance TSV file, so that data from other
 aligners can be used.  This is currently used to support output from hisat2,
 and will support ChIP-Seq and ATAC-Seq peak data in the future.
 
+FASDA's abundance estimates are currently about 40% higher than kallisto's,
+but they are proportional.  I would assume that kallisto's estimates are
+more accurate, but the resulting fold-changes are the same.  This
+will be explored further when time permits.
+
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
 below show that FASDA is extremely fast, normalizing over 92,000 estimated

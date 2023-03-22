@@ -53,9 +53,9 @@ if [ $jobs = 0 ]; then
 fi
 printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
-data_dir=Data/02-trim
+data_dir=Results/02-trim
 log_dir=Logs/02-trim
 mkdir -p $data_dir $log_dir
-ls Data/01-fetch/Raw-renamed/*.fastq.gz \
+ls Results/01-fetch/Raw-renamed/*.fastq.gz \
     | xargs -n 1 -P $jobs ./trim1.sh $data_dir $log_dir
 
