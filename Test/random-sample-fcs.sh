@@ -60,8 +60,9 @@ if [ $# != 1 ]; then
 fi
 sample_count=$1
 
-kallisto_dir=../06-kallisto-quant
-cd Results/07-fasda-kallisto
+kallisto_dir=../Results/06-kallisto-quant
+mkdir -p Random-sample-FCs
+cd Random-sample-FCs
 
 # Compare 10 random selections of samples
 for trial in $(seq 1 20); do
@@ -89,7 +90,8 @@ for trial in $(seq 1 20); do
     # Compute fold-changes and P-values for this set of samples
     for condition in WT SNF2; do
 	r0=$(printf '%02d' $trial)
-	if [ ! -e $condition-all-norm-$r0.tsv ]; then
+	norm_file=$condition-all-norm-$sample_count-$r0.tsv
+	if [ ! -e $norm_file ]; then
 	    printf "Normalizing $condition: $samples replicates\n"
 	    files=""
 	    for r in $samples; do
@@ -101,20 +103,23 @@ for trial in $(seq 1 20); do
 		files="$files $file"
 	    done
 	    printf "%s\n" $files
-	    time fasda normalize --output $condition-all-norm-$r0.tsv $files
+	    time fasda normalize --output $norm_file $files
 	fi
     done
     
-    if [ ! -e WT-SNF2-FC-MW-$r0.txt ]; then
+    fc_file=WT-SNF2-FC-MW-$sample_count-$r0.txt
+    if [ ! -e $fc_file ]; then
 	printf "Computing fold-change for $replicates replicates...\n"
 	time fasda fold-change \
-	    --output WT-SNF2-FC-MW-$r0.txt \
-	    WT-all-norm-$r0.tsv SNF2-all-norm-$r0.tsv
+	    --output $fc_file \
+	    WT-all-norm-$sample_count-$r0.tsv \
+	    SNF2-all-norm-$sample_count-$r0.tsv
     fi
 done
 
 transcripts=$(fgrep -v Feature WT-SNF2-FC-MW-01.txt | head | awk '{ print $1 }')
 for transcript in $transcripts; do
     printf "\n$transcript\n"
-    awk -v transcript=$transcript '$1 == transcript { print $7, $8 }' *.txt
+    awk -v transcript=$transcript '$1 == transcript { print $7, $8 }' \
+	*-$sample_count-*.txt
 done

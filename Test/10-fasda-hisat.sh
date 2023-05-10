@@ -138,7 +138,7 @@ for file in WT-SNF2-FC-NE-*.txt; do
 	$(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)
 done | more
 
-if [ -e WT-SNF2-FC-MW-*.txt ]; then
+if [ -n "$(ls WT-SNF2-FC-MW-*.txt)" ]; then
     for file in WT-SNF2-FC-MW-*.txt; do
 	printf "%-25s %10s %10s\n" $file: \
 	    $(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)
