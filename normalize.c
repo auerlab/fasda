@@ -118,7 +118,7 @@ int     main(int argc, const char *argv[])
 int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 
 {
-    dsv_line_t  dsv_line[FASDA_MAX_SAMPLES];
+    dsv_line_t  *dsv_lines[FASDA_MAX_SAMPLES];
     size_t      sample, sample_count, feature_count = 0, c;
     FILE        *abundance_streams[FASDA_MAX_SAMPLES],
 		*tmp_streams[FASDA_MAX_SAMPLES],
@@ -145,10 +145,10 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		    strerror(errno));
 	    return EX_NOINPUT;
 	}
-	dsv_line_init(&dsv_line[sample_count]);
+	dsv_lines[sample_count] = dsv_line_new();
     }
     
-    skip_headers(abundance_files, abundance_streams, dsv_line, sample_count);
+    skip_headers(abundance_files, abundance_streams, dsv_lines, sample_count);
 
     // Abundance file format:
     // target_id       length  eff_length      est_counts      tpm
@@ -157,7 +157,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
     {
 	for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
 	{
-	    if ( dsv_line_read(&dsv_line[sample], abundance_streams[sample],
+	    if ( dsv_line_read(dsv_lines[sample], abundance_streams[sample],
 				"\t") == EOF )
 	    {
 		check_all_eof(abundance_files, abundance_streams, sample, sample_count);
@@ -165,14 +165,14 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	    }
 	    else
 	    {
-		target_id = DSV_LINE_FIELDS_AE(&dsv_line[sample], 0);
+		target_id = dsv_line_get_fields_ae(dsv_lines[sample], 0);
 		
 		// Dummy output: Just echo non-normalized counts to test UI
-		// count_str = DSV_LINE_FIELDS_AE(&dsv_line[sample], 3);
+		// count_str = dsv_line_get_fields_ae(dsv_lines[sample], 3);
 		// printf("%s\t%s\n", target_id, count_str);
 		
 		if ( (sample > 0) && (strcmp(target_id,
-			DSV_LINE_FIELDS_AE(&dsv_line[sample - 1], 0)) != 0) )
+			dsv_line_get_fields_ae(dsv_lines[sample - 1], 0)) != 0) )
 		{
 		    fprintf(stderr,
 			    "normalize: %s, %s: Different feature IDs on line %zu\n.\n",
@@ -197,11 +197,11 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		 *      (compute pseudo-reference)
 		 */
 		
-		count = strtof(DSV_LINE_FIELDS_AE(&dsv_line[sample], 3), &end);
+		count = strtof(dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
 		if ( *end != '\0' )
 		{
 		    fprintf(stderr, "normalize: Invalid count: %s\n",
-			    DSV_LINE_FIELDS_AE(&dsv_line[sample_count],0));
+			    dsv_line_get_fields_ae(dsv_lines[sample_count],0));
 		    return EX_DATAERR;
 		}
 		lc[sample] = log(count);
@@ -300,13 +300,13 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	fprintf(norm_sample_streams[sample], "target_id\tlength\teff_length\test_counts\ttpm\tnorm_counts\n");
     }
     
-    skip_headers(abundance_files, abundance_streams, dsv_line, sample_count);
+    skip_headers(abundance_files, abundance_streams, dsv_lines, sample_count);
     feature_count = 0;
     while ( ! feof(abundance_streams[0]) )
     {
 	for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
 	{
-	    if ( dsv_line_read(&dsv_line[sample], abundance_streams[sample],
+	    if ( dsv_line_read(dsv_lines[sample], abundance_streams[sample],
 				"\t") == EOF )
 	    {
 		check_all_eof(abundance_files, abundance_streams, sample, sample_count);
@@ -320,14 +320,14 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		 */
 		
 		// Copy abundance.tsv fields
-		for (c = 0; c < DSV_LINE_NUM_FIELDS(&dsv_line[sample]); ++c)
+		for (c = 0; c < dsv_line_get_num_fields(dsv_lines[sample]); ++c)
 		    fprintf(norm_sample_streams[sample], "%s\t",
-			    DSV_LINE_FIELDS_AE(&dsv_line[sample], c));
-		count = strtof(DSV_LINE_FIELDS_AE(&dsv_line[sample], 3), &end);
+			    dsv_line_get_fields_ae(dsv_lines[sample], c));
+		count = strtof(dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
 		if ( *end != '\0' )
 		{
 		    fprintf(stderr, "normalize: Invalid count: %s\n",
-			    DSV_LINE_FIELDS_AE(&dsv_line[sample],0));
+			    dsv_line_get_fields_ae(dsv_lines[sample],0));
 		    return EX_DATAERR;
 		}
 		
@@ -346,7 +346,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		// Feature ID (target_id) just once
 		if ( sample == 0 )
 		    fprintf(norm_all_stream, "%s",
-			    DSV_LINE_FIELDS_AE(&dsv_line[0],0));
+			    dsv_line_get_fields_ae(dsv_lines[0],0));
 		
 		fprintf(norm_all_stream, "\t%f",
 			count * scaling_factor[sample]);
@@ -402,7 +402,7 @@ void    close_all_streams(FILE *abundance_streams[], FILE *norm_sample_streams[]
  ***************************************************************************/
 
 void    skip_headers(const char *abundance_files[], FILE *abundance_streams[],
-		     dsv_line_t dsv_line[], size_t sample_count)
+		     dsv_line_t *dsv_lines[], size_t sample_count)
 
 {
     size_t  c;
@@ -410,13 +410,13 @@ void    skip_headers(const char *abundance_files[], FILE *abundance_streams[],
     for (c = 0; c < sample_count; ++c)
     {
 	// Every abundance file should have a 1-line header
-	dsv_line_read(&dsv_line[c], abundance_streams[c], "\t");
-	//puts(DSV_LINE_FIELDS_AE(&dsv_line[sample_count], 0));
-	if ( strcmp(DSV_LINE_FIELDS_AE(&dsv_line[c], 0), "target_id") != 0 )
+	dsv_line_read(dsv_lines[c], abundance_streams[c], "\t");
+	//puts(dsv_line_get_fields_ae(dsv_lines[sample_count], 0));
+	if ( strcmp(dsv_line_get_fields_ae(dsv_lines[c], 0), "target_id") != 0 )
 	{
 	    fprintf(stderr, "normalize: %s: Expected header starting with \"target_id\".\n",
 		    abundance_files[c]);
-	    fprintf(stderr, "Got %s\n", DSV_LINE_FIELDS_AE(&dsv_line[c], 0));
+	    fprintf(stderr, "Got %s\n", dsv_line_get_fields_ae(dsv_lines[c], 0));
 	    exit(EX_DATAERR);
 	}
     }

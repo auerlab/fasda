@@ -77,7 +77,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
     double      cond_tot_counts[MAX_CONDITIONS],
 		condition_stddevs[MAX_CONDITIONS],
 		*rep_counts[MAX_REPLICATES];    // 2D conditions x replicates
-    dsv_line_t  dsv_line[MAX_REPLICATES];
+    dsv_line_t  *dsv_lines[MAX_REPLICATES];
     // Silence GCC 7 uninit warning, later versions OK
     char        *id = NULL, *new_id = NULL;
     int         delim;
@@ -92,13 +92,14 @@ int     fold_change(FILE *condition_streams[], int conditions,
     // Skip header line if present
     for (condition = 0; condition < conditions; ++condition)
     {
-	if ( dsv_line_read(&dsv_line[condition],
+	dsv_lines[condition] = dsv_line_new();
+	if ( dsv_line_read(dsv_lines[condition],
 	    condition_streams[condition], "\t") != '\n' )
 	{
 	    fprintf(stderr, "fold-change: Error reading first feature.\n");
 	    return EX_DATAERR;
 	}
-	id = DSV_LINE_FIELDS_AE(&dsv_line[condition], 0);
+	id = dsv_line_get_fields_ae(dsv_lines[condition], 0);
 	if ( strcmp(id, "target_id") == 0 )
 	    dsv_skip_rest_of_line(condition_streams[condition]);
 	else
@@ -121,7 +122,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
 	for (condition = 0; condition < conditions; ++condition)
 	{
 	    // Read counts for all replicates of one feature
-	    delim = dsv_line_read(&dsv_line[condition],
+	    delim = dsv_line_read(dsv_lines[condition],
 				  condition_streams[condition], "\t");
 	    if ( delim != EOF )
 	    {
@@ -138,11 +139,11 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		 *  on corresponding lines from each abundances file.
 		 */
 		
-		new_id = DSV_LINE_FIELDS_AE(&dsv_line[condition], 0);
+		new_id = dsv_line_get_fields_ae(dsv_lines[condition], 0);
 		if ( (condition > 0) && (strcmp(new_id, id) != 0) )
 		{
 		    fprintf(stderr, "fold-change: Abundances files out of sync: %s %s\n",
-			    id, DSV_LINE_FIELDS_AE(&dsv_line[condition], 0));
+			    id, dsv_line_get_fields_ae(dsv_lines[condition], 0));
 		    return EX_DATAERR;
 		}
 		
@@ -155,7 +156,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		
 		if ( rep_counts[condition] == NULL )
 		{
-		    num_repls[condition] = DSV_LINE_NUM_FIELDS(&dsv_line[0]) - 1;
+		    num_repls[condition] = dsv_line_get_num_fields(dsv_lines[0]) - 1;
 		    rep_counts[condition] =
 			xt_malloc(num_repls[condition],
 				  sizeof(*rep_counts[condition]));
@@ -172,7 +173,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		 */
 		
 		cond_tot_counts[condition] =
-		    dsv_total_counts(&dsv_line[condition],
+		    dsv_total_counts(dsv_lines[condition],
 				     rep_counts[condition],
 				     &condition_stddevs[condition]);
 	    }
@@ -390,13 +391,13 @@ double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[],
     char    *end;
     
     // All but first field are counts
-    for (f = 1, total_counts = 0.0; f < DSV_LINE_NUM_FIELDS(dsv_line); ++f)
+    for (f = 1, total_counts = 0.0; f < dsv_line_get_num_fields(dsv_line); ++f)
     {
-	rep_counts[f-1] = strtof(DSV_LINE_FIELDS_AE(dsv_line, f), &end);
+	rep_counts[f-1] = strtof(dsv_line_get_fields_ae(dsv_line, f), &end);
 	if ( *end != '\0' )
 	{
 	    fprintf(stderr, "fold-change: Invalid abundance: %s\n",
-		    DSV_LINE_FIELDS_AE(dsv_line, f));
+		    dsv_line_get_fields_ae(dsv_line, f));
 	    return EX_DATAERR;
 	}
 	total_counts += rep_counts[f-1];
@@ -404,10 +405,10 @@ double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[],
 	//getchar();
     }
     
-    mean = total_counts / DSV_LINE_NUM_FIELDS(dsv_line);
-    for (f = 1, sum_sq = 0; f < DSV_LINE_NUM_FIELDS(dsv_line); ++f)
+    mean = total_counts / dsv_line_get_num_fields(dsv_line);
+    for (f = 1, sum_sq = 0; f < dsv_line_get_num_fields(dsv_line); ++f)
 	sum_sq += (rep_counts[f-1] - mean) * (rep_counts[f-1] - mean);
-    variance = sum_sq / DSV_LINE_NUM_FIELDS(dsv_line);
+    variance = sum_sq / dsv_line_get_num_fields(dsv_line);
     *condition_stddevs = sqrt(variance);
     return total_counts;
 }
