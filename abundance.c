@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <unistd.h>         // ftruncate()
 #include <limits.h>         // PATH_MAX OpenIndiana
+#include <stdbool.h>
 #include <xtend/file.h>
 #include <xtend/string.h>   // strlcpy() on Linux
 #include <biolibc/gff.h>
@@ -22,11 +23,16 @@
 #include <biolibc/biostring.h>
 #include "abundance.h"
 
+bool    Debug = false;
+
 int     main(int argc,char *argv[])
 
 {
-    char        *features_file, *sam_files[MAX_FILE_COUNT],
-		*abundance_files[MAX_FILE_COUNT], *p;
+    char        *features_file,
+		*sam_files[MAX_FILE_COUNT],
+		*abundance_files[MAX_FILE_COUNT],
+		*p,
+		*feature_type = "mRNA";
     FILE        *feature_stream, *sam_streams[MAX_FILE_COUNT],
 		*abundance_streams[MAX_FILE_COUNT];
     int         file_count, c, flags;
@@ -40,8 +46,12 @@ int     main(int argc,char *argv[])
     {
 	if ( strcmp(argv[c], "--show-gene-name") == 0 )
 	    flags |= FASDA_FLAG_SHOW_GENE;
-	else if ( strcmp(argv[c], "--map-to-gene") == 0 )
-	    flags |= FASDA_FLAG_MAP_GENE;
+	else if ( strcmp(argv[c], "--ignore-chromosome-order") == 0 )
+	    flags |= FASDA_IGNORE_CHR_ORDER;
+	else if ( strcmp(argv[c], "--feature-type") == 0 )
+	    feature_type = argv[++c];
+	else if ( strcmp(argv[c], "--debug") == 0 )
+	    Debug = true;
 	else
 	    usage(argv);
     }
@@ -102,17 +112,17 @@ int     main(int argc,char *argv[])
     }
     
     return abundance(feature_stream, sam_streams, abundance_streams,
-		     file_count, flags);
+		     file_count, feature_type, flags);
 }
 
 
 int     abundance(FILE *feature_stream, FILE *sam_streams[],
-		 FILE *abundance_streams[], int file_count, int flags)
+		 FILE *abundance_streams[], int file_count,
+		 const char *feature_type, int flags)
 
 {
     char        previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
-		previous_alignment_chrom[MAX_FILE_COUNT][BL_CHROM_MAX_CHARS + 1],
-		*feature_type = "mRNA";
+		previous_alignment_chrom[MAX_FILE_COUNT][BL_CHROM_MAX_CHARS + 1];
     bl_gff_t    feature, subfeature;
     bl_sam_t    alignment;
     int         c, cmp, status;
@@ -122,8 +132,6 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     FILE        *buffer_streams[MAX_FILE_COUNT];
     bl_alignment_stats_t    alignment_stats = BL_ALIGNMENT_STATS_INIT;
     
-    if ( flags & FASDA_FLAG_MAP_GENE )
-	feature_type = "gene";
     bl_gff_init(&feature);
     bl_gff_init(&subfeature);
     bl_sam_init(&alignment);
@@ -141,34 +149,42 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     
     while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
     {
+	if ( Debug )
+	    fprintf(stderr, "%s %s %s\n", BL_GFF_FEATURE_ID(&feature),
+		    BL_GFF_TYPE(&feature), feature_type);
 	if ( strcmp(BL_GFF_TYPE(&feature), feature_type) == 0 )
 	{
-	    //fprintf(stderr, "New %s\n", feature_type);
+	    if ( Debug )
+		fprintf(stderr, "New %s: %s\n",
+			feature_type, BL_GFF_FEATURE_ID(&feature));
 	    
 	    // Verify that features are properly sorted
-	    cmp = bl_chrom_name_cmp(BL_GFF_SEQID(&feature),
-				    previous_feature_chrom);
-	    if ( cmp < 0 )
+	    cmp = chrom_name_cmp(BL_GFF_SEQID(&feature),
+				    previous_feature_chrom, flags);
+	    if ( cmp > 0 )
+		strlcpy(previous_feature_chrom, BL_GFF_SEQID(&feature),
+			BL_CHROM_MAX_CHARS + 1);
+	    else if ( cmp < 0 )
 	    {
 		fprintf(stderr, "fasda: Error: GFF3 chromosomes out of order: %s %s\n",
 			previous_feature_chrom, BL_GFF_SEQID(&feature));
 		return EX_DATAERR;
 	    }
-	    else if ( cmp > 0 )
-		strlcpy(previous_feature_chrom, BL_GFF_SEQID(&feature),
-			BL_CHROM_MAX_CHARS + 1);
 
 	    // Compute sum of exon lengths for abundance TSV output
 	    length = 0;
 	    previous_start = 0;
 	    alternate_exons = false;
-	    //fprintf(stderr, "Finding exons of %s...\n",
-	    //        BL_GFF_FEATURE_ID(&feature));
+	    
+	    if ( Debug )
+		fprintf(stderr, "Finding exons of %s...\n",
+			BL_GFF_FEATURE_ID(&feature));
 	    while ( ((status = bl_gff_read(&subfeature, feature_stream, GFF_MASK))
-			== BL_READ_OK) &&
-		    (strcmp(BL_GFF_TYPE(&subfeature), "###") != 0) )
+			== BL_READ_OK)
+		    && (strcmp(BL_GFF_TYPE(&subfeature), "###") != 0)
+		    && (strcmp(BL_GFF_TYPE(&subfeature), feature_type) != 0) )
 	    {
-		//fprintf(stderr, "type = %s\n", BL_GFF_TYPE(&subfeature));
+		// fprintf(stderr, "type = %s\n", BL_GFF_TYPE(&subfeature));
 		// Stop counting exons as soon as one has a lower start
 		// position than the previous one.  This means we're into
 		// alternate splicing data.  Lengths computed this way match
@@ -180,22 +196,27 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 		    //        previous_start, BL_GFF_START(&subfeature));
 		    if ( BL_GFF_START(&subfeature) > previous_start )
 		    {
-			//fprintf(stderr, "Adding exon %" PRId64 " %" PRId64 " ",
-			//    BL_GFF_START(&subfeature), BL_GFF_END(&subfeature));
+			if ( Debug )
+			    fprintf(stderr, "Adding exon %" PRId64 " %" PRId64 " ",
+				    BL_GFF_START(&subfeature), BL_GFF_END(&subfeature));
 			length += BL_GFF_END(&subfeature) -
 			    BL_GFF_START(&subfeature) + 1;
-			//fprintf(stderr, "length = %" PRId64 "\n", length);
+			if ( Debug )
+			    fprintf(stderr, "length = %" PRId64 "\n", length);
 			previous_start = BL_GFF_START(&subfeature);
 		    }
 		    else
 			alternate_exons = true;
 		}
 	    }
-	    //fprintf(stderr, "Found %s  length = %" PRId64 " status = %d\n",
-	    //        feature_type, length, status);
 	    
-	    // Rewind to beginning of next mRNA/gene so outer loop reads it
-	    // fseeko(feature_stream, BL_GFF_FILE_POS(&subfeature), SEEK_SET);
+	    if ( Debug )
+		fprintf(stderr, "Found %s  length = %" PRId64 " status = %d\n",
+			feature_type, length, status);
+	    
+	    // Rewind to beginning of mRNA/transcript/gene so outer loop reads it
+	    // FIXME: Why was this commented out?
+	    fseeko(feature_stream, BL_GFF_FILE_POS(&subfeature), SEEK_SET);
 	    
 	    for (c = 0; c < file_count; ++c)
 	    {
@@ -206,7 +227,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 		if ( (bl_gff_find_overlapping_alignment(&feature,
 			sam_streams[c], buffer_streams[c],
 			previous_alignment_chrom[c],
-			&alignment, &alignment_stats) == BL_READ_OK) &&
+			&alignment, &alignment_stats, flags) == BL_READ_OK) &&
 		     (bl_sam_gff_cmp(&alignment, &feature) == 0) )
 		{
 		    /*
@@ -218,7 +239,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 					sam_streams[c],
 					buffer_streams[c],
 					previous_alignment_chrom[c],
-					&alignment_stats);
+					&alignment_stats, flags);
 		}
 		print_abundance(abundance_streams[c], &feature, length,
 				est_counts, flags);
@@ -273,7 +294,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
 	    FILE *sam_stream, FILE *buffer_stream,
 	    char *previous_alignment_chrom, bl_sam_t *alignment,
-	    bl_alignment_stats_t *alignment_stats)
+	    bl_alignment_stats_t *alignment_stats, int flags)
 
 {
     int     status, cmp;
@@ -285,7 +306,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
     {
 	// fprintf(stderr, "buffered: %s %lu\n", BL_SAM_RNAME(alignment), BL_SAM_POS(alignment));
 	// Verify that alignments are properly sorted
-	cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
+	cmp = chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
 	if ( cmp > 0 )
 	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	else if ( cmp < 0 )
@@ -313,7 +334,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
 	    ++BL_ALIGNMENT_STATS_TOTAL(alignment_stats);
 	    
 	    // Verify that alignments are properly sorted
-	    cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
+	    cmp = chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
 	    if ( cmp > 0 )
 		strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	    else if ( cmp < 0 )
@@ -363,7 +384,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
 double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 		       FILE *sam_stream, FILE *buffer_stream,
 		       char *previous_alignment_chrom,
-		       bl_alignment_stats_t *alignment_stats)
+		       bl_alignment_stats_t *alignment_stats, int flags)
 
 {
     int64_t overlapping_reads = 0;
@@ -383,7 +404,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
     do
     {
 	// fprintf(stderr, "Counting buffered alignemnts...\n");
-	cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
+	cmp = chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
 	if ( cmp > 0 )
 	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	else if ( cmp < 0 )
@@ -432,7 +453,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	{
 	    ++BL_ALIGNMENT_STATS_TOTAL(alignment_stats);
 	    ++BL_ALIGNMENT_STATS_OVERLAPPING(alignment_stats);
-	    cmp = bl_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom);
+	    cmp = chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
 	    if ( cmp > 0 )
 		strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	    else if ( cmp < 0 )
@@ -533,13 +554,27 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
 }
 
 
+int     chrom_name_cmp(const char *s1, const char *s2, int flags)
+
+{
+    // Return "true" if we're supposed to ignore order
+    if ( flags & FASDA_IGNORE_CHR_ORDER )
+	return 1;
+    else
+	return bl_chrom_name_cmp(s1, s2);
+}
+
+
 void    usage(char *argv[])
 
 {
     fprintf(stderr, "Usage: %s \\\n"
-	    "\t[--show-gene-name] [--map-to-gene] \\\n"
+	    "\t[--debug] \\\n"
+	    "\t[--show-gene-name] \\\n"
+	    "\t[--ignore-chromosome-order] \\\n"
+	    "\t[--feature-type mRNA|transcript|gene (default=mRNA)] \\\n"
 	    "\tfeatures.gff3 \\\n"
-	    "\tfile.[sam|bam|cram][.gz|.bz2|.xz] \\\n"
-	    "\t[file.[sam|bam|cram][.gz|.bz2|.xz] ...]\n", argv[0]);
+	    "\tfile.[sam|bam|cram]" XT_COMPRESSION_EXTENSIONS " \\\n"
+	    "\t[file.[sam|bam|cram]" XT_COMPRESSION_EXTENSIONS " ...]\n", argv[0]);
     exit(EX_USAGE);
 }
