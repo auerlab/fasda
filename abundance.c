@@ -122,7 +122,8 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 
 {
     char        previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
-		previous_alignment_chrom[MAX_FILE_COUNT][BL_CHROM_MAX_CHARS + 1];
+		previous_alignment_chrom[MAX_FILE_COUNT][BL_CHROM_MAX_CHARS + 1],
+		*id, *p;
     bl_gff_t    feature, subfeature;
     bl_sam_t    alignment;
     int         c, cmp, status;
@@ -135,7 +136,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     bl_gff_init(&feature);
     bl_gff_init(&subfeature);
     bl_sam_init(&alignment);
-    
+
     strlcpy(previous_feature_chrom, "0", BL_CHROM_MAX_CHARS + 1);
     for (c = 0; c < file_count; ++c)
     {
@@ -149,14 +150,20 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     
     while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
     {
-	if ( Debug )
-	    fprintf(stderr, "%s %s %s\n", BL_GFF_FEATURE_ID(&feature),
-		    BL_GFF_TYPE(&feature), feature_type);
+	// Some IDs contain aliases separated by '|'.  The last is usually
+	// the unique ID.
+	id = BL_GFF_FEATURE_ID(&feature);
+	if ( (id != NULL) && (p = strrchr(id, '|')) != NULL )
+	    id = p + 1;
+
+	if ( false ) // Debug )
+	    fprintf(stderr, "%s %s %s\n",
+		    id, BL_GFF_TYPE(&feature), feature_type);
 	if ( strcmp(BL_GFF_TYPE(&feature), feature_type) == 0 )
 	{
 	    if ( Debug )
 		fprintf(stderr, "New %s: %s\n",
-			feature_type, BL_GFF_FEATURE_ID(&feature));
+			feature_type, id);
 	    
 	    // Verify that features are properly sorted
 	    cmp = chrom_name_cmp(BL_GFF_SEQID(&feature),
@@ -177,8 +184,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 	    alternate_exons = false;
 	    
 	    if ( Debug )
-		fprintf(stderr, "Finding exons of %s...\n",
-			BL_GFF_FEATURE_ID(&feature));
+		fprintf(stderr, "Finding exons of %s...\n", id);
 	    while ( ((status = bl_gff_read(&subfeature, feature_stream, GFF_MASK))
 			== BL_READ_OK)
 		    && (strcmp(BL_GFF_TYPE(&subfeature), "###") != 0)
@@ -541,6 +547,11 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
     
     // Drop "gene:" or "transcript:"
     if ( (p = strchr(id, ':')) != NULL )
+	id = p + 1;
+    
+    // Some IDs contain aliases separated by '|'.  The last is usually
+    // the unique ID.
+    if ( (p = strrchr(id, '|')) != NULL )
 	id = p + 1;
     
     // FIXME: http://robpatro.com/blog/?p=235
