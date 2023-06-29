@@ -100,6 +100,8 @@ int     main(int argc,char *argv[])
 	if ( output_dir != NULL )
 	{
 	    // Get base name of SAM input
+	    // FIXME: Use basename()?  Implementation details vary
+	    // according to the FreeBSD man page.
 	    if ( (p = strrchr(sam_files[file_count], '/')) != NULL )
 		++p;
 	    else
