@@ -243,12 +243,18 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 	    }
 	    
 	    if ( Debug )
+	    {
 		fprintf(stderr, "Found %s  length = %" PRId64 " status = %d\n",
 			feature_type, length, status);
+		fprintf(stderr, "Rewinding to %zu (%s)...\n",
+			BL_GFF_FILE_POS(&subfeature),
+			BL_GFF_TYPE(&subfeature));
+	    }
 	    
 	    // Rewind to beginning of mRNA/transcript/gene so outer loop reads it
-	    // FIXME: Why was this commented out?
-	    fseeko(feature_stream, BL_GFF_FILE_POS(&subfeature), SEEK_SET);
+	    // FIXME: Maybe don't use BL_GFF_FILE_POS()
+	    if ( strcmp(BL_GFF_TYPE(&subfeature), "###") != 0 )
+		fseeko(feature_stream, BL_GFF_FILE_POS(&subfeature), SEEK_SET);
 	    
 	    for (c = 0; c < file_count; ++c)
 	    {
