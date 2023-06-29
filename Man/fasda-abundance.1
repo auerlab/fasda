@@ -10,7 +10,13 @@ fasda abundance - Compute abundances from SAM data
 .PP
 .nf 
 .na 
-fasda abundance features.gff3 alignment-file [alignment-file ...]
+fasda abundance \\
+    --debug \\
+    --show-gene-name \\
+    --ignore-chromosome-order \\
+    --feature-type mRNA|transcript|gene (default = mRNA) \\
+    --output-dir dir (default=same as SAM/BAM/CRAM input) \\
+    features.gff3 alignment-file [alignment-file ...]
 .ad
 .fi
 
@@ -18,7 +24,12 @@ fasda abundance features.gff3 alignment-file [alignment-file ...]
 .B "fasda abundance"
 computes raw read counts from one or more SAM/BAM/CRAM files overlapping
 each features in a GFF3 file.  Output is an abundance.tsv file in the
-same format as those produced by kallisto.
+same format as those produced by kallisto.  Estimated counts may not match
+those produced by kallisto as they are calculated differently.  However,
+the ratio of kallisto counts / fasda counts should be fairly consistent,
+so that fold-changes produced by 
+.B fasda fold-change
+are highly similar.
 
 Abundances in the output are raw counts of properly paired reads that are
 not flagged as secondary alignments, failed QC, duplicate, or supplementary.
@@ -27,6 +38,33 @@ should be expected to reflect about double the number of fragments aligned.
 
 Any normalization of counts is left to downstream tools such as
 .B fasda-normalize(1).
+
+.SH OPTIONS
+.TP
+\fB--debug
+Turn on debugging output
+
+.TP
+\fB--show-gene-name
+Show gene name rather than feature (mRNA/transcript) name in output.
+
+.TP
+\fB--ignore-chromosome-order
+Do not abort if GFF3 or SAM input chromosomes are not sorted in order
+determined by bl_chrom_name_cmp(3).  If this option is used, you must ensure
+that the order of the chromosomes is the same in the GFF3 and SAM input.
+
+.TP
+\fB--feature-type=mRNA|transcript|gene\fR
+Indicate what features in the GFF3 input reads were aligned to.
+Should normally be mRNA, transcript, or gene, but the user is free
+to use any string present in column 3 of the GFF3 file.
+Default is mRNA.
+
+.TP
+\fB--output-dir=directory\fR
+Indicate where -abundance.tsv output files should go.  The default
+is the same directory is the SAM input.
 
 .SH FILES
 .nf
@@ -47,3 +85,4 @@ Please report bugs to the author and send patches in unified diff format.
 .nf
 .na
 J. Bacon
+

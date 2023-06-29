@@ -32,7 +32,8 @@ int     main(int argc,char *argv[])
 		*sam_files[MAX_FILE_COUNT],
 		*abundance_files[MAX_FILE_COUNT],
 		*p,
-		*feature_type = "mRNA";
+		*feature_type = "mRNA",
+		*output_dir = NULL;
     FILE        *feature_stream, *sam_streams[MAX_FILE_COUNT],
 		*abundance_streams[MAX_FILE_COUNT];
     int         file_count, c, flags;
@@ -44,14 +45,16 @@ int     main(int argc,char *argv[])
     // See samtools-view
     for (c = 1, flags = 0x0; (c < argc) && (argv[c][0] == '-'); ++c)
     {
-	if ( strcmp(argv[c], "--show-gene-name") == 0 )
+	if ( strcmp(argv[c], "--debug") == 0 )
+	    Debug = true;
+	else if ( strcmp(argv[c], "--show-gene-name") == 0 )
 	    flags |= FASDA_FLAG_SHOW_GENE;
 	else if ( strcmp(argv[c], "--ignore-chromosome-order") == 0 )
 	    flags |= FASDA_IGNORE_CHR_ORDER;
 	else if ( strcmp(argv[c], "--feature-type") == 0 )
 	    feature_type = argv[++c];
-	else if ( strcmp(argv[c], "--debug") == 0 )
-	    Debug = true;
+	else if ( strcmp(argv[c], "--output-dir") == 0 )
+	    output_dir = argv[++c];
 	else
 	    usage(argv);
     }
@@ -67,8 +70,11 @@ int     main(int argc,char *argv[])
 
     for (file_count = 0; c < argc; ++c, ++file_count)
     {
+	/*
+	 *  Open SAM/BAM/CRAM input file
+	 */
+	
 	sam_files[file_count] = argv[c];
-
 	if ( (sam_streams[file_count] =
 	      bl_sam_fopen(sam_files[file_count], "r",
 	      SAMTOOLS_ARGS)) == NULL )
@@ -79,13 +85,30 @@ int     main(int argc,char *argv[])
 	}
 	bl_sam_skip_header(sam_streams[file_count]);
 	
-	abundance_files[file_count] = strdup(sam_files[file_count]);
+	/*
+	 *  Open abundance output file for this input
+	 */
+	
+	abundance_files[file_count] = malloc(PATH_MAX + 1);
 	if ( abundance_files[file_count] == NULL )
 	{
 	    fprintf(stderr, "abundance: Could not strdup() abudance_files[%d]\n",
 		    file_count);
 	    return EX_UNAVAILABLE;
 	}
+	
+	if ( output_dir != NULL )
+	{
+	    // output-dir/base-name-of-sam-file
+	    if ( (p = strstr(abundance_files[file_count], ".bam")) == NULL )
+		p = sam_files[file_count];
+	    snprintf(abundance_files[file_count], PATH_MAX + 1, "%s/%s",
+		    output_dir, sam_files[file_count]);
+	}
+	else
+	    strlcpy(abundance_files[file_count], sam_files[file_count], PATH_MAX +1);
+	
+	// Replace .sam/.bam/.cram with -abundance.tsv
 	if ( (p = strstr(abundance_files[file_count], ".bam")) == NULL )
 	    if ( (p = strstr(abundance_files[file_count], ".sam")) == NULL )
 		if ( (p = strstr(abundance_files[file_count], ".cram")) == NULL )
@@ -584,6 +607,7 @@ void    usage(char *argv[])
 	    "\t[--show-gene-name] \\\n"
 	    "\t[--ignore-chromosome-order] \\\n"
 	    "\t[--feature-type mRNA|transcript|gene (default=mRNA)] \\\n"
+	    "\t[--output-dir dir (default=same as SAM/BAM/CRAM input)] \\\n"
 	    "\tfeatures.gff3 \\\n"
 	    "\tfile.[sam|bam|cram]" XT_COMPRESSION_EXTENSIONS " \\\n"
 	    "\t[file.[sam|bam|cram]" XT_COMPRESSION_EXTENSIONS " ...]\n", argv[0]);
