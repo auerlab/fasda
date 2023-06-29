@@ -99,11 +99,14 @@ int     main(int argc,char *argv[])
 	
 	if ( output_dir != NULL )
 	{
-	    // output-dir/base-name-of-sam-file
-	    if ( (p = strstr(abundance_files[file_count], ".bam")) == NULL )
+	    // Get base name of SAM input
+	    if ( (p = strrchr(sam_files[file_count], '/')) != NULL )
+		++p;
+	    else
 		p = sam_files[file_count];
+	    
 	    snprintf(abundance_files[file_count], PATH_MAX + 1, "%s/%s",
-		    output_dir, sam_files[file_count]);
+		    output_dir, p);
 	}
 	else
 	    strlcpy(abundance_files[file_count], sam_files[file_count], PATH_MAX +1);
