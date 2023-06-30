@@ -67,15 +67,9 @@ for file in Results/02-trim/*.fastq.gz; do
     out_dir=Results/06-kallisto-quant/$stem
     mkdir -p $out_dir
 
-    # Manual says a GTF is needed.  Kallisto aborts using GFF3.
-    # Guessing mean and sd for fragment length from typical Illumina
-    # stated in kallisto manual
     set -x
     kallisto quant \
 	--single --fragment-length=190 --sd=10 \
-	--genomebam \
-	    --gtf=Results/04-reference/$gtf \
-	    --chromosomes=Results/04-reference/chromosome-sizes.tsv \
 	--threads=$threads \
 	--index=Results/05-kallisto-index/all-but-xy.index \
 	--output-dir=$out_dir $file

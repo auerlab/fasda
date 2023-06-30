@@ -201,14 +201,17 @@ int     fold_change(FILE *condition_streams[], int conditions,
 	    }
 	}
 	
-	// Output fold-change and p-value
-	print_fold_change(diff_stream, id,
-			  cond_tot_counts, condition_stddevs, conditions,
-			  rep_counts, num_repls, flags);
-	
-	// Progress counter
-	if ( ++count % 100 == 0 )
-	    fprintf(stderr, "%lu\r", count);
+	if ( !feof(condition_streams[0]) )
+	{
+	    // Output fold-change and p-value
+	    print_fold_change(diff_stream, id,
+			      cond_tot_counts, condition_stddevs, conditions,
+			      rep_counts, num_repls, flags);
+	    
+	    // Progress counter
+	    if ( ++count % 100 == 0 )
+		fprintf(stderr, "%lu\r", count);
+	}
     }    
     
     for (condition = 0; condition < conditions; ++condition)

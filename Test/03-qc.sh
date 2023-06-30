@@ -53,6 +53,8 @@ for dir in 01-fetch/Raw-renamed 02-trim; do
     ls Results/$dir/*.fastq.gz \
 	| xargs -n 1 -P $jobs ./qc1.sh $report_dir $log_dir $file
     if which multiqc; then
+	export LC_ALL=en_us-UTF-8
+	export LANG=en_us-UTF-8
 	multiqc --outdir $report_dir $report_dir
     fi
 done
