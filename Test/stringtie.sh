@@ -1,22 +1,120 @@
 #!/bin/sh
 
-kallisto=Results/06-kallisto-quant/WT-1/abundance.tsv
-stringtie=stringtie-transcripts.gtf
 
-if [ ! -e $stringtie ]; then
-    stringtie -e \
-	-G Results/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
-	Results/09-hisat-align/SNF2-1.bam \
-	-A stringtie.out \
-	-o stringtie.gtf
-    awk '$3 == "transcript"' stringtie.gtf > $stringtie
-fi
+##########################################################################
+#   Function description:
+#       Pause until user presses return
+##########################################################################
 
-wc -l $kallisto $stringtie
+pause()
+{
+    local junk
+    
+    printf "Press return to continue..."
+    read junk
+}
+
+for condition in WT SNF2; do
+    kallisto=Results/06-kallisto-quant/$condition-1/abundance.tsv
+    bam=Results/09-hisat-align/$condition-1.bam
+    bam_sorted=${bam%.bam}-sorted.bam
+    
+    # Make sure hisat2 output is properly sorted
+    # Does not seem to be necessary, but is indicated by the stringtie manual
+    if [ ! -e $bam_sorted ]; then
+	samtools sort -o $bam_sorted $bam
+    fi
+    
+    stringtie_out=$condition-1-stringtie.gtf
+    stringtie_transcripts=$condition-1-stringtie-transcripts.gtf
+    
+    if [ ! -e $stringtie_transcripts ]; then
+	stringtie -e \
+	    -G Results/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
+	    $bam_sorted \
+	    -o $stringtie_out
+	awk '$3 == "transcript"' $stringtie_out > $stringtie_transcripts
+    fi
+    
+    wc -l $kallisto $stringtie_transcripts
+done
+pause
+
+# Kallisto abundances and stringtie coverages are very different, but
+# produce the same fold-changes
+reads=$(samtools view Results/09-hisat-align/SNF2-1.bam | wc -l)
 for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     echo $transcript
-    awk -F ';' -v t="transcript:"$transcript '$2 ~ t { print $3, $4, $5 }' $stringtie
-    awk -v t=$transcript '$1 ~ t { print $4 }' $kallisto
-    #awk -v t=$transcript '$1 == t { print $8 }' stringtie.out
+    
+    swt=$(awk -F ';' -v t="transcript:"$transcript \
+	'$2 ~ t { print $3 }' WT-1-stringtie-transcripts.gtf \
+	| awk '{ print $2 }' | tr -d '"')
+    
+    # Transcript not found
+    if [ -z "$swt" ]; then
+	continue
+    fi
+    
+    ssnf2=$(awk -F ';' -v t="transcript:"$transcript \
+	'$2 ~ t { print $3 }' SNF2-1-stringtie-transcripts.gtf \
+	| awk '{ print $2 }' | tr -d '"')
+
+    # Reverse compute raw counts from stringtie FPKM
+    start=$(awk -F '\t' -v t="transcript:"$transcript \
+	'$9 ~ t { print $4 }' WT-1-stringtie-transcripts.gtf)
+    end=$(awk -F '\t' -v t="transcript:"$transcript \
+	'$9 ~ t { print $5 }' WT-1-stringtie-transcripts.gtf)
+    fpkm=$(awk -F ';' -v t="transcript:"$transcript \
+	'$2 ~ t { print $4 }' WT-1-stringtie-transcripts.gtf \
+	| awk '{ print $2 }' | tr -d '"')
+    printf "reads = $reads start = $start end = $end FPKM = $fpkm\n"
+    # Just guessing the "/ 2" here.  Single vs paired?
+    wt_count=`printf "$fpkm * ($reads / 1000000) * (($end - $start) / 1000) / 2\n" | bc -l`
+
+    start=$(awk -F '\t' -v t="transcript:"$transcript \
+	'$9 ~ t { print $4 }' SNF2-1-stringtie-transcripts.gtf)
+    end=$(awk -F '\t' -v t="transcript:"$transcript \
+	'$9 ~ t { print $5 }' SNF2-1-stringtie-transcripts.gtf)
+    fpkm=$(awk -F ';' -v t="transcript:"$transcript \
+	'$2 ~ t { print $4 }' SNF2-1-stringtie-transcripts.gtf \
+	| awk '{ print $2 }' | tr -d '"')
+    printf "reads = $reads start = $start end = $end FPKM = $fpkm\n"
+    # Just guessing the "/ 2" here.  Single vs paired?
+    snf2_count=`printf "$fpkm * ($reads / 1000000) * (($end - $start) / 1000) / 2\n" | bc -l`
+    
+    # Add a minor error in exchange for avoiding div by 0
+    test -z "$swt" && swt=0
+    test -z "$ssnf2" && ssnf2=0
+    
+    # Fold-changes computed from coverage are very similar to kallisto's
+    sft=`printf "($swt + 0.00001) / ($ssnf2 + 0.00001)\n" | bc -l 2> /dev/null`
+    
+    # Fold-changes computed from counts are very different
+    # sft=`printf "($wt_count + 0.00001) / ($snf2_count + 0.00001)\n" | bc -l 2> /dev/null`
+    
+    tpm=$(grep $transcript WT-1-stringtie-transcripts.gtf | cut -d ';' -f 5)
+    printf "Stringtie: %10.2f %10.2f %10.2f WT TPM = %s\n" \
+	$wt_count $snf2_count $sft "$tpm"
+    
+    kwt=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
+	Results/06-kallisto-quant/WT-1/abundance.tsv)
+    
+    ksnf2=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
+	Results/06-kallisto-quant/SNF2-1/abundance.tsv)
+
+    wt_tpm=$(awk -v t=$transcript '$1 ~ t { print $5 }' \
+	Results/06-kallisto-quant/WT-1/abundance.tsv)
+
+    # Transcript not found
+    if [ -z "$kwt" ]; then
+	continue
+    fi
+    
+    test -z "$kwt" && kwt=0
+    test -z "$ksnf2" && ksnf2=0
+    kft=`printf "($kwt + 0.00001) / ($ksnf2 + 0.00001)\n" | bc -l 2> /dev/null`
+    printf "Kallisto:  %10.2f %10.2f %10.2f  WT TPM = %s\n" \
+	$kwt $ksnf2 $kft $wt_tpm
+    
     echo '==='
-done | more
+done 2>&1 | more
