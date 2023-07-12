@@ -29,7 +29,7 @@ for condition in WT SNF2; do
     stringtie_transcripts=$condition-1-stringtie-transcripts.gtf
     
     if [ ! -e $stringtie_transcripts ]; then
-	stringtie -e \
+	stringtie -e -B \
 	    -G Results/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
 	    $bam_sorted \
 	    -o $stringtie_out
@@ -67,9 +67,14 @@ for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     fpkm=$(awk -F ';' -v t="transcript:"$transcript \
 	'$2 ~ t { print $4 }' WT-1-stringtie-transcripts.gtf \
 	| awk '{ print $2 }' | tr -d '"')
-    printf "reads = $reads start = $start end = $end FPKM = $fpkm\n"
+    # printf "reads = $reads start = $start end = $end FPKM = $fpkm\n"
     # Just guessing the "/ 2" here.  Single vs paired?
-    wt_count=`printf "$fpkm * ($reads / 1000000) * (($end - $start) / 1000) / 2\n" | bc -l`
+    # wt_count=`printf "$fpkm * ($reads / 1000000) * (($end - $start) / 1000) / 2\n" | bc -l`
+    
+    # From http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
+    # regarding prepDE.py3
+    #  reads_per_transcript = coverage * transcript_len / read_len
+    wt_count=`printf "$swt * ($end - $start) / 50\n" | bc -l`
 
     start=$(awk -F '\t' -v t="transcript:"$transcript \
 	'$9 ~ t { print $4 }' SNF2-1-stringtie-transcripts.gtf)
@@ -78,22 +83,24 @@ for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     fpkm=$(awk -F ';' -v t="transcript:"$transcript \
 	'$2 ~ t { print $4 }' SNF2-1-stringtie-transcripts.gtf \
 	| awk '{ print $2 }' | tr -d '"')
-    printf "reads = $reads start = $start end = $end FPKM = $fpkm\n"
+    # printf "reads = $reads start = $start end = $end FPKM = $fpkm\n"
+    
     # Just guessing the "/ 2" here.  Single vs paired?
-    snf2_count=`printf "$fpkm * ($reads / 1000000) * (($end - $start) / 1000) / 2\n" | bc -l`
+    # snf2_count=`printf "$fpkm * ($reads / 1000000) * (($end - $start) / 1000) / 2\n" | bc -l`
+    
+    # From http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
+    # regarding prepDE.py3
+    #  reads_per_transcript = coverage * transcript_len / read_len
+    snf2_count=`printf "$ssnf2 * ($end - $start) / 50\n" | bc -l`
     
     # Add a minor error in exchange for avoiding div by 0
     test -z "$swt" && swt=0
     test -z "$ssnf2" && ssnf2=0
     
-    # Fold-changes computed from coverage are very similar to kallisto's
-    sft=`printf "($swt + 0.00001) / ($ssnf2 + 0.00001)\n" | bc -l 2> /dev/null`
+    sft=`printf "($wt_count + 0.00001) / ($snf2_count + 0.00001)\n" | bc -l 2> /dev/null`
     
-    # Fold-changes computed from counts are very different
-    # sft=`printf "($wt_count + 0.00001) / ($snf2_count + 0.00001)\n" | bc -l 2> /dev/null`
-    
-    tpm=$(grep $transcript WT-1-stringtie-transcripts.gtf | cut -d ';' -f 5)
-    printf "Stringtie: %10.2f %10.2f %10.2f WT TPM = %s\n" \
+    tpm=$(grep $transcript WT-1-stringtie-transcripts.gtf | cut -d ';' -f 5 | awk '{ print $2 }' | tr -d '"')
+    printf "Stringtie: %10.2f %10.2f %10.2f  WT TPM = %s\n" \
 	$wt_count $snf2_count $sft "$tpm"
     
     kwt=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
