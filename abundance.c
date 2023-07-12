@@ -201,7 +201,7 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 	if ( regexec(&feature_re, BL_GFF_TYPE(&feature), 0, NULL, 0) == 0 )
 	{
 	    // Verify that features are properly sorted
-	    cmp = chrom_name_cmp(BL_GFF_SEQID(&feature),
+	    cmp = fasda_chrom_name_cmp(BL_GFF_SEQID(&feature),
 				    previous_feature_chrom, flags);
 	    if ( cmp > 0 )
 		strlcpy(previous_feature_chrom, BL_GFF_SEQID(&feature),
@@ -366,7 +366,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
     {
 	// fprintf(stderr, "buffered: %s %lu\n", BL_SAM_RNAME(alignment), BL_SAM_POS(alignment));
 	// Verify that alignments are properly sorted
-	cmp = chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
+	cmp = fasda_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
 	if ( cmp > 0 )
 	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	else if ( cmp < 0 )
@@ -394,7 +394,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
 	    ++BL_ALIGNMENT_STATS_TOTAL(alignment_stats);
 	    
 	    // Verify that alignments are properly sorted
-	    cmp = chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
+	    cmp = fasda_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
 	    if ( cmp > 0 )
 		strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	    else if ( cmp < 0 )
@@ -464,7 +464,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
     do
     {
 	// fprintf(stderr, "Counting buffered alignemnts...\n");
-	cmp = chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
+	cmp = fasda_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
 	if ( cmp > 0 )
 	    strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	else if ( cmp < 0 )
@@ -513,7 +513,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	{
 	    ++BL_ALIGNMENT_STATS_TOTAL(alignment_stats);
 	    ++BL_ALIGNMENT_STATS_OVERLAPPING(alignment_stats);
-	    cmp = chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
+	    cmp = fasda_chrom_name_cmp(BL_SAM_RNAME(alignment), previous_alignment_chrom, flags);
 	    if ( cmp > 0 )
 		strlcpy(previous_alignment_chrom, BL_SAM_RNAME(alignment), BL_CHROM_MAX_CHARS + 1);
 	    else if ( cmp < 0 )
@@ -619,7 +619,7 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
 }
 
 
-int     chrom_name_cmp(const char *s1, const char *s2, int flags)
+int     fasda_chrom_name_cmp(const char *s1, const char *s2, int flags)
 
 {
     // Return "true" if we're supposed to ignore order

@@ -122,6 +122,13 @@ for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     kft=`printf "($kwt + 0.00001) / ($ksnf2 + 0.00001)\n" | bc -l 2> /dev/null`
     printf "Kallisto:  %10.2f %10.2f %10.2f  WT TPM = %s\n" \
 	$kwt $ksnf2 $kft $wt_tpm
+
+    fwt=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
+	Results/09-hisat-align/WT-1-abundance.tsv)
     
+    fsnf2=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
+	Results/09-hisat-align/SNF2-1-abundance.tsv)
+
+    printf "FASDA:     %10.2f %10.2f\n" $fwt $fsnf2
     echo '==='
 done 2>&1 | more
