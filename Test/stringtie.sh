@@ -62,11 +62,14 @@ for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     # Reverse compute raw counts from stringtie FPKM
     start=$(awk -F '\t' -v t="transcript:"$transcript \
 	'$9 ~ t { print $4 }' WT-1-stringtie-transcripts.gtf)
+
     end=$(awk -F '\t' -v t="transcript:"$transcript \
 	'$9 ~ t { print $5 }' WT-1-stringtie-transcripts.gtf)
+    
     fpkm=$(awk -F ';' -v t="transcript:"$transcript \
 	'$2 ~ t { print $4 }' WT-1-stringtie-transcripts.gtf \
 	| awk '{ print $2 }' | tr -d '"')
+    
     # printf "reads = $reads start = $start end = $end FPKM = $fpkm\n"
     # Just guessing the "/ 2" here.  Single vs paired?
     # wt_count=`printf "$fpkm * ($reads / 1000000) * (($end - $start) / 1000) / 2\n" | bc -l`
@@ -100,8 +103,11 @@ for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     sft=`printf "($wt_count + 0.00001) / ($snf2_count + 0.00001)\n" | bc -l 2> /dev/null`
     
     tpm=$(grep $transcript WT-1-stringtie-transcripts.gtf | cut -d ';' -f 5 | awk '{ print $2 }' | tr -d '"')
-    printf "Stringtie: %10.2f %10.2f %10.2f  WT TPM = %s\n" \
-	$wt_count $snf2_count $sft "$tpm"
+    
+    printf "Tool       %10s %10s %10s %10s\n" WT SNF2 FC "WT TPM"
+    
+    printf "Stringtie  %10.2f %10.2f %10.2f %10.2f\n" \
+	$wt_count $snf2_count $sft $tpm
     
     kwt=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
 	Results/06-kallisto-quant/WT-1/abundance.tsv)
@@ -120,7 +126,7 @@ for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     test -z "$kwt" && kwt=0
     test -z "$ksnf2" && ksnf2=0
     kft=`printf "($kwt + 0.00001) / ($ksnf2 + 0.00001)\n" | bc -l 2> /dev/null`
-    printf "Kallisto:  %10.2f %10.2f %10.2f  WT TPM = %s\n" \
+    printf "Kallisto   %10.2f %10.2f %10.2f %10.2f\n" \
 	$kwt $ksnf2 $kft $wt_tpm
 
     fwt=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
@@ -129,6 +135,5 @@ for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     fsnf2=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
 	Results/09-hisat-align/SNF2-1-abundance.tsv)
 
-    printf "FASDA:     %10.2f %10.2f\n" $fwt $fsnf2
-    echo '==='
+    printf "FASDA      %10.2f %10.2f\n\n" $fwt $fsnf2
 done 2>&1 | more
