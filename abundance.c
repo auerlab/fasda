@@ -19,6 +19,7 @@
 #include <regex.h>          // Pattern match feature types or IDs
 #include <xtend/file.h>
 #include <xtend/string.h>   // strlcpy() on Linux
+#include <xtend/dsv.h>
 #include <biolibc/gff.h>
 #include <biolibc/sam.h>
 #include <biolibc/biostring.h>
@@ -29,15 +30,16 @@ bool    Debug = false;
 int     main(int argc,char *argv[])
 
 {
-    char        *features_file,
+    char        *feature_file,
 		*sam_files[MAX_FILE_COUNT],
 		*abundance_files[MAX_FILE_COUNT],
-		*p,
+		*p, *endp,
 		*feature_type = "RNA$|transcript$|gene_segment$",
 		*output_dir = NULL;
-    FILE        *feature_stream, *sam_streams[MAX_FILE_COUNT],
-		*abundance_streams[MAX_FILE_COUNT];
     int         file_count, c, flags;
+    unsigned    read_length;
+    abundance_method_t  method = STRINGTIE;
+    FILE        *abundance_streams[MAX_FILE_COUNT];
     
     if ( argc < 3 )
 	usage(argv);
@@ -48,6 +50,10 @@ int     main(int argc,char *argv[])
     {
 	if ( strcmp(argv[c], "--debug") == 0 )
 	    Debug = true;
+	else if ( strcmp(argv[c], "--exact") == 0 )
+	    method = EXACT;
+	else if ( strcmp(argv[c], "--stringtie") == 0 )
+	    flags |= STRINGTIE;
 	else if ( strcmp(argv[c], "--show-gene-name") == 0 )
 	    flags |= FASDA_FLAG_SHOW_GENE;
 	else if ( strcmp(argv[c], "--ignore-chromosome-order") == 0 )
@@ -63,15 +69,12 @@ int     main(int argc,char *argv[])
 	else
 	    usage(argv);
     }
-    features_file = argv[c++];
+
+    read_length = strtoul(argv[c++], &endp, 10);
+    if ( *endp != '\0' )
+	usage(argv);
     
-    if ( (feature_stream = xt_fopen(features_file, "r")) == NULL )
-    {
-	fprintf(stderr, "fasda: Could not open %s for read: %s.\n",
-		features_file, strerror(errno));
-	return EX_NOINPUT;
-    }
-    bl_gff_skip_header(feature_stream);
+    feature_file = argv[c++];
 
     for (file_count = 0; c < argc; ++c, ++file_count)
     {
@@ -80,15 +83,6 @@ int     main(int argc,char *argv[])
 	 */
 	
 	sam_files[file_count] = argv[c];
-	if ( (sam_streams[file_count] =
-	      bl_sam_fopen(sam_files[file_count], "r",
-	      SAMTOOLS_ARGS)) == NULL )
-	{
-	    fprintf(stderr, "abundance: Could not open %s for read: %s.\n",
-		    sam_files[file_count], strerror(errno));
-	    return EX_NOINPUT;
-	}
-	bl_sam_skip_header(sam_streams[file_count]);
 	
 	/*
 	 *  Open abundance output file for this input
@@ -132,6 +126,7 @@ int     main(int argc,char *argv[])
 	strlcat(p, "-abundance.tsv", PATH_MAX);
 	fprintf(stderr, "Writing abundances to %s\n",
 	    abundance_files[file_count]);
+
 	if ( (abundance_streams[file_count] =
 	      fopen(abundance_files[file_count], "w")) == NULL )
 	{
@@ -144,12 +139,23 @@ int     main(int argc,char *argv[])
 	fflush(abundance_streams[file_count]);
     }
     
-    return abundance(feature_stream, sam_streams, abundance_streams,
-		     file_count, feature_type, flags);
+    switch(method)
+    {
+	case    EXACT:
+	    return exact_abundance(feature_file, sam_files, abundance_streams,
+			 file_count, feature_type, flags);
+	case    STRINGTIE:
+	    return stringtie_abundance(feature_file, sam_files, abundance_streams,
+			 file_count, feature_type, read_length, flags);
+	default:
+	    fprintf(stderr, "Invalid abundance method: %d\n"
+		    "This is a software bug.\n", method);
+	    return EX_SOFTWARE;
+    }
 }
 
 
-int     abundance(FILE *feature_stream, FILE *sam_streams[],
+int     exact_abundance(const char *feature_file, char *sam_files[],
 		 FILE *abundance_streams[], int file_count,
 		 const char *feature_type, int flags)
 
@@ -163,10 +169,38 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
     int64_t     length, previous_start;
     double      est_counts = 0.0;
     bool        alternate_exons;
-    FILE        *buffer_streams[MAX_FILE_COUNT];
+    FILE        *feature_stream,
+		*sam_streams[MAX_FILE_COUNT],
+		*buffer_streams[MAX_FILE_COUNT];
     unsigned long   features_processed;
     bl_alignment_stats_t    alignment_stats = BL_ALIGNMENT_STATS_INIT;
     regex_t     feature_re;
+    
+    fputs("Warning: Exact abundance calculation is experimental.\n"
+	  "Use the default stringtie abundance calculation for more robust results.\n",
+	  stderr);
+    
+    if ( (feature_stream = xt_fopen(feature_file, "r")) == NULL )
+    {
+	fprintf(stderr, "fasda: Could not open %s for read: %s.\n",
+		feature_file, strerror(errno));
+	return EX_NOINPUT;
+    }
+
+    for (c = 0; c < file_count; ++c)
+    {
+	if ( (sam_streams[c] =
+	      bl_sam_fopen(sam_files[c], "r",
+	      SAMTOOLS_ARGS)) == NULL )
+	{
+	    fprintf(stderr, "abundance: Could not open %s for read: %s.\n",
+		    sam_files[file_count], strerror(errno));
+	    return EX_NOINPUT;
+	}
+	bl_sam_skip_header(sam_streams[c]);
+    }
+    
+    bl_gff_skip_header(feature_stream);
     
     bl_gff_init(&feature);
     bl_gff_init(&subfeature);
@@ -318,6 +352,178 @@ int     abundance(FILE *feature_stream, FILE *sam_streams[],
 	    BL_ALIGNMENT_STATS_TOTAL(&alignment_stats));
     printf("Alignments overlapping a feature:  %lu\n",
 	    BL_ALIGNMENT_STATS_OVERLAPPING(&alignment_stats));
+    
+    return EX_OK;
+}
+
+
+/***************************************************************************
+ *  Description:
+ *      Spawn a stringtie process to compute abundances and reformat
+ *      the output to a kallisto-style abundance.tsv file.
+ *  
+ *  History: 
+ *  Date        Name        Modification
+ *  2023-07-17  Jason Bacon Begin
+ ***************************************************************************/
+
+int     stringtie_abundance(const char *feature_file, char *sam_files[],
+		 FILE *abundance_streams[], int file_count,
+		 const char *feature_type, unsigned read_length, int flags)
+
+{
+    FILE    *gtf_stream;
+    char    cmd[MAX_CMD_LEN + 1],
+	    *gtf_feature_type,
+	    *gtf_attributes,
+	    *gtf_start_text,
+	    *gtf_end_text,
+	    *field,
+	    *p, *p2, *endp,
+	    *transcript_id,
+	    *coverage,
+	    *tpm;
+    unsigned long   start, end, length;
+    double  cov, est_count;
+    int     c;
+    dsv_line_t  *dsv_line = dsv_line_new();
+    bool    field_ok;
+    
+    for (c = 0; c < file_count; ++c)
+    {
+	
+	// Note: BAMs must be properly sorted (samtools sort default order)
+	snprintf(cmd, MAX_CMD_LEN + 1, "stringtie -e -G %s %s",
+		 feature_file, sam_files[c]);
+	fprintf(stderr, "Running %s...\n", cmd);
+	gtf_stream = popen(cmd, "r");
+	
+	// FIXME: Create GTF class in biolibc?
+	while ( dsv_line_read(dsv_line, gtf_stream, "\t") != EOF )
+	{
+	    // Skip header and comment lines
+	    if ( *dsv_line_get_fields_ae(dsv_line, 0) != '#' )
+	    {
+		gtf_feature_type = dsv_line_get_fields_ae(dsv_line, 2);
+		gtf_start_text = dsv_line_get_fields_ae(dsv_line, 3);
+		gtf_end_text = dsv_line_get_fields_ae(dsv_line, 4);
+		gtf_attributes = dsv_line_get_fields_ae(dsv_line, 8);
+		if ( strcmp(gtf_feature_type, "transcript") == 0 )
+		{
+		    //printf("Feature type: %s\n", gtf_feature_type);
+		    //printf("%s\n", gtf_start_text);
+		    //printf("%s\n", gtf_end_text);
+		    //printf("Attributes: %s\n", gtf_attributes);
+		    // dsv_line_write(dsv_line, stdout);
+		    
+		    start = strtol(gtf_start_text, &endp, 10);
+		    if ( *endp != '\0' )
+		    {
+			fprintf(stderr, "Invalid start locus: %s\n", gtf_start_text);
+			exit(EX_DATAERR);
+		    }
+		    end = strtol(gtf_end_text, &endp, 10);
+		    if ( *endp != '\0' )
+		    {
+			fprintf(stderr, "Invalid end locus: %s\n", gtf_end_text);
+			exit(EX_DATAERR);
+		    }
+		    // FIXME: Check GTF specs
+		    length = end - start + 1;
+		    
+		    p = gtf_attributes;
+		    while ( (field = strsep(&p, ";")) != NULL )
+		    {
+			// puts(field);
+			field_ok = false;
+			
+			// FIXME: Factor out attribute extraction function
+			// Better yet, implement a GTF class in biolibc
+			if ( memcmp(field, " transcript_id ", 15) == 0 )
+			{
+			    p2 = field + 15;
+			    if ( *p2 == '"' )
+			    {
+				transcript_id = ++p2;
+				if ( memcmp(transcript_id, "transcript:", 11) == 0 )
+				    transcript_id += 11;
+				if ( (p2 = strchr(transcript_id, '"')) != NULL )
+				    *p2 = '\0';
+				field_ok = true;
+			    }
+			    
+			    if ( ! field_ok )
+			    {
+				fprintf(stderr, "Malformed transcript id field: %s.  Expected '\"'.\n",
+					field);
+				exit(EX_DATAERR);
+			    }
+			    
+			    // printf("transcript_id = %s\n", transcript_id);
+			}
+			else if ( memcmp(field, " cov ", 5) == 0 )
+			{
+			    p2 = field + 5;
+			    if ( *p2 == '"' )
+			    {
+				coverage = ++p2;
+				if ( (p2 = strchr(coverage, '"')) != NULL )
+				    *p2 = '\0';
+				field_ok = true;
+			    }
+			    
+			    if ( ! field_ok )
+			    {
+				fprintf(stderr, "Malformed coverage field: %s.  Expected '\"'.\n",
+					field);
+				exit(EX_DATAERR);
+			    }
+			    
+			    // printf("coverage = %s\n", coverage);
+			}
+			else if ( memcmp(field, " TPM ", 5) == 0 )
+			{
+			    p2 = field + 5;
+			    if ( *p2 == '"' )
+			    {
+				tpm = ++p2;
+				if ( (p2 = strchr(tpm, '"')) != NULL )
+				    *p2 = '\0';
+				field_ok = true;
+			    }
+			    
+			    if ( ! field_ok )
+			    {
+				fprintf(stderr, "Malformed TPM field: %s.  Expected '\"'.\n",
+					field);
+				exit(EX_DATAERR);
+			    }
+			    
+			    // printf("TPM = %s\n", tpm);
+			}
+		    }
+
+		    // FIXME: Replace coverage with count
+		    // From http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual
+		    // regarding prepDE.py3
+		    // reads_per_transcript = coverage * transcript_len / read_len
+		    cov = strtod(coverage, &endp);
+		    if ( *endp != '\0' )
+		    {
+			fprintf(stderr, "Invalid coverage: %s\n", coverage);
+			exit(EX_DATAERR);
+		    }
+		    est_count = (double)cov * length / read_length;
+		    fprintf(abundance_streams[c],
+			    "%s\t%lu\t%0.1f\t%0.1f\t%s\n",
+			    transcript_id, length, 0.0, est_count, tpm);
+		}
+	    }
+	    dsv_line_free(dsv_line);
+	}
+	
+	pclose(gtf_stream);
+    }
     
     return EX_OK;
 }
@@ -613,7 +819,7 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
     eff_length = 0.0;
     tpm = 0.0;
     
-    fprintf(abundance_stream, "%s\t%" PRId64 "\t%f\t%f\t%f\n",
+    fprintf(abundance_stream, "%s\t%" PRId64 "\t%0.1f\t%0.1f\t%0.2f\n",
 	    id, length, eff_length, est_counts, tpm);
     return 0;
 }
@@ -635,10 +841,13 @@ void    usage(char *argv[])
 {
     fprintf(stderr, "Usage: %s \\\n"
 	    "\t[--debug] \\\n"
+	    "\t[--stringtie] \\\n"
+	    "\t[--exact] \\\n"
 	    "\t[--show-gene-name] \\\n"
 	    "\t[--ignore-chromosome-order] \\\n"
 	    "\t[--feature-type mRNA|transcript|gene (default=mRNA)] \\\n"
 	    "\t[--output-dir dir (default=same as SAM/BAM/CRAM input)] \\\n"
+	    "\tread-length \\\n"
 	    "\tfeatures.gff3 \\\n"
 	    "\tfile.[sam|bam|cram]" XT_COMPRESSION_EXTENSIONS " \\\n"
 	    "\t[file.[sam|bam|cram]" XT_COMPRESSION_EXTENSIONS " ...]\n", argv[0]);
