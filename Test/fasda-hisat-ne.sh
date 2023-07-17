@@ -35,7 +35,7 @@ for condition in WT SNF2; do
 	for r in $(seq 1 $replicates); do
 	    files="$files $hisat_dir/$condition-$r-abundance.tsv"
 	done
-	# printf "%s\n" $files
+	ls $files
 	time fasda normalize --output $condition-all-norm-$r0.tsv $files \
 	    > $log_dir/normalize-$condition-$r0-NE.out \
 	    2> $log_dir/normalize-$condition-$r0-NE.err
