@@ -80,6 +80,13 @@ for condition in WT SNF2; do
 	    time fasda abundance 50 \
 		$reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
 		$hisat_dir/$file
+	    
+	    # FIXME: Hack for testing, move this to abundance.c
+	    # stringtie is screwy, sorting each gtf output differently
+	    fgrep eff_length $ab > temp.tsv
+	    fgrep -v eff_length $ab | sort >> temp.tsv
+	    mv -f temp.tsv $ab
+	    
 	    head $ab
     done
 done
