@@ -18,10 +18,10 @@ pause()
 kallisto=Results/07-fasda-kallisto/SNF2-all-norm-03.tsv
 hisat2=Results/10-fasda-hisat/SNF2-all-norm-03.tsv
 
-kallisto=Results/06-kallisto-quant/WT-1/abundance.tsv
-hisat2=Results/09-hisat-align/WT-1-abundance.tsv
+#kallisto=Results/06-kallisto-quant/WT-1/abundance.tsv
+#hisat2=Results/09-hisat-align/WT-1-abundance.tsv
 for transcript in $(awk '{ print $1 }' $kallisto); do
-    echo '==='
+    printf '===\n'
     printf "Kallisto: "
     grep $transcript $kallisto
     printf "Hisat2:   "
@@ -30,11 +30,10 @@ for transcript in $(awk '{ print $1 }' $kallisto); do
     h=$(awk -v t=$transcript '$1 == t { print $2 + $3 + $4 }' $hisat2)
     printf "$h / ($k + .0000001)\n" | bc -l
 done | more
-exit
 
 # Fold-changes
-kallisto=Results/13-fasda-kallisto/chondro-time1-time2-FC.txt
-hisat2=Results/20-fasda-fc-hisat2/chondro-time1-time2-FC.txt
+kallisto=Results/07-fasda-kallisto/WT-SNF2-FC-NE-03.txt
+hisat2=Results/10-fasda-hisat/WT-SNF2-FC-NE-03.txt
 for transcript in $(awk '{ print $1 }' $kallisto | head -20); do
     echo $transcript
     grep $transcript $kallisto

@@ -35,11 +35,20 @@ for sample in ../02-trim/*; do
     gzb=$(basename $gz1)
     bam=${gzb%.*.*}.bam
     if [ ! -e $bam ]; then
+	printf "Running hisat2...\n"
 	hisat2 --threads 2 -x ../08-hisat-index/$genome \
 	    -U $gz1 | samtools sort > $bam
     else
 	printf "$bam already exists.\n"
     fi
+    
+    # This doesn't seem to be necessary for modern hisat2 output,
+    # but sorting is required by stringtie, to just in case...
+    printf "Sorting $bam for stringtie...\n"
+    samtools sort $bam -o sorted-$bam
+    mv -f sorted-$bam $bam
+    
+    printf "Indexing $bam...\n"
     if [ ! -e $bam.bai ]; then
 	samtools index $bam
     fi

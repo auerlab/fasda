@@ -83,11 +83,12 @@ for condition in WT SNF2; do
 	    
 	    # FIXME: Hack for testing, move this to abundance.c
 	    # stringtie is screwy, sorting each gtf output differently
-	    fgrep eff_length $ab > temp.tsv
-	    fgrep -v eff_length $ab | sort >> temp.tsv
-	    mv -f temp.tsv $ab
+	    #fgrep eff_length $ab > temp.tsv
+	    #fgrep -v eff_length $ab | sort >> temp.tsv
+	    #mv -f temp.tsv $ab
 	    
 	    head $ab
+	    wc $ab
     done
 done
 

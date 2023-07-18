@@ -17,6 +17,7 @@
 #include <limits.h>         // PATH_MAX OpenIndiana
 #include <stdbool.h>
 #include <regex.h>          // Pattern match feature types or IDs
+#include <sys/types.h>      // off_t
 #include <xtend/file.h>
 #include <xtend/string.h>   // strlcpy() on Linux
 #include <xtend/dsv.h>
@@ -35,8 +36,9 @@ int     main(int argc,char *argv[])
 		*abundance_files[MAX_FILE_COUNT],
 		*p, *endp,
 		*feature_type = "RNA$|transcript$|gene_segment$",
-		*output_dir = NULL;
-    int         file_count, c, flags;
+		*output_dir = NULL,
+		*gtf_files[MAX_FILE_COUNT];
+    int         file_count, c, flags, status;
     unsigned    read_length;
     abundance_method_t  method = STRINGTIE;
     FILE        *abundance_streams[MAX_FILE_COUNT];
@@ -95,6 +97,15 @@ int     main(int argc,char *argv[])
 		    file_count);
 	    return EX_UNAVAILABLE;
 	}
+
+	gtf_files[file_count] = strdup(sam_files[file_count]);
+	if ( (p = bl_sam_filename_extension(gtf_files[file_count])) == NULL )
+	{
+	    fprintf(stderr, "abundance: Expected sam|bam|cram: %s\n",
+		    abundance_files[file_count]);
+	    return EX_NOINPUT;
+	}
+	strlcpy(p, ".gtf", 5);
 	
 	if ( output_dir != NULL )
 	{
@@ -112,15 +123,12 @@ int     main(int argc,char *argv[])
 	else
 	    strlcpy(abundance_files[file_count], sam_files[file_count], PATH_MAX +1);
 	
-	// Replace .sam/.bam/.cram with -abundance.tsv
-	if ( (p = strstr(abundance_files[file_count], ".bam")) == NULL )
-	    if ( (p = strstr(abundance_files[file_count], ".sam")) == NULL )
-		if ( (p = strstr(abundance_files[file_count], ".cram")) == NULL )
-		{
-		    fprintf(stderr, "abundance: Expected sam|bam|cram: %s\n",
-			    abundance_files[file_count]);
-		    return EX_NOINPUT;
-		}
+	if ( (p = bl_sam_filename_extension(abundance_files[file_count])) == NULL )
+	{
+	    fprintf(stderr, "abundance: Expected sam|bam|cram: %s\n",
+		    abundance_files[file_count]);
+	    return EX_NOINPUT;
+	}
 	
 	*p = '\0';
 	strlcat(p, "-abundance.tsv", PATH_MAX);
@@ -145,8 +153,17 @@ int     main(int argc,char *argv[])
 	    return exact_abundance(feature_file, sam_files, abundance_streams,
 			 file_count, feature_type, flags);
 	case    STRINGTIE:
-	    return stringtie_abundance(feature_file, sam_files, abundance_streams,
+	    /*
+	     *  stringtie GTFs come out sorted differently, and
+	     *  abundance files are sorted the same.  fasda normalize
+	     *  needs them in the same sort order.
+	     */
+	    status = stringtie_abundance(feature_file, sam_files, 
+			 gtf_files, abundance_streams,
 			 file_count, feature_type, read_length, flags);
+	    sort_abundance(abundance_files, file_count);
+	    return status;
+	
 	default:
 	    fprintf(stderr, "Invalid abundance method: %d\n"
 		    "This is a software bug.\n", method);
@@ -176,7 +193,7 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
     bl_alignment_stats_t    alignment_stats = BL_ALIGNMENT_STATS_INIT;
     regex_t     feature_re;
     
-    fputs("Warning: Exact abundance calculation is experimental.\n"
+    fputs("Warning: Exact abundance calculation is incomplete.\n"
 	  "Use the default stringtie abundance calculation for more robust results.\n",
 	  stderr);
     
@@ -344,6 +361,7 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
     {
 	bl_sam_fclose(sam_streams[c]);
 	fclose(buffer_streams[c]);
+	fclose(abundance_streams[c]);
     }
     xt_fclose(feature_stream);
     
@@ -354,6 +372,58 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 	    BL_ALIGNMENT_STATS_OVERLAPPING(&alignment_stats));
     
     return EX_OK;
+}
+
+
+unsigned long   sum_exons(FILE *gtf_stream)
+
+{
+    dsv_line_t  *dsv_line = dsv_line_new();
+    int         delim;
+    off_t       pos;
+    bool        is_exon;
+    char        *gtf_feature_type,
+		*gtf_start_text,
+		*gtf_end_text,
+		*endp;
+    unsigned long   start, end, length;
+    
+    length = 0;
+    do 
+    {
+	pos = ftello(gtf_stream);
+	if ( (delim = dsv_line_read(dsv_line, gtf_stream, "\t")) != EOF )
+	{
+	    gtf_feature_type = dsv_line_get_fields_ae(dsv_line, 2);
+	    fprintf(stderr, "Feature = %s\n", gtf_feature_type);
+	    is_exon = (strcmp(gtf_feature_type, "exon") == 0);
+	    if ( is_exon )
+	    {
+		gtf_start_text = dsv_line_get_fields_ae(dsv_line, 3);
+		gtf_end_text = dsv_line_get_fields_ae(dsv_line, 4);
+		
+		start = strtol(gtf_start_text, &endp, 10);
+		if ( *endp != '\0' )
+		{
+		    fprintf(stderr, "Invalid start locus: %s\n", gtf_start_text);
+		    exit(EX_DATAERR);
+		}
+		end = strtol(gtf_end_text, &endp, 10);
+		if ( *endp != '\0' )
+		{
+		    fprintf(stderr, "Invalid end locus: %s\n", gtf_end_text);
+		    exit(EX_DATAERR);
+		}
+		
+		// FIXME: Compute from exon lengths
+		fprintf(stderr, "Adding exon length %lu\n", end - start + 1);
+		length += end - start + 1;
+	    }
+	}
+    }   while ( (delim != EOF) && is_exon );
+    fseeko(gtf_stream, pos, SEEK_SET);
+    
+    return length;
 }
 
 
@@ -368,6 +438,7 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
  ***************************************************************************/
 
 int     stringtie_abundance(const char *feature_file, char *sam_files[],
+		 char *gtf_files[],
 		 FILE *abundance_streams[], int file_count,
 		 const char *feature_type, unsigned read_length, int flags)
 
@@ -376,16 +447,14 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
     char    cmd[MAX_CMD_LEN + 1],
 	    *gtf_feature_type,
 	    *gtf_attributes,
-	    *gtf_start_text,
-	    *gtf_end_text,
 	    *field,
 	    *p, *p2, *endp,
 	    *transcript_id,
 	    *coverage,
 	    *tpm;
-    unsigned long   start, end, length;
+    unsigned long   length;
     double  cov, est_count;
-    int     c;
+    int     c, status;
     dsv_line_t  *dsv_line = dsv_line_new();
     bool    field_ok;
     
@@ -393,10 +462,23 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
     {
 	
 	// Note: BAMs must be properly sorted (samtools sort default order)
-	snprintf(cmd, MAX_CMD_LEN + 1, "stringtie -e -G %s %s",
-		 feature_file, sam_files[c]);
+	// Write stringtie GTF to a file so we can use seek() while reading
+	// It's also just nice to have the GTFs to look at
+	snprintf(cmd, MAX_CMD_LEN + 1, "stringtie -e -G %s -o %s %s",
+		 feature_file, gtf_files[c], sam_files[c]);
 	fprintf(stderr, "Running %s...\n", cmd);
-	gtf_stream = popen(cmd, "r");
+	if ( (status = system(cmd)) != 0 )
+	{
+	    fprintf(stderr, "abundance: Error: %s\n", cmd);
+	    fprintf(stderr, "status = %d\n", status);
+	    return EX_SOFTWARE;
+	}
+	
+	if ( (gtf_stream = fopen(gtf_files[c], "r")) == NULL )
+	{
+	    fprintf(stderr, "abundance: Could not open %s.\n", gtf_files[c]);
+	    return EX_NOINPUT;
+	}
 	
 	// FIXME: Create GTF class in biolibc?
 	while ( dsv_line_read(dsv_line, gtf_stream, "\t") != EOF )
@@ -405,8 +487,6 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	    if ( *dsv_line_get_fields_ae(dsv_line, 0) != '#' )
 	    {
 		gtf_feature_type = dsv_line_get_fields_ae(dsv_line, 2);
-		gtf_start_text = dsv_line_get_fields_ae(dsv_line, 3);
-		gtf_end_text = dsv_line_get_fields_ae(dsv_line, 4);
 		gtf_attributes = dsv_line_get_fields_ae(dsv_line, 8);
 		if ( strcmp(gtf_feature_type, "transcript") == 0 )
 		{
@@ -415,21 +495,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 		    //printf("%s\n", gtf_end_text);
 		    //printf("Attributes: %s\n", gtf_attributes);
 		    // dsv_line_write(dsv_line, stdout);
-		    
-		    start = strtol(gtf_start_text, &endp, 10);
-		    if ( *endp != '\0' )
-		    {
-			fprintf(stderr, "Invalid start locus: %s\n", gtf_start_text);
-			exit(EX_DATAERR);
-		    }
-		    end = strtol(gtf_end_text, &endp, 10);
-		    if ( *endp != '\0' )
-		    {
-			fprintf(stderr, "Invalid end locus: %s\n", gtf_end_text);
-			exit(EX_DATAERR);
-		    }
-		    // FIXME: Check GTF specs
-		    length = end - start + 1;
+		    length = sum_exons(gtf_stream);
 		    
 		    p = gtf_attributes;
 		    while ( (field = strsep(&p, ";")) != NULL )
@@ -523,6 +589,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	}
 	
 	pclose(gtf_stream);
+	fclose(abundance_streams[c]);
     }
     
     return EX_OK;
@@ -833,6 +900,68 @@ int     fasda_chrom_name_cmp(const char *s1, const char *s2, int flags)
 	return 1;
     else
 	return bl_chrom_name_cmp(s1, s2);
+}
+
+
+/***************************************************************************
+ *  Use auto-c2man to generate a man page from this comment
+ *
+ *  Library:
+ *      #include <>
+ *      -l
+ *
+ *  Description:
+ *  
+ *  Arguments:
+ *
+ *  Returns:
+ *
+ *  Examples:
+ *
+ *  Files:
+ *
+ *  Environment
+ *
+ *  See also:
+ *
+ *  History: 
+ *  Date        Name        Modification
+ *  2023-07-18  Jason Bacon Begin
+ ***************************************************************************/
+
+char    *bl_sam_filename_extension(const char *filename)
+
+{
+    char  *p;
+    
+    // Replace .sam/.bam/.cram with -abundance.tsv
+    if ( (p = strstr(filename, ".bam")) == NULL )
+	if ( (p = strstr(filename, ".sam")) == NULL )
+	    p = strstr(filename, ".cram");
+    
+    return p;
+}
+
+
+void    sort_abundance(char *abundance_files[], int file_count)
+
+{
+    int     c;
+    char    cmd[MAX_CMD_LEN + 1];
+    
+    // FIXME: Check system() return vals
+    for (c = 0; c < file_count; ++c)
+    {
+	snprintf(cmd, MAX_CMD_LEN + 1, "head -n 1 %s > %s.sorted",
+		 abundance_files[c], abundance_files[c]);
+	system(cmd);
+	snprintf(cmd, MAX_CMD_LEN + 1, "fgrep -v eff_length %s | sort >> %s.sorted",
+		 abundance_files[c], abundance_files[c]);
+	system(cmd);
+	snprintf(cmd, MAX_CMD_LEN + 1, "mv -f %s.sorted %s",
+		 abundance_files[c], abundance_files[c]);
+	system(cmd);
+    }
 }
 
 
