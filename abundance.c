@@ -179,7 +179,7 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 {
     char        previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
 		previous_alignment_chrom[MAX_FILE_COUNT][BL_CHROM_MAX_CHARS + 1],
-		*id, *p;
+		*transcript_id, *p;
     bl_gff_t    feature, subfeature;
     bl_sam_t    alignment;
     int         c, cmp, status;
@@ -241,13 +241,13 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
     {
 	// Some IDs contain aliases separated by '|'.  The last is usually
 	// the unique ID.
-	id = BL_GFF_FEATURE_ID(&feature);
-	if ( (id != NULL) && (p = strrchr(id, '|')) != NULL )
-	    id = p + 1;
+	transcript_id = BL_GFF_FEATURE_ID(&feature);
+	if ( (transcript_id != NULL) && (p = strrchr(transcript_id, '|')) != NULL )
+	    transcript_id = p + 1;
 
 	if ( false ) // Debug )
 	    fprintf(stderr, "%s %s %s\n",
-		    id, BL_GFF_TYPE(&feature), feature_type);
+		    transcript_id, BL_GFF_TYPE(&feature), feature_type);
 	// if ( strcmp(BL_GFF_TYPE(&feature), feature_type) == 0 )
 	if ( regexec(&feature_re, BL_GFF_TYPE(&feature), 0, NULL, 0) == 0 )
 	{
@@ -270,7 +270,7 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 	    alternate_exons = false;
 	    
 	    if ( Debug )
-		fprintf(stderr, "Finding exons of %s...\n", id);
+		fprintf(stderr, "Finding exons of %s...\n", transcript_id);
 	    while ( ((status = bl_gff_read(&subfeature, feature_stream, GFF_MASK))
 			== BL_READ_OK)
 		    && (strcmp(BL_GFF_TYPE(&subfeature), "###") != 0)
@@ -395,7 +395,7 @@ unsigned long   sum_exons(FILE *gtf_stream)
 	if ( (delim = dsv_line_read(dsv_line, gtf_stream, "\t")) != EOF )
 	{
 	    gtf_feature_type = dsv_line_get_fields_ae(dsv_line, 2);
-	    fprintf(stderr, "Feature = %s\n", gtf_feature_type);
+	    // fprintf(stderr, "Feature = %s\n", gtf_feature_type);
 	    is_exon = (strcmp(gtf_feature_type, "exon") == 0);
 	    if ( is_exon )
 	    {
@@ -415,8 +415,7 @@ unsigned long   sum_exons(FILE *gtf_stream)
 		    exit(EX_DATAERR);
 		}
 		
-		// FIXME: Compute from exon lengths
-		fprintf(stderr, "Adding exon length %lu\n", end - start + 1);
+		// fprintf(stderr, "Adding exon length %lu\n", end - start + 1);
 		length += end - start + 1;
 	    }
 	}
@@ -490,7 +489,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 		gtf_attributes = dsv_line_get_fields_ae(dsv_line, 8);
 		if ( strcmp(gtf_feature_type, "transcript") == 0 )
 		{
-		    //printf("Feature type: %s\n", gtf_feature_type);
+		    // fprintf(stderr, "Feature type: %s\n", gtf_feature_type);
 		    //printf("%s\n", gtf_start_text);
 		    //printf("%s\n", gtf_end_text);
 		    //printf("Attributes: %s\n", gtf_attributes);
@@ -507,12 +506,20 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 			// Better yet, implement a GTF class in biolibc
 			if ( memcmp(field, " transcript_id ", 15) == 0 )
 			{
-			    p2 = field + 15;
-			    if ( *p2 == '"' )
+			    transcript_id = field + 15;
+			    
+			    if ( *transcript_id == '"' )
 			    {
-				transcript_id = ++p2;
+				++transcript_id;
 				if ( memcmp(transcript_id, "transcript:", 11) == 0 )
 				    transcript_id += 11;
+
+				// Some IDs contain aliases separated by '|'.
+				// The last is usually the unique ID.
+				if ( (p2 = strrchr(transcript_id, '|')) != NULL )
+				    transcript_id = p2 + 1;
+				// fprintf(stderr, "Clipped alias: %s\n", transcript_id);
+			    
 				if ( (p2 = strchr(transcript_id, '"')) != NULL )
 				    *p2 = '\0';
 				field_ok = true;
@@ -520,7 +527,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 			    
 			    if ( ! field_ok )
 			    {
-				fprintf(stderr, "Malformed transcript id field: %s.  Expected '\"'.\n",
+				fprintf(stderr, "Malformed transcript_id field: %s.  Expected '\"'.\n",
 					field);
 				exit(EX_DATAERR);
 			    }
