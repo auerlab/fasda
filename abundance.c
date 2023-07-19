@@ -90,22 +90,25 @@ int     main(int argc,char *argv[])
 	 *  Open abundance output file for this input
 	 */
 	
+	// FIXME: Compute actual length from removing extension and
+	// adding "-abundance.tsv".
 	abundance_files[file_count] = malloc(PATH_MAX + 1);
 	if ( abundance_files[file_count] == NULL )
 	{
-	    fprintf(stderr, "abundance: Could not strdup() abudance_files[%d]\n",
+	    fprintf(stderr, "abundance: Could not malloc() abundance_files[%d]\n",
 		    file_count);
 	    return EX_UNAVAILABLE;
 	}
 
+	// We only need GTFs for stringtie, but build the filenames
+	// here along with abundance.tsv files since the process is the same
 	gtf_files[file_count] = strdup(sam_files[file_count]);
-	if ( (p = bl_sam_filename_extension(gtf_files[file_count])) == NULL )
+	if ( gtf_files[file_count] == NULL )
 	{
-	    fprintf(stderr, "abundance: Expected sam|bam|cram: %s\n",
-		    abundance_files[file_count]);
-	    return EX_NOINPUT;
+	    fprintf(stderr, "abundance: Could not strdup() gtf_files[%d]\n",
+		    file_count);
+	    return EX_UNAVAILABLE;
 	}
-	strlcpy(p, ".gtf", 5);
 	
 	if ( output_dir != NULL )
 	{
@@ -119,9 +122,14 @@ int     main(int argc,char *argv[])
 	    
 	    snprintf(abundance_files[file_count], PATH_MAX + 1, "%s/%s",
 		    output_dir, p);
+	    snprintf(gtf_files[file_count], PATH_MAX + 1, "%s/%s",
+		    output_dir, p);
 	}
 	else
-	    strlcpy(abundance_files[file_count], sam_files[file_count], PATH_MAX +1);
+	{
+	    strlcpy(abundance_files[file_count], sam_files[file_count], PATH_MAX + 1);
+	    strlcpy(gtf_files[file_count], sam_files[file_count], strlen(gtf_files[file_count]) + 1);
+	}
 	
 	if ( (p = bl_sam_filename_extension(abundance_files[file_count])) == NULL )
 	{
@@ -133,7 +141,7 @@ int     main(int argc,char *argv[])
 	*p = '\0';
 	strlcat(p, "-abundance.tsv", PATH_MAX);
 	fprintf(stderr, "Writing abundances to %s\n",
-	    abundance_files[file_count]);
+		abundance_files[file_count]);
 
 	if ( (abundance_streams[file_count] =
 	      fopen(abundance_files[file_count], "w")) == NULL )
@@ -145,6 +153,16 @@ int     main(int argc,char *argv[])
 	fprintf(abundance_streams[file_count],
 		"target_id\tlength\teff_length\test_counts\ttpm\n");
 	fflush(abundance_streams[file_count]);
+	
+	if ( (p = bl_sam_filename_extension(gtf_files[file_count])) == NULL )
+	{
+	    fprintf(stderr, "abundance: Expected sam|bam|cram: %s\n",
+		    abundance_files[file_count]);
+	    return EX_NOINPUT;
+	}
+	strlcpy(p, ".gtf", 5);
+	if ( method == STRINGTIE )
+	    fprintf(stderr, "Writing GTF to %s\n", gtf_files[file_count]);
     }
     
     switch(method)
