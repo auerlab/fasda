@@ -470,7 +470,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	    *coverage,
 	    *tpm;
     unsigned long   length;
-    double  cov, est_count;
+    double  eff_length, cov, est_count;
     int     c, status;
     dsv_line_t  *dsv_line = dsv_line_new();
     bool    field_ok;
@@ -605,9 +605,11 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 			exit(EX_DATAERR);
 		    }
 		    est_count = (double)cov * length / read_length;
+		    // FIXME: Explore how kallisto computes this
+		    eff_length = length;
 		    fprintf(abundance_streams[c],
 			    "%s\t%lu\t%0.1f\t%0.1f\t%s\n",
-			    transcript_id, length, 0.0, est_count, tpm);
+			    transcript_id, length, eff_length, est_count, tpm);
 		}
 	    }
 	    dsv_line_free(dsv_line);
@@ -908,7 +910,8 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
     
     // FIXME: http://robpatro.com/blog/?p=235
     // https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/
-    eff_length = 0.0;
+    // Explore how kallisto computes eff_length
+    eff_length = length;
     tpm = 0.0;
     
     fprintf(abundance_stream, "%s\t%" PRId64 "\t%0.1f\t%0.1f\t%0.2f\n",
