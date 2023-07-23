@@ -6,3 +6,7 @@ Docs: Never make a decision based solely on the p-value and/or fold-change
 
 Report stats on counts, including mean and maximum deviation as % of mean
 to help guide pval-sim parameters
+
+Proper boostrap analysis to show variance in near-exact P-values used
+for sample counts 5 to 12.  Low priority, since most studies have
+either 3 samples, or a high number so that Mann-Whitney is used instead.
