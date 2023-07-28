@@ -151,7 +151,7 @@ int     main(int argc,char *argv[])
 	    return EX_CANTCREAT;
 	}
 	fprintf(abundance_streams[file_count],
-		"target_id\tlength\teff_length\test_counts\ttpm\n");
+		"target_id\tlength\teff_length\test_counts\ttpm\tfpkm\n");
 	fflush(abundance_streams[file_count]);
 	
 	if ( (p = bl_sam_filename_extension(gtf_files[file_count])) == NULL )
@@ -468,7 +468,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	    *p, *p2, *endp,
 	    *transcript_id,
 	    *coverage,
-	    *tpm;
+	    *tpm, *fpkm;
     unsigned long   length;
     double  eff_length, cov, est_count;
     int     c, status;
@@ -592,6 +592,26 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 			    
 			    // printf("TPM = %s\n", tpm);
 			}
+			else if ( memcmp(field, " FPKM ", 6) == 0 )
+			{
+			    p2 = field + 6;
+			    if ( *p2 == '"' )
+			    {
+				fpkm = ++p2;
+				if ( (p2 = strchr(fpkm, '"')) != NULL )
+				    *p2 = '\0';
+				field_ok = true;
+			    }
+			    
+			    if ( ! field_ok )
+			    {
+				fprintf(stderr, "Malformed FPKM field: %s.  Expected '\"'.\n",
+					field);
+				exit(EX_DATAERR);
+			    }
+			    
+			    // printf("TPM = %s\n", tpm);
+			}
 		    }
 
 		    // FIXME: Replace coverage with count
@@ -608,8 +628,8 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 		    // FIXME: Explore how kallisto computes this
 		    eff_length = length;
 		    fprintf(abundance_streams[c],
-			    "%s\t%lu\t%0.1f\t%0.1f\t%s\n",
-			    transcript_id, length, eff_length, est_count, tpm);
+			    "%s\t%lu\t%0.1f\t%0.1f\t%s\t%s\n",
+			    transcript_id, length, eff_length, est_count, tpm, fpkm);
 		}
 	    }
 	    dsv_line_free(dsv_line);
@@ -914,7 +934,8 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
     eff_length = length;
     tpm = 0.0;
     
-    fprintf(abundance_stream, "%s\t%" PRId64 "\t%0.1f\t%0.1f\t%0.2f\n",
+    // FIXME: Add FPKM in last field?
+    fprintf(abundance_stream, "%s\t%" PRId64 "\t%0.1f\t%0.1f\t%0.2f\t*\n",
 	    id, length, eff_length, est_counts, tpm);
     return 0;
 }

@@ -87,7 +87,7 @@ for condition in WT SNF2; do
 	    #fgrep -v eff_length $ab | sort >> temp.tsv
 	    #mv -f temp.tsv $ab
 	    
-	    head $ab
+	    column -t $ab | head
 	    wc $ab
     done
 done
