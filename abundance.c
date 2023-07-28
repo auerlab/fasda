@@ -507,7 +507,9 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 		gtf_attributes = dsv_line_get_fields_ae(dsv_line, 8);
 		if ( strcmp(gtf_feature_type, "transcript") == 0 )
 		{
-		    // fprintf(stderr, "Feature type: %s\n", gtf_feature_type);
+		    //fprintf(stderr, "Seq: %s  Feature type: %s\n",
+		    //        dsv_line_get_fields_ae(dsv_line, 0),
+		    //        gtf_feature_type);
 		    //printf("%s\n", gtf_start_text);
 		    //printf("%s\n", gtf_end_text);
 		    //printf("Attributes: %s\n", gtf_attributes);
@@ -635,7 +637,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	    dsv_line_free(dsv_line);
 	}
 	
-	pclose(gtf_stream);
+	fclose(gtf_stream);
 	fclose(abundance_streams[c]);
     }
     
