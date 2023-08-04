@@ -5,9 +5,9 @@
 #define MAX_SEQ_LEN         1024
 #define MAX_GTF_LINE_LEN    8192
 
-#define GFF_MASK        BL_GFF_FIELD_SEQID|BL_GFF_FIELD_TYPE|\
-			BL_GFF_FIELD_START|BL_GFF_FIELD_END|\
-			BL_GFF_FIELD_ATTRIBUTES
+#define GFF3_MASK        BL_GFF3_FIELD_SEQID|BL_GFF3_FIELD_TYPE|\
+			BL_GFF3_FIELD_START|BL_GFF3_FIELD_END|\
+			BL_GFF3_FIELD_ATTRIBUTES
 #define SAM_MASK        BL_SAM_FIELD_RNAME|BL_SAM_FIELD_POS
 // -@ 2 does not help, at least with BAM files.  CRAM files are
 // more expensive to decode, so it may help there.

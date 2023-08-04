@@ -21,7 +21,7 @@
 #include <xtend/file.h>
 #include <xtend/string.h>   // strlcpy() on Linux
 #include <xtend/dsv.h>
-#include <biolibc/gff.h>
+#include <biolibc/gff3.h>
 #include <biolibc/sam.h>
 #include <biolibc/biostring.h>
 #include "abundance.h"
@@ -200,7 +200,7 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
     char        previous_feature_chrom[BL_CHROM_MAX_CHARS + 1],
 		previous_alignment_chrom[MAX_FILE_COUNT][BL_CHROM_MAX_CHARS + 1],
 		*transcript_id, *p;
-    bl_gff_t    feature, subfeature;
+    bl_gff3_t    feature, subfeature;
     bl_sam_t    alignment;
     int         c, cmp, status;
     int64_t     length, previous_start;
@@ -237,10 +237,10 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 	bl_sam_skip_header(sam_streams[c]);
     }
     
-    bl_gff_skip_header(feature_stream);
+    bl_gff3_skip_header(feature_stream);
     
-    bl_gff_init(&feature);
-    bl_gff_init(&subfeature);
+    bl_gff3_init(&feature);
+    bl_gff3_init(&subfeature);
     bl_sam_init(&alignment);
 
     regcomp(&feature_re, feature_type, REG_EXTENDED);
@@ -257,30 +257,30 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
     }
     
     features_processed = 0;
-    while ( bl_gff_read(&feature, feature_stream, GFF_MASK) == BL_READ_OK )
+    while ( bl_gff3_read(&feature, feature_stream, GFF3_MASK) == BL_READ_OK )
     {
 	// Some IDs contain aliases separated by '|'.  The last is usually
 	// the unique ID.
-	transcript_id = BL_GFF_FEATURE_ID(&feature);
+	transcript_id = BL_GFF3_FEATURE_ID(&feature);
 	if ( (transcript_id != NULL) && (p = strrchr(transcript_id, '|')) != NULL )
 	    transcript_id = p + 1;
 
 	if ( false ) // Debug )
 	    fprintf(stderr, "%s %s %s\n",
-		    transcript_id, BL_GFF_TYPE(&feature), feature_type);
-	// if ( strcmp(BL_GFF_TYPE(&feature), feature_type) == 0 )
-	if ( regexec(&feature_re, BL_GFF_TYPE(&feature), 0, NULL, 0) == 0 )
+		    transcript_id, BL_GFF3_TYPE(&feature), feature_type);
+	// if ( strcmp(BL_GFF3_TYPE(&feature), feature_type) == 0 )
+	if ( regexec(&feature_re, BL_GFF3_TYPE(&feature), 0, NULL, 0) == 0 )
 	{
 	    // Verify that features are properly sorted
-	    cmp = fasda_chrom_name_cmp(BL_GFF_SEQID(&feature),
+	    cmp = fasda_chrom_name_cmp(BL_GFF3_SEQID(&feature),
 				    previous_feature_chrom, flags);
 	    if ( cmp > 0 )
-		strlcpy(previous_feature_chrom, BL_GFF_SEQID(&feature),
+		strlcpy(previous_feature_chrom, BL_GFF3_SEQID(&feature),
 			BL_CHROM_MAX_CHARS + 1);
 	    else if ( cmp < 0 )
 	    {
 		fprintf(stderr, "fasda: Error: GFF3 chromosomes out of order: %s %s\n",
-			previous_feature_chrom, BL_GFF_SEQID(&feature));
+			previous_feature_chrom, BL_GFF3_SEQID(&feature));
 		return EX_DATAERR;
 	    }
 
@@ -291,10 +291,10 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 	    
 	    if ( Debug )
 		fprintf(stderr, "Finding exons of %s...\n", transcript_id);
-	    while ( ((status = bl_gff_read(&subfeature, feature_stream, GFF_MASK))
+	    while ( ((status = bl_gff3_read(&subfeature, feature_stream, GFF3_MASK))
 			== BL_READ_OK)
-		    && (strcmp(BL_GFF_TYPE(&subfeature), "###") != 0)
-		    && (regexec(&feature_re, BL_GFF_TYPE(&subfeature),
+		    && (strcmp(BL_GFF3_TYPE(&subfeature), "###") != 0)
+		    && (regexec(&feature_re, BL_GFF3_TYPE(&subfeature),
 			0, NULL, 0) != 0) )
 	    {
 		// Stop counting exons as soon as one has a lower start
@@ -302,20 +302,20 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 		// alternate splicing data.  Lengths computed this way match
 		// kallisto's abundance.tsv.
 		if ( ! alternate_exons && 
-		     (strcmp(BL_GFF_TYPE(&subfeature), "exon") == 0) )
+		     (strcmp(BL_GFF3_TYPE(&subfeature), "exon") == 0) )
 		{
 		    //fprintf(stderr, "%ld %ld\n",
-		    //        previous_start, BL_GFF_START(&subfeature));
-		    if ( BL_GFF_START(&subfeature) > previous_start )
+		    //        previous_start, BL_GFF3_START(&subfeature));
+		    if ( BL_GFF3_START(&subfeature) > previous_start )
 		    {
 			if ( Debug )
 			    fprintf(stderr, "Adding exon %" PRId64 " %" PRId64 " ",
-				    BL_GFF_START(&subfeature), BL_GFF_END(&subfeature));
-			length += BL_GFF_END(&subfeature) -
-			    BL_GFF_START(&subfeature) + 1;
+				    BL_GFF3_START(&subfeature), BL_GFF3_END(&subfeature));
+			length += BL_GFF3_END(&subfeature) -
+			    BL_GFF3_START(&subfeature) + 1;
 			if ( Debug )
 			    fprintf(stderr, "length = %" PRId64 "\n", length);
-			previous_start = BL_GFF_START(&subfeature);
+			previous_start = BL_GFF3_START(&subfeature);
 		    }
 		    else
 			alternate_exons = true;
@@ -325,19 +325,19 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 	    if ( Debug )
 	    {
 		fprintf(stderr, "Found %s  length = %" PRId64 " status = %d\n",
-			BL_GFF_TYPE(&feature), length, status);
+			BL_GFF3_TYPE(&feature), length, status);
 	    }
 	    
 	    // Last feature read was not a subfeature, so rewind to
 	    // it so outer loop reads it again as a primary feature
-	    // FIXME: Maybe don't use BL_GFF_FILE_POS()
-	    if ( strcmp(BL_GFF_TYPE(&subfeature), "###") != 0 )
+	    // FIXME: Maybe don't use BL_GFF3_FILE_POS()
+	    if ( strcmp(BL_GFF3_TYPE(&subfeature), "###") != 0 )
 	    {
 		if ( Debug )
 		    fprintf(stderr, "Rewinding to %zu (%s)...\n",
-			    BL_GFF_FILE_POS(&subfeature),
-			    BL_GFF_TYPE(&subfeature));
-		fseeko(feature_stream, BL_GFF_FILE_POS(&subfeature), SEEK_SET);
+			    BL_GFF3_FILE_POS(&subfeature),
+			    BL_GFF3_TYPE(&subfeature));
+		fseeko(feature_stream, BL_GFF3_FILE_POS(&subfeature), SEEK_SET);
 	    }
 	    
 	    for (c = 0; c < file_count; ++c)
@@ -346,11 +346,11 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 		 *  Find first overlapping read for this gene.
 		 */
 
-		if ( (bl_gff_find_overlapping_alignment(&feature,
+		if ( (bl_gff3_find_overlapping_alignment(&feature,
 			sam_streams[c], buffer_streams[c],
 			previous_alignment_chrom[c],
 			&alignment, &alignment_stats, flags) == BL_READ_OK) &&
-		     (bl_sam_gff_cmp(&alignment, &feature) == 0) )
+		     (bl_sam_gff3_cmp(&alignment, &feature) == 0) )
 		{
 		    /*
 		     *  Now get counts of all reads overlapping the gene.
@@ -371,7 +371,7 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 	    if ( isatty(fileno(stdout)) && (features_processed % 100 == 0) )
 	    {
 		printf("Chrom: %3s  Features processed: %lu\r",
-			BL_GFF_SEQID(&feature), features_processed);
+			BL_GFF3_SEQID(&feature), features_processed);
 		fflush(stdout);
 	    }
 	}
@@ -685,7 +685,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
  *  2022-04-06  Jason Bacon Begin
  ***************************************************************************/
 
-int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
+int     bl_gff3_find_overlapping_alignment(bl_gff3_t *feature,
 	    FILE *sam_stream, FILE *buffer_stream,
 	    char *previous_alignment_chrom, bl_sam_t *alignment,
 	    bl_alignment_stats_t *alignment_stats, int flags)
@@ -696,7 +696,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
     // First search alignments buffered from previous gene
     // fprintf(stderr, "Checking buffered alignments...\n");
     while ( ((status = bl_sam_read(alignment, buffer_stream, SAM_MASK)) == BL_READ_OK) &&
-	    (bl_sam_gff_cmp(alignment, feature) < 0) )
+	    (bl_sam_gff3_cmp(alignment, feature) < 0) )
     {
 	// fprintf(stderr, "buffered: %s %lu\n", BL_SAM_RNAME(alignment), BL_SAM_POS(alignment));
 	// Verify that alignments are properly sorted
@@ -723,7 +723,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
 	ftruncate(fileno(buffer_stream), 0);
 	
 	while ( ((status = bl_sam_read(alignment, sam_stream, SAM_MASK)) == BL_READ_OK) &&
-		(bl_sam_gff_cmp(alignment, feature) < 0) )
+		(bl_sam_gff3_cmp(alignment, feature) < 0) )
 	{
 	    ++BL_ALIGNMENT_STATS_TOTAL(alignment_stats);
 	    
@@ -775,7 +775,7 @@ int     bl_gff_find_overlapping_alignment(bl_gff_t *feature,
  *  2022-04-08  Jason Bacon Begin
  ***************************************************************************/
 
-double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
+double  count_coverage(bl_gff3_t *feature, bl_sam_t *alignment,
 		       FILE *sam_stream, FILE *buffer_stream,
 		       char *previous_alignment_chrom,
 		       bl_alignment_stats_t *alignment_stats, int flags)
@@ -829,7 +829,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	// sum_length += fragment_length;
     }   while ( ((read_status = bl_sam_read(alignment, buffer_stream, SAM_MASK))
 			    == BL_READ_OK)
-		&& (bl_sam_gff_cmp(alignment, feature) == 0) );
+		&& (bl_sam_gff3_cmp(alignment, feature) == 0) );
     
     // If we ran out of buffered alignments, discard the old ones and
     // continue in primary SAM stream
@@ -843,7 +843,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
 	buffer_pos = 0;     // rewind() obsoletes ftell() above
 	
 	while ( (bl_sam_read(alignment, sam_stream, SAM_MASK) == BL_READ_OK)
-		&& (bl_sam_gff_cmp(alignment, feature) == 0) )
+		&& (bl_sam_gff3_cmp(alignment, feature) == 0) )
 	{
 	    ++BL_ALIGNMENT_STATS_TOTAL(alignment_stats);
 	    ++BL_ALIGNMENT_STATS_OVERLAPPING(alignment_stats);
@@ -921,7 +921,7 @@ double  count_coverage(bl_gff_t *feature, bl_sam_t *alignment,
  *  2022-05-04  Jason Bacon Begin
  ***************************************************************************/
 
-int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
+int     print_abundance(FILE *abundance_stream, bl_gff3_t *feature,
 			int64_t length, double est_counts, int flags)
 
 {
@@ -929,9 +929,9 @@ int     print_abundance(FILE *abundance_stream, bl_gff_t *feature,
     double          eff_length, tpm;
 
     if ( flags & FASDA_FLAG_SHOW_GENE )
-	id = BL_GFF_FEATURE_NAME(feature);
+	id = BL_GFF3_FEATURE_NAME(feature);
     else
-	id = BL_GFF_FEATURE_ID(feature);
+	id = BL_GFF3_FEATURE_ID(feature);
     
     // Drop "gene:" or "transcript:"
     if ( (p = strchr(id, ':')) != NULL )

@@ -8,17 +8,19 @@ alignment-stats-mutators.o: alignment-stats-mutators.c alignment-stats.h \
   alignment-stats-mutators.h
 	${CC} -c ${CFLAGS} alignment-stats-mutators.c
 
-exact-p-val.o: exact-p-val.c exact-p-val.h
+exact-p-val.o: exact-p-val.c exact-p-val.h exact-p-val-protos.h \
+  fc-ge-protos.h
 	${CC} -c ${CFLAGS} exact-p-val.c
 
 fasda.o: fasda.c
 	${CC} -c ${CFLAGS} fasda.c
 
-fc-ge.o: fc-ge.c exact-p-val.h
+fc-ge.o: fc-ge.c exact-p-val.h exact-p-val-protos.h fc-ge-protos.h
 	${CC} -c ${CFLAGS} fc-ge.c
 
 fold-change.o: fold-change.c fold-change.h fold-change-protos.h \
-  exact-p-val.h
+  mann-whitney-protos.h exact-p-val.h exact-p-val-protos.h \
+  fc-ge-protos.h
 	${CC} -c ${CFLAGS} fold-change.c
 
 mann-whitney.o: mann-whitney.c
@@ -27,6 +29,7 @@ mann-whitney.o: mann-whitney.c
 normalize.o: normalize.c normalize.h fasda.h normalize-protos.h
 	${CC} -c ${CFLAGS} normalize.c
 
-pval-sim.o: pval-sim.c exact-p-val.h
+pval-sim.o: pval-sim.c pval-sim.h pval-sim-protos.h mann-whitney-protos.h \
+  exact-p-val.h exact-p-val-protos.h fc-ge-protos.h
 	${CC} -c ${CFLAGS} pval-sim.c
 
