@@ -77,6 +77,8 @@ int     main(int argc,char *argv[])
 	usage(argv);
     
     feature_file = argv[c++];
+    if ( c == argc )
+	usage(argv);
 
     for (file_count = 0; c < argc; ++c, ++file_count)
     {
@@ -483,6 +485,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	// It's also just nice to have the GTFs to look at
 	snprintf(cmd, MAX_CMD_LEN + 1, "stringtie -e -G %s -o %s %s",
 		 feature_file, gtf_files[c], sam_files[c]);
+	
 	fprintf(stderr, "Running %s...\n", cmd);
 	if ( (status = system(cmd)) != 0 )
 	{
@@ -507,9 +510,10 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 		gtf_attributes = dsv_line_get_fields_ae(dsv_line, 8);
 		if ( strcmp(gtf_feature_type, "transcript") == 0 )
 		{
-		    //fprintf(stderr, "Seq: %s  Feature type: %s\n",
-		    //        dsv_line_get_fields_ae(dsv_line, 0),
-		    //        gtf_feature_type);
+		    if ( Debug )
+			fprintf(stderr, "Seq: %s  Feature type: %s\n",
+			    dsv_line_get_fields_ae(dsv_line, 0),
+			    gtf_feature_type);
 		    //printf("%s\n", gtf_start_text);
 		    //printf("%s\n", gtf_end_text);
 		    //printf("Attributes: %s\n", gtf_attributes);
@@ -524,9 +528,15 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 			
 			// FIXME: Factor out attribute extraction function
 			// Better yet, implement a GTF class in biolibc
-			if ( memcmp(field, " transcript_id ", 15) == 0 )
+			// If transcript_id comes after a ;, it will start
+			// with a space
+			if ( (memcmp(field, " transcript_id ", 15) == 0) ||
+			     (memcmp(field, "transcript_id ", 14) == 0) )
 			{
-			    transcript_id = field + 15;
+			    if ( *field == ' ' )
+				transcript_id = field + 15;
+			    else
+				transcript_id = field + 14;
 			    
 			    if ( *transcript_id == '"' )
 			    {
@@ -552,7 +562,8 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 				exit(EX_DATAERR);
 			    }
 			    
-			    // printf("transcript_id = %s\n", transcript_id);
+			    if ( Debug )
+				fprintf(stderr, "transcript_id = %s\n", transcript_id);
 			}
 			else if ( memcmp(field, " cov ", 5) == 0 )
 			{
@@ -629,6 +640,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 		    est_count = (double)cov * length / read_length;
 		    // FIXME: Explore how kallisto computes this
 		    eff_length = length;
+		    //fprintf(stderr, "Outputting %s...\n", transcript_id);
 		    fprintf(abundance_streams[c],
 			    "%s\t%lu\t%0.1f\t%0.1f\t%s\t%s\n",
 			    transcript_id, length, eff_length, est_count, tpm, fpkm);
