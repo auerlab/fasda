@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Run hisat aligner on each RNA sample.
+#       Run hisat2 aligner on each RNA sample.
 #
 #       All necessary tools are assumed to be in PATH.  If this is not
 #       the case, add whatever code is needed here to gain access.
@@ -16,7 +16,7 @@
 ##########################################################################
 
 ##############################################################################
-# Align with hisat, which can handle splice junctions in RNA reads
+# Align with hisat2, which can handle splice junctions in RNA reads
 
 # Document software versions used for publication
 uname -a
@@ -28,25 +28,22 @@ release=$(Common/genome-release.sh)
 genome=$(Reference/genome-filename.sh)
 
 # samtools sort dumps temp files in CWD
-cd Results/09-hisat-align
+cd Results/09-hisat2-align
 
-for sample in ../02-trim/*; do
-    gz1=$(ls $sample)
+for fastq in ../02-trim/*; do
+    gz1=$(ls $fastq)
     gzb=$(basename $gz1)
     bam=${gzb%.*.*}.bam
+    sample=${gzb%.fastq.gz}
+    log=../../Logs/09-hisat2-align/$sample.err
     if [ ! -e $bam ]; then
 	printf "Running hisat2...\n"
-	hisat2 --threads 2 -x ../08-hisat-index/$genome \
-	    -U $gz1 | samtools sort > $bam
+	hisat2 --threads 2 -x ../08-hisat2-index/$genome -U $gz1 \
+	    2> $log | samtools sort > $bam
+	cat $log
     else
 	printf "$bam already exists.\n"
     fi
-    
-    # This doesn't seem to be necessary for modern hisat2 output,
-    # but sorting is required by stringtie, to just in case...
-    printf "Sorting $bam for stringtie...\n"
-    samtools sort $bam -o sorted-$bam
-    mv -f sorted-$bam $bam
     
     printf "Indexing $bam...\n"
     if [ ! -e $bam.bai ]; then

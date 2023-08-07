@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Run fasda normalize and fold-change on hisat abundances
+#       Run fasda normalize and fold-change on hisat2 abundances
 #       
 #   History:
 #   Date        Name        Modification
@@ -47,15 +47,15 @@ if [ ! -e Results/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 ]; then
     Reference/fetch-gff.sh
 fi
 
-cd Results/10-fasda-hisat
+cd Results/10-fasda-hisat2
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
 export PATH
 
-hisat_dir=../09-hisat-align
+hisat2_dir=../09-hisat2-align
 reference_dir=../04-reference
-log_dir=../../Logs/10-fasda-hisat
+log_dir=../../Logs/10-fasda-hisat2
 
 ##########################################################################
 #   3 to 12 replicates, [near-]exact P-values
@@ -75,11 +75,11 @@ fi
 for condition in WT SNF2; do
     for r in $(seq 1 $tr); do
 	file=$condition-$r.bam
-	ab=$hisat_dir/${file%.bam}-abundance.tsv
+	ab=$hisat2_dir/${file%.bam}-abundance.tsv
 	    printf "Computing abundances for $condition replicate $r...\n"
 	    time fasda abundance 50 \
 		$reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
-		$hisat_dir/$file
+		$hisat2_dir/$file
 	    
 	    # FIXME: Hack for testing, move this to abundance.c
 	    # stringtie is screwy, sorting each gtf output differently
@@ -101,7 +101,7 @@ jobs=$threads
 printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
 seq 3 $max_ne | xargs -n 1 -P $jobs \
-    ../../fasda-hisat-ne.sh $hisat_dir $log_dir
+    ../../fasda-hisat2-ne.sh $hisat2_dir $log_dir
 
 ##########################################################################
 #   8 to all replicates, Mann-Whitney P-values
@@ -116,7 +116,7 @@ if [ $tr -ge 8 ]; then
 		printf "Normalizing $condition: $replicates replicates\n"
 		files=""
 		for r in $(seq 1 $replicates); do
-		    files="$files $hisat_dir/$condition-$r-abundance.tsv"
+		    files="$files $hisat2_dir/$condition-$r-abundance.tsv"
 		done
 		time fasda normalize --output \
 		    $condition-all-norm-$r0.tsv $files \
@@ -150,7 +150,7 @@ if [ -n "$(ls WT-SNF2-FC-MW-*.txt)" ]; then
     done | more
 fi
 
-printf "\nHisat:\n"
+printf "\nHisat2:\n"
 for feature in YPL071C_mRNA YLL050C_mRNA YMR172W_mRNA YOR185C_mRNA; do
     grep -h $feature WT-SNF2-FC-NE-03.txt
 done

@@ -90,20 +90,20 @@ fi
 header "Running FASDA differential analysis on kallisto abundances..."
 time ./07-fasda-kallisto.sh $max_replicates
 
-if [ ! -e Results/08-hisat-index/all-but-xy.index ]; then
+if [ ! -e Results/08-hisat2-index/all-but-xy.index ]; then
     header "Building hisat2 index..."
-    time ./08-hisat-index.sh
+    time ./08-hisat2-index.sh
 else
-    header "08-hisat-index.sh already done."
+    header "08-hisat2-index.sh already done."
 fi
 
-quant_count=$(ls -d Results/09-hisat-align/* 2> /dev/null | wc -l)
+quant_count=$(ls -d Results/09-hisat2-align/* 2> /dev/null | wc -l)
 if [ $quant_count -ne $raw_count ]; then
     header "Running hisat2 genome alignment..."
-    time ./09-hisat-align.sh
+    time ./09-hisat2-align.sh
 else
-    header "09-hisat-align.sh already done."
+    header "09-hisat2-align.sh already done."
 fi
 
 header "Running FASDA differential analysis on hisat2 alignments..."
-time ./10-fasda-hisat.sh $max_replicates
+time ./10-fasda-hisat2.sh $max_replicates

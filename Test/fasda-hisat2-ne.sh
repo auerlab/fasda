@@ -11,7 +11,7 @@
 
 usage()
 {
-    printf "Usage: $0 hisat-dir replicates\n"
+    printf "Usage: $0 hisat2-dir replicates\n"
     exit 1
 }
 
@@ -23,7 +23,7 @@ usage()
 if [ $# != 3 ]; then
     usage
 fi
-hisat_dir=$1
+hisat2_dir=$1
 log_dir=$2
 replicates=$3
 
@@ -33,7 +33,7 @@ for condition in WT SNF2; do
 	printf "Normalizing $condition: $replicates replicates\n"
 	files=""
 	for r in $(seq 1 $replicates); do
-	    files="$files $hisat_dir/$condition-$r-abundance.tsv"
+	    files="$files $hisat2_dir/$condition-$r-abundance.tsv"
 	done
 	printf "Noramlizing $files...\n"
 	time fasda normalize --output $condition-all-norm-$r0.tsv $files \

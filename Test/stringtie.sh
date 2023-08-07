@@ -16,7 +16,7 @@ pause()
 
 for condition in WT SNF2; do
     kallisto=Results/06-kallisto-quant/$condition-1/abundance.tsv
-    bam=Results/09-hisat-align/$condition-1.bam
+    bam=Results/09-hisat2-align/$condition-1.bam
     bam_sorted=${bam%.bam}-sorted.bam
     
     # Make sure hisat2 output is properly sorted
@@ -42,7 +42,7 @@ pause
 
 # Kallisto abundances and stringtie coverages are very different, but
 # produce the same fold-changes
-reads=$(samtools view Results/09-hisat-align/SNF2-1.bam | wc -l)
+reads=$(samtools view Results/09-hisat2-align/SNF2-1.bam | wc -l)
 for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
     echo $transcript
     
@@ -130,10 +130,10 @@ for transcript in $(cat $kallisto | fgrep -v target_id | cut -f 1); do
 	$kwt $ksnf2 $kft $wt_tpm
 
     fwt=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
-	Results/09-hisat-align/WT-1-abundance.tsv)
+	Results/09-hisat2-align/WT-1-abundance.tsv)
     
     fsnf2=$(awk -v t=$transcript '$1 ~ t { print $4 }' \
-	Results/09-hisat-align/SNF2-1-abundance.tsv)
+	Results/09-hisat2-align/SNF2-1-abundance.tsv)
 
     printf "FASDA      %10.2f %10.2f\n\n" $fwt $fsnf2
 done 2>&1 | more
