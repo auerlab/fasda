@@ -39,15 +39,15 @@ if [ $# != 1 ]; then
 fi
 tr=$1
 
-uname -a
-fasda --version
-pwd
-
 cd Results/07-fasda-kallisto
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
 export PATH
+
+uname -a
+fasda --version
+pwd
 
 kallisto_dir=../06-kallisto-quant
 log_dir=../../Logs/07-fasda-kallisto
@@ -108,14 +108,17 @@ if [ $tr -ge 8 ]; then
     done
 fi
 
-head WT-SNF2-FC-NE-*.txt WT-SNF2-FC-MW-*.txt | more
+if [ $tr -ge 8 ]; then
+    head WT-SNF2-FC-NE-*.txt WT-SNF2-FC-MW-*.txt | more
+fi
+
 printf "\n%-25s %10s %10s\n" "File" "Features" "P < 0.05"
 for file in WT-SNF2-FC-NE-*.txt; do
     printf "%-25s %10s %10s\n" $file: \
 	$(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)
 done | more
 
-if [ -n "$(ls WT-SNF2-FC-MW-*.txt)" ]; then
+if [ $tr -ge 8 ] && [ -n "$(ls WT-SNF2-FC-MW-*.txt)" ]; then
     for file in WT-SNF2-FC-MW-*.txt; do
 	printf "%-25s %10s %10s\n" $file: \
 	    $(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)
