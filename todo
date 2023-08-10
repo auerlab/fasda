@@ -1,4 +1,8 @@
 
+Compute effective lengths
+    http://robpatro.com/blog/?p=235
+	Also discusses TPM
+
 Mann-Whitney for odd numbers of replicates coming out slightly higher
 than wilcox.test()
 
