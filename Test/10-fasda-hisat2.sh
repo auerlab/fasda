@@ -39,10 +39,6 @@ if [ $# != 1 ]; then
 fi
 tr=$1
 
-uname -a
-fasda --version
-pwd
-
 if [ ! -e Results/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 ]; then
     Reference/fetch-gff.sh
 fi
@@ -52,6 +48,10 @@ cd Results/10-fasda-hisat2
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
 export PATH
+
+uname -a
+fasda --version
+pwd
 
 hisat2_dir=../09-hisat2-align
 reference_dir=../04-reference
