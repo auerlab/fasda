@@ -22,6 +22,7 @@
 uname -a
 STAR --version
 pwd
+which STAR
 
 build=$(Common/genome-build.sh)
 release=$(Common/genome-release.sh)
