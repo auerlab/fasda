@@ -76,19 +76,13 @@ for condition in WT SNF2; do
     for r in $(seq 1 $tr); do
 	file=$condition-$r.bam
 	ab=$hisat2_dir/${file%.bam}-abundance.tsv
-	    printf "Computing abundances for $condition replicate $r...\n"
-	    time fasda abundance 50 \
-		$reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
-		$hisat2_dir/$file
-	    
-	    # FIXME: Hack for testing, move this to abundance.c
-	    # stringtie is screwy, sorting each gtf output differently
-	    #fgrep eff_length $ab > temp.tsv
-	    #fgrep -v eff_length $ab | sort >> temp.tsv
-	    #mv -f temp.tsv $ab
-	    
-	    column -t $ab | head
-	    wc $ab
+	printf "Computing abundances for $condition replicate $r...\n"
+	time fasda abundance 50 \
+	    $reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
+	    $hisat2_dir/$file
+	
+	column -t $ab | head
+	wc $ab
     done
 done
 

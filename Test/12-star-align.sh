@@ -40,9 +40,9 @@ for fastq in $(ls ../02-trim/*.fastq.gz); do
     log=../../../Logs/12-star-align/$sample.err
     bam=Aligned.sortedByCoord.out.bam
     if [ ! -e bam ]; then
-	printf "Running star...\n"
+	printf "===\nSTAR $fastq...\n\n"
 	STAR \
-	    --runThreadN 1 \
+	    --runThreadN 2 \
 	    --genomeDir ../../11-star-index \
 	    --readFilesIn ../$fastq \
 	    --readFilesCommand 'gunzip -c' \
