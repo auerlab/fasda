@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Build hisat2 index for reference genome.
+#       Build star index for reference genome.
 #
 #       All necessary tools are assumed to be in PATH.  If this is not
 #       the case, add whatever code is needed here to gain access.
@@ -12,28 +12,30 @@
 #       
 #   History:
 #   Date        Name        Modification
-#   2021-11-24  Jason Bacon Begin
+#   2023-08-17  Jason Bacon Begin
 ##########################################################################
 
 # Document software versions used for publication
 uname -a
-hisat2 --version
+STAR --version
 samtools --version
 pwd
 
-# Run hisat2-build on a copy in 08-hisat2-index so it will put the .ht2
-# files there
 reference_dir=Results/04-reference
-hisat2_dir=Results/08-hisat2-index
+star_dir=Results/11-star-index
 
-genome=$(Reference/genome-filename.sh)
-ln -f $reference_dir/$genome $hisat2_dir
-ln -f $reference_dir/$genome.fai $hisat2_dir
-genome=$hisat2_dir/$genome
+genome=../04-reference/$(Reference/genome-filename.sh)
 printf "Using reference $genome...\n"
+gtf=../04-reference/$(Reference/gtf-filename.sh)
+printf "Using GTF $gtf...\n"
 
-if [ ! -e $genome.8.ht2 ]; then
-    printf "Building $genome.*.ht2...\n"
-    hisat2-build $genome $genome
-fi
-ls $hisat2_dir
+printf "Building STAR index...\n"
+cd Results/11-star-index
+STAR \
+    --runMode genomeGenerate \
+    --genomeSAindexNbases 10 \
+    --genomeDir . \
+    --genomeFastaFiles $genome \
+    --sjdbGTFfile $gtf \
+    --sjdbOverhang 49       # Read length - 1
+ls
