@@ -62,10 +62,11 @@ for condition in WT SNF2; do
 	file=$condition-$r/Aligned.sortedByCoord.out.bam
 	ab=$star_dir/${file%.bam}-abundance.tsv
 	printf "Computing abundances for $condition replicate $r...\n"
+	set -x
 	time fasda abundance 50 \
 	    $reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
 	    $star_dir/$file
-	
+	set +x
 	column -t $ab | head
 	wc $ab
     done
