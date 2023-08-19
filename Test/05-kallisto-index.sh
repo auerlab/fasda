@@ -21,16 +21,16 @@ kallisto version
 samtools --version
 pwd
 
-transcriptome=Results/04-reference/$(Reference/transcriptome-filename.sh)
+transcriptome=$(Reference/transcriptome-filename.sh)
 printf "Using reference $transcriptome...\n"
-index=${transcriptome%.transcriptome.fa}.index
 
 # Needed for kallisto --genomebam
 if [ ! -e $transcriptome.fai ]; then
-    printf "Building $transcriptome...\n"
-    samtools faidx $transcriptome
+    printf "Building $transcriptome.fai...\n"
+    samtools faidx Results/04-reference/$transcriptome
 fi
 
 printf "Building kallisto index...\n"
 set -x
-kallisto index --index=Results/05-kallisto-index/$index $transcriptome
+kallisto index --index=Results/05-kallisto-index/transcriptome.index \
+    Results/04-reference/$transcriptome
