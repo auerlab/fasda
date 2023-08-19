@@ -1,0 +1,1 @@
+../Test/05-kallisto-index.sh

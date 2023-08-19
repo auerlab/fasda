@@ -1,0 +1,15 @@
+Query: mouse 20:200[number of samples]
+
+See fasda/Mouse-test for analysis scripts
+
+Summary
+Species Tissue      Repl    Cond
+
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE240710
+Mouse   Heart       6       8 (4 lines + littermates)
+
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE240573
+Mouse   Hippocampus 6-7     6 (vHip, PFC * succept, resilience, control)
+
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE230745
+Mouse   Kidney      5       6
