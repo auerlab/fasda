@@ -13,7 +13,7 @@
 
 usage()
 {
-    printf "Usage: $0\n"
+    printf "Usage: $0 PRJ\n"
     exit 1
 }
 
@@ -22,9 +22,10 @@ usage()
 #   Main
 ##########################################################################
 
-if [ $# != 0 ]; then
+if [ $# != 1 ]; then
     usage
 fi
+prj=$1
 
 # Document software versions used for publication
 uname -a
@@ -35,15 +36,32 @@ raw=Results/01-fetch/Raw
 raw_renamed=Results/01-fetch/Raw-renamed
 mkdir -p $raw $raw_renamed
 
-for condition in WT CEK; do
-    fgrep ",$condition," SraRunTable.txt | cut -d , -f 1 > $condition.tsv
+case $prj in
+PRJNA1004253)
+    conditions="control susceptible"
+    ;;
+
+PRJNA1004652)
+    conditions="WT CEK"
+    ;;
+
+*)
+    printf "Invalid PRJ: $prj.\n"
+    exit 1
+    ;;
+
+esac
+
+cond_num=1
+for condition in $conditions; do
+    fgrep ",$condition," SraRunTable-$prj.txt | cut -d , -f 1 > $condition.tsv
     printf "$condition:\n"
 
     biorep=1
     for sample in $(awk '{ print $1 }' $condition.tsv); do
 	fq1="${sample}_1.fastq"
 	fq2="${sample}_2.fastq"
-	printf "$sample = $condition-$biorep...\n"
+	printf "$sample = cond$cond_num-rep$biorep...\n"
 	if [ ! -e $raw/$fq1.zst ] || [ ! -e $raw/$fq2.zst ]; then
 	    if [ ! -e $raw/$fq1 ] || [ ! -e $raw/$fq2 ]; then
 		set -x
@@ -60,11 +78,14 @@ for condition in WT CEK; do
 	else
 	    printf "$fq1 and $fq2 already exist.\n"
 	fi
-	(cd $raw_renamed && ln -fs ../Raw/$fq1.zst $condition-$biorep-R1.fq.zst)
-	(cd $raw_renamed && ln -fs ../Raw/$fq2.zst $condition-$biorep-R2.fq.zst)
+	(cd $raw_renamed && ln -fs ../Raw/$fq1.zst cond$cond_num-rep$biorep-R1.fq.zst)
+	(cd $raw_renamed && ln -fs ../Raw/$fq2.zst cond$cond_num-rep$biorep-R2.fq.zst)
+	(cd $raw_renamed && ln -fs cond$cond_num-rep$biorep-R1.fq.zst $condition-rep$biorep-R1.fq.zst)
+	(cd $raw_renamed && ln -fs cond$cond_num-rep$biorep-R2.fq.zst $condition-rep$biorep-R2.fq.zst)
 	biorep=$(($biorep + 1))
     done
     rm -f $condition.tsv
+    cond_num=$(($cond_num + 1))
 done
 ls -l $raw
 ls -l $raw_renamed
