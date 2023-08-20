@@ -21,7 +21,12 @@ kallisto version
 samtools --version
 pwd
 
+# Built from genome and GTF
 transcriptome=$(Reference/transcriptome-filename.sh)
+
+# Ensembl cdna
+# transcriptome=Mus_musculus.GRCm39.cdna.all.fa
+
 printf "Using reference $transcriptome...\n"
 
 # Needed for kallisto --genomebam
