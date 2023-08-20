@@ -5,4 +5,4 @@
 # Using release 100 made little or no difference
 # Maybe due to using CDNA reference which does not include all genes
 # listed in the GTF
-echo 109
+echo 110
