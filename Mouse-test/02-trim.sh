@@ -44,6 +44,6 @@ printf "Hyperthreads = $hardware_threads  Jobs = $jobs\n"
 data_dir=Results/02-trim
 log_dir=Logs/02-trim
 mkdir -p $data_dir $log_dir
-ls Results/01-fetch/Raw-renamed/*.fq.zst \
+ls Results/01-fetch/Raw-renamed/cond*-rep*-R1.fq.zst \
     | xargs -n 1 -P $jobs ./trim1.sh $data_dir $log_dir
 
