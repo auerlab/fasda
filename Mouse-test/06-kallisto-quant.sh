@@ -11,9 +11,6 @@
 #       every program with one environment.)
 ##########################################################################
 
-# Set a default value for testing outside the SLURM environment
-: ${SLURM_ARRAY_TASK_ID:=1}
-
 # Document software versions used for publication
 uname -a
 kallisto version
@@ -25,10 +22,6 @@ gtf=$(Reference/gtf-filename.sh)
 # https://github.com/pachterlab/kallisto/issues/197
 # export HDF5_USE_FILE_LOCKING=FALSE
 
-# 6-merge-bams.sbatch relies on sample N being in Results/09-kallisto-quant/N
-# The sample number comes after -sample in the filename, e.g.
-# chondro-sample4-rep2-time1-R1.fq.xz is sample 4
-
 # getconf NPROCESSORS_ONLN does not work on Alma8, _NPROCESSORS_ONLN does
 # _NPROCESSORS_ONLN does not work on NetBSD9
 # Both forms work on FreeBSD and macOS
@@ -38,26 +31,20 @@ else
     threads=$(getconf NPROCESSORS_ONLN)
 fi
 
-for zst1 in Results/02-trim/*-R1.fq.zst; do
-    echo $zst1
-    # kallisto 0.46.1 can't handle xz and will simply seg fault rather than
-    # issue an error message.  If your trimmed fq files are in xz format,
-    # this will convert to gzip format.
-    # Convert xz to gz rather than raw to reduce NFS load from compute nodes
+for zst1 in Results/02-trim/cond*-rep*-R1.fq.zst; do
+    zst2=${zst1%-R1.fq.zst}-R2.fq.zst
+    echo $zst1 $zst2
+    
+    # kallisto 0.46.1 can't handle zstd and will simply seg fault rather than
+    # issue an error message.
     
     # Kallisto requires an output subdirectory for each sample
     stem=$(basename ${zst1%.fq.zst})
     out_dir=Results/06-kallisto-quant/$stem
     mkdir -p $out_dir
 
-    zst2=${zst1%R1.fq.zst}R1.fq.zst
     base1=$(basename $zst1)
     base2=$(basename $zst2)
-    
-    # Kallisto requires an output subdirectory for each sample
-    stem=$(basename ${zst1%-R1*})
-    out_dir=Results/09-kallisto-quant/$stem
-    mkdir -p $out_dir
     
     # kallisto only supports gzip compression as of 0.48.0, so use FIFOs
     # feed it raw fq
