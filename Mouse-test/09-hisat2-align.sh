@@ -34,7 +34,7 @@ for zst1 in ../02-trim/cond*-rep*-R1.fq.zst; do
     zstb=$(basename $zst1)
     bam=${zstb%-R1.*.*}.bam
     printf "\n===\n\nhisat2: $zst1 $zst2\n"
-    log=../../Logs/09-hisat2-align/$sample.err
+    log=../../Logs/09-hisat2-align/$(basename $sample).err
     if [ ! -e $bam ]; then
 	# Hisat2 doesn't understand zstd and performs seeks on the
 	# fasta input, so it must be a regular file, not a pipe
