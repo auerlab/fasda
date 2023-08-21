@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+awk '$2 > 200 && $7 > 2' Results/10-fasda-hisat2/fc-1-2-3.txt | more
+
