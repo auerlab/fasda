@@ -64,13 +64,17 @@ done
 
 # Compute DE for all 6 replicates
 for cond in 1 2; do
-    printf "Normalizing condition $cond for all replicates...\n"
-    fasda normalize --output \
-	$ab_dir/norm-cond$cond-all.tsv $ab_dir/cond$cond-rep*-abundance.tsv
+    if [ ! -e $ab_dir/norm-cond$cond-all.tsv ]; then
+	printf "Normalizing condition $cond for all replicates...\n"
+	fasda normalize --output \
+	    $ab_dir/norm-cond$cond-all.tsv $ab_dir/cond$cond-rep*-abundance.tsv
+    fi
 done
-printf "Computing fold-changes for all replicates...\n"
-fasda fold-change --output $ab_dir/fc-all.txt \
-    $ab_dir/norm-cond1-all.tsv $ab_dir/norm-cond2-all.tsv
+if [ ! -e $ab_dir/fc-all.txt ]; then
+    printf "Computing fold-changes for all replicates...\n"
+    fasda fold-change --output $ab_dir/fc-all.txt \
+	$ab_dir/norm-cond1-all.tsv $ab_dir/norm-cond2-all.tsv
+fi
 
 cd $ab_dir
 for transcript in $transcripts; do
