@@ -36,6 +36,9 @@ raw=Results/01-fetch/Raw
 raw_renamed=Results/01-fetch/Raw-renamed
 mkdir -p $raw $raw_renamed
 
+# Link raw files to WT-rep or SNF-rep to indicate the biological condition
+# Link raw files to condX-repYY for easy and consistent scripting
+# I usually make cond1 the control (e.g. wild-type) or first time point
 cond_num=1
 for condition in WT SNF2; do
     # Select $replicates replicates
@@ -51,10 +54,12 @@ for condition in WT SNF2; do
     for sample in $(awk '{ print $1 }' $condition.tsv); do
 	fq="$sample.fastq.gz"
 	biorep=$(awk -v sample=$sample '$1 == sample { print $4 }' $condition.tsv)
+	# Use 2 digits for all replicates in filenames for easier viewing
+	biorep=$(printf "%02d" $biorep)
 	if [ ! -e $raw/$fq ]; then
 	    # Use rsync if possible on local test platforms.  May not have
 	    # sra-tools and pulling from coral saves a lot of bandwidth.
-	    printf "Downloading $sample = $condition-$biorep...\n"
+	    printf "Downloading $sample = $condition-$biorep = cond$cond_num-rep$biorep...\n"
 	    fasterq-dump --progress --force --outdir $raw $sample
 	    printf "Compressing...\n"
 	    # Background so next download can start

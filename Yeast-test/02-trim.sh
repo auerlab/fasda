@@ -40,6 +40,7 @@ data_dir=Results/02-trim
 log_dir=Logs/02-trim
 mkdir -p $data_dir $log_dir
 for r in $(seq 1 $replicates); do
-    files="$files $(ls Results/01-fetch/Raw-renamed/cond*-rep$r.fastq.gz)"
+    r2=$(printf "%02d" $r)
+    files="$files $(ls Results/01-fetch/Raw-renamed/cond*-rep$r2.fastq.gz)"
 done
 echo $files | xargs -n 1 -P $jobs ./trim1.sh $data_dir $log_dir

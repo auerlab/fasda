@@ -39,7 +39,8 @@ fi
 
 log_dir=Logs/06-kallisto-quant
 for r in $(seq 1 $replicates); do
-    for file in Results/02-trim/cond*-rep$r.fastq.gz; do
+    r2=$(printf "%02d" $r)
+    for file in Results/02-trim/cond*-rep$r2.fastq.gz; do
 	echo $file
 	base=$(basename $file)
 	log=$log_dir/${base%.fastq.gz}
