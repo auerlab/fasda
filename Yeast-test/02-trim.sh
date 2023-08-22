@@ -39,6 +39,7 @@ printf "Hyperthreads = $hardware_threads  Jobs = $jobs\n"
 data_dir=Results/02-trim
 log_dir=Logs/02-trim
 mkdir -p $data_dir $log_dir
+files=""
 for r in $(seq 1 $replicates); do
     r2=$(printf "%02d" $r)
     files="$files $(ls Results/01-fetch/Raw-renamed/cond*-rep$r2.fastq.gz)"

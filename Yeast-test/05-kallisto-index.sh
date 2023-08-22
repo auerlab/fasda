@@ -15,12 +15,19 @@ transcriptome=$(Reference/transcriptome-filename.sh)
 printf "Using reference $transcriptome...\n"
 
 # Needed for kallisto --genomebam
-if [ ! -e $transcriptome.fai ]; then
+if [ ! -e Results/04-reference/$transcriptome.fai ]; then
     printf "Building $transcriptome.fai...\n"
     samtools faidx Results/04-reference/$transcriptome
+else
+    printf "$transcriptome.fai already exists.\n"
 fi
 
-printf "Building kallisto index...\n"
-set -x
-kallisto index --index=Results/05-kallisto-index/transcriptome.index \
-    Results/04-reference/$transcriptome
+index=Results/05-kallisto-index/transcriptome.index
+if [ ! -e $index ]; then
+    printf "Building kallisto index...\n"
+    set -x
+    kallisto index --index=$index Results/04-reference/$transcriptome
+    set +x
+else
+    printf "$index already exists.\n"
+fi

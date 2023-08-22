@@ -16,9 +16,10 @@ usage()
 #   Main
 ##########################################################################
 
-if [ $# != 0 ]; then
+if [ $# != 1 ]; then
     usage
 fi
+replicates=$1
 
 uname -a
 fastqc --version
@@ -40,9 +41,13 @@ for dir in 01-fetch/Raw-renamed 02-trim; do
     log_dir=Logs/03-qc/$dir
     mkdir -p $report_dir $log_dir
     # Run fastqc jobs in parallel
-    ls Results/$dir/cond*-rep*.fastq.gz \
-	| xargs -n 1 -P $jobs ./qc1.sh $report_dir $log_dir $file
-    if which multiqc; then
+    files=""
+    for r in $(seq 1 $replicates); do
+	r2=$(printf "%02d" $r)
+	files="$files $(ls Results/$dir/cond*-rep$r2.fastq.gz)"
+    done
+    echo $files | xargs -n 1 -P $jobs ./qc1.sh $report_dir $log_dir $file
+    if which multiqc && [ ! -e $report_dir/multiqc_data ]; then
 	export LC_ALL=en_us-UTF-8
 	export LANG=en_us-UTF-8
 	multiqc --outdir $report_dir $report_dir

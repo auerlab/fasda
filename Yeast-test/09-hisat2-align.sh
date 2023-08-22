@@ -28,7 +28,7 @@ for fastq in ../02-trim/cond*-rep*.fastq.gz; do
     log=../../Logs/09-hisat2-align/$sample.err
     if [ ! -e $bam ]; then
 	printf "Running hisat2...\n"
-	hisat2 --threads 2 -x ../08-hisat2-index/$genome -U $gz1 \
+	hisat2 --threads 4 -x ../08-hisat2-index/$genome -U $gz1 \
 	    2> $log | samtools sort > $bam
 	cat $log
     else
