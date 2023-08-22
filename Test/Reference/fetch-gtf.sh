@@ -4,8 +4,8 @@
 #   GTF is used by kallisto
 ##########################################################################
 
-fetch=$(Common/find-fetch.sh)
-release=$(Common/genome-release.sh)
+fetch='curl -O'
+release=$(Reference/genome-release.sh)
 gtf=$(Reference/gtf-filename.sh)
 
 # GTF

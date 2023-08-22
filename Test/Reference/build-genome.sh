@@ -12,9 +12,9 @@ fi
 # macOS zcat looks for .Z extension, while Linux does not have gzcat
 zcat='gunzip -c'
 
-fetch=$(Common/find-fetch.sh)
-build=$(Common/genome-build.sh)
-release=$(Common/genome-release.sh)
+fetch='curl -O'
+build=$(Reference/genome-build.sh)
+release=$(Reference/genome-release.sh)
 genome=$(Reference/genome-filename.sh)
 
 # Chromosome files

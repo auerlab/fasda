@@ -1,25 +1,11 @@
 #!/bin/sh -e
 
 ##########################################################################
-#   Synopsis:
-#       
 #   Description:
-#       
-#   Arguments:
-#       
-#   Returns:
-#
-#   Examples:
-#
-#   Files:
-#
-#   Environment:
-#
-#   See also:
-#       
-#   History:
-#   Date        Name        Modification
-#   2022-11-17  Jason Bacon Begin
+#       Trim a single raw fastq file, storing results in data-dir and
+#       redirecting stdout and stderr to log-dir.  This script takes
+#       the filename last, so that it can easily be used with xargs
+#       to parallelize trimming.
 ##########################################################################
 
 usage()
@@ -49,4 +35,3 @@ else
     fastq-trim --3p-adapter1 AGATCGGAAGAG --polya-min-length 3 \
 	$file $trimmed > $log_dir/$base.out 2> $log_dir/$base.err
 fi
-

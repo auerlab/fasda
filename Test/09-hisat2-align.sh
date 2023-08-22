@@ -23,8 +23,8 @@ uname -a
 hisat2 --version
 pwd
 
-build=$(Common/genome-build.sh)
-release=$(Common/genome-release.sh)
+build=$(Reference/genome-build.sh)
+release=$(Reference/genome-release.sh)
 genome=$(Reference/genome-filename.sh)
 
 # samtools sort dumps temp files in CWD

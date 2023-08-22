@@ -3,21 +3,11 @@
 ##########################################################################
 #   Description:
 #       Fetch Yeast sample data and create symlinks with descriptive names
-#
-#       All necessary tools are assumed to be in PATH.  If this is not
-#       the case, add whatever code is needed here to gain access.
-#       (Adding such code to your .bashrc or other startup script is
-#       generally a bad idea since it's too complicated to support
-#       every program with one environment.)
-#       
-#   History:
-#   Date        Name        Modification
-#   2022-11-17  Jason Bacon Begin
 ##########################################################################
 
 usage()
 {
-    printf "Usage: $0 sample_count\n"
+    printf "Usage: $0 replicates\n"
     printf "Example: $0 10\n"
     exit 1
 }
@@ -30,9 +20,9 @@ usage()
 if [ $# != 1 ]; then
     usage
 fi
-sample_count=$1
+replicates=$1
 
-if [ $sample_count -lt 3 ]; then
+if [ $replicates -lt 3 ]; then
     printf "Sample count must be at least 3.\n"
     exit 1
 fi
@@ -46,14 +36,15 @@ raw=Results/01-fetch/Raw
 raw_renamed=Results/01-fetch/Raw-renamed
 mkdir -p $raw $raw_renamed
 
+cond_num=1
 for condition in WT SNF2; do
-    # Select $sample_count replicates
+    # Select $replicates replicates
     # Get one technical replicate from each biological replicate
     # Col 2 (Lane) indicates technical rep, use samples where Lane = 1
     # Col 3 is SNF2 mutant or WT
     # Col 4 is biological replicate
-    awk -v sample_count=$sample_count -v condition=$condition \
-	'$2 == 1 && $3 == condition && $4 <= sample_count' \
+    awk -v replicates=$replicates -v condition=$condition \
+	'$2 == 1 && $3 == condition && $4 <= replicates' \
 	ERP004763_sample_mapping.tsv > $condition.tsv
     printf "$condition:\n"
 
@@ -70,8 +61,10 @@ for condition in WT SNF2; do
 	    gzip $raw/$sample.fastq &
 	fi
 	(cd $raw_renamed && ln -fs ../Raw/$fq $condition-$biorep.fastq.gz)
+	(cd $raw_renamed && ln -fs ../Raw/$fq cond$cond_num-rep$biorep.fastq.gz)
     done
     rm -f $condition.tsv
+    cond_num=$(($cond_num + 1))
 done
 ls -l $raw
 ls -l $raw_renamed

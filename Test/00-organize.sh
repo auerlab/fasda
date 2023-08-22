@@ -3,10 +3,6 @@
 ##########################################################################
 #   Description:
 #       Create directory structure required for test scripts
-#       
-#   History:
-#   Date        Name        Modification
-#   2022-05-12  Jason Bacon Adapt from CNC-EMDiff
 ##########################################################################
 
 usage()

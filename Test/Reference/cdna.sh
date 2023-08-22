@@ -13,10 +13,10 @@ zcat='gunzip -c'
 # Need GTF for kallisto quant --genomebam in any case
 Reference/fetch-gtf.sh
 
-fetch=$(Common/find-fetch.sh)
-build=$(Common/genome-build.sh)
-release=$(Common/genome-release.sh)
-awk=$(Common/find-awk.sh)
+fetch='curl -O'
+build=$(Reference/genome-build.sh)
+release=$(Reference/genome-release.sh)
+awk='awk'
 transcriptome=$(Reference/transcriptome-filename.sh)
 
 # Can't guarantee this file will always be available.

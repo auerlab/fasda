@@ -43,11 +43,13 @@ pwd
 
 Reference/build-genome.sh
 
-Reference/cdna.sh       # Remove XY from Ensembl cdna transcriptome
-# Reference/gtf2fasta.sh  # Construct genome minus XY using Ensembl GFF
+# Building a transcriptome from GTF and genome is a bit of a pain
+# due to the sort order of the GTF.  We just use the Ensembl cDNA
+# and remove mitchoncria for simplicity, since this is just for demonstration.
+Reference/cdna.sh
 
 # Reference/create-chrom-sizes.sh
-chrom_sizes="Results/04-reference/chromosome-sizes.tsv"
-printf "Generating $chrom_sizes...\n"
-blt chrom-lens < Results/04-reference/$(Reference/genome-filename.sh) > $chrom_sizes
-cat $chrom_sizes
+chrom_lengths="Results/04-reference/chromosome-sizes.tsv"
+printf "Generating $chrom_lengths...\n"
+blt chrom-lens < Results/04-reference/$(Reference/genome-filename.sh) > $chrom_lengths
+cat $chrom_lengths

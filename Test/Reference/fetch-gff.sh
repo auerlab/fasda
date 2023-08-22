@@ -4,8 +4,8 @@
 #   GFF is used by downstream analysis, such as peak classification
 ##########################################################################
 
-fetch=$(Common/find-fetch.sh)
-release=$(Common/genome-release.sh)
+fetch='curl -O'
+release=$(Reference/genome-release.sh)
 gff=$(Reference/gff-filename.sh)
 
 # macOS zcat looks for .Z extension, while Linux does not have gzcat
