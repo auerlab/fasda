@@ -3,16 +3,6 @@
 ##########################################################################
 #   Description:
 #       Run hisat2 aligner on each RNA sample.
-#
-#       All necessary tools are assumed to be in PATH.  If this is not
-#       the case, add whatever code is needed here to gain access.
-#       (Adding such code to your .bashrc or other startup script is
-#       generally a bad idea since it's too complicated to support
-#       every program with one environment.)
-#       
-#   History:
-#   Date        Name        Modification
-#   2021-11-24  Jason Bacon Begin
 ##########################################################################
 
 ##############################################################################
@@ -30,7 +20,7 @@ genome=$(Reference/genome-filename.sh)
 # samtools sort dumps temp files in CWD
 cd Results/09-hisat2-align
 
-for fastq in ../02-trim/*; do
+for fastq in ../02-trim/cond*-rep*.fastq.gz; do
     gz1=$(ls $fastq)
     gzb=$(basename $gz1)
     bam=${gzb%.*.*}.bam

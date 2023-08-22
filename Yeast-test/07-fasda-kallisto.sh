@@ -3,10 +3,6 @@
 ##########################################################################
 #   Description:
 #       Run fasda normalize and fold-change on kallisto abundances
-#       
-#   History:
-#   Date        Name        Modification
-#   2022-11-19  Jason Bacon Begin
 ##########################################################################
 
 usage()

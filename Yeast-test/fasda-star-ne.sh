@@ -3,10 +3,6 @@
 ##########################################################################
 #   Description:
 #       Compute one FASDA [near-]exact set of FCs
-#       
-#   History:
-#   Date        Name        Modification
-#   2022-11-27  Jason Bacon Begin
 ##########################################################################
 
 usage()

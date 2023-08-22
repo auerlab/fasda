@@ -15,8 +15,8 @@ pause()
 }
 
 # Abundances
-kallisto=Results/06-kallisto-quant/WT-1/abundance.tsv
-hisat2=Results/09-hisat2-align/WT-1-abundance.tsv
+kallisto=Results/06-kallisto-quant/cond1-rep01/abundance.tsv
+hisat2=Results/09-hisat2-align/cond1-rep01-abundance.tsv
 
 for transcript in $(awk '{ print $1 }' $kallisto); do
     printf '===\n'
@@ -27,8 +27,8 @@ for transcript in $(awk '{ print $1 }' $kallisto); do
 done | more
 
 # Normalized
-kallisto=Results/07-fasda-kallisto/SNF2-all-norm-03.tsv
-hisat2=Results/10-fasda-hisat2/SNF2-all-norm-03.tsv
+kallisto=Results/07-fasda-kallisto/cond2-all-norm-03.tsv
+hisat2=Results/10-fasda-hisat2/cond2-all-norm-03.tsv
 
 for transcript in $(awk '{ print $1 }' $kallisto); do
     printf '===\n'
@@ -42,8 +42,8 @@ for transcript in $(awk '{ print $1 }' $kallisto); do
 done | more
 
 # Fold-changes
-kallisto=Results/07-fasda-kallisto/WT-SNF2-FC-NE-03.txt
-hisat2=Results/10-fasda-hisat2/WT-SNF2-FC-NE-03.txt
+kallisto=Results/07-fasda-kallisto/fc-03.txt
+hisat2=Results/10-fasda-hisat2/fc-03.txt
 for transcript in $(awk '{ print $1 }' $kallisto | head -20); do
     echo $transcript
     grep $transcript $kallisto

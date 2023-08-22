@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Run fasda normalize and fold-change on star abundances
+#       Run fasda normalize and fold-change on hisat2 abundances
 ##########################################################################
 
 usage()
@@ -35,7 +35,11 @@ if [ $# != 1 ]; then
 fi
 tr=$1
 
-cd Results/13-fasda-star
+if [ ! -e Results/04-reference/Saccharomyces_cerevisiae.R64-1-1.106.gff3 ]; then
+    Reference/fetch-gff.sh
+fi
+
+cd Results/10-fasda-hisat2
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
@@ -45,29 +49,9 @@ uname -a
 fasda --version
 pwd
 
+hisat2_dir=../09-hisat2-align
 reference_dir=../04-reference
-star_dir=../12-star-align
-log_dir=../../Logs/13-fasda-star
-
-##########################################################################
-#   Compute abundances
-##########################################################################
-
-for condition in WT SNF2; do
-    for r in $(seq 1 $tr); do
-	file=$condition-$r/Aligned.sortedByCoord.out.bam
-	ab=$star_dir/${file%.bam}-abundance.tsv
-	printf "Computing abundances for $condition replicate $r...\n"
-	set -x
-	time fasda abundance 50 \
-	    $reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
-	    $star_dir/$file
-	set +x
-	column -t $ab | head
-	wc $ab
-    done
-done
-exit
+log_dir=../../Logs/10-fasda-hisat2
 
 ##########################################################################
 #   3 to 12 replicates, [near-]exact P-values
@@ -80,6 +64,24 @@ else
     max_ne=12
 fi
 
+##########################################################################
+#   Compute abundances
+##########################################################################
+
+for condition in WT SNF2; do
+    for r in $(seq 1 $tr); do
+	file=$condition-$r.bam
+	ab=$hisat2_dir/${file%.bam}-abundance.tsv
+	printf "Computing abundances for $condition replicate $r...\n"
+	time fasda abundance 50 \
+	    $reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
+	    $hisat2_dir/$file
+	
+	column -t $ab | head
+	wc $ab
+    done
+done
+
 if [ $(uname) = Linux ]; then
     threads=$(getconf _NPROCESSORS_ONLN)
 else
@@ -89,9 +91,7 @@ jobs=$threads
 printf "Hyperthreads = $threads  Jobs = $jobs\n"
 
 seq 3 $max_ne | xargs -n 1 -P $jobs \
-    ../../fasda-star-ne.sh $star_dir $log_dir
-
-exit
+    ../../fasda-hisat2-ne.sh $hisat2_dir $log_dir
 
 ##########################################################################
 #   8 to all replicates, Mann-Whitney P-values
@@ -106,9 +106,8 @@ if [ $tr -ge 8 ]; then
 		printf "Normalizing $condition: $replicates replicates\n"
 		files=""
 		for r in $(seq 1 $replicates); do
-		    files="$files $star_dir/$condition-$r/abundance.tsv"
+		    files="$files $hisat2_dir/$condition-$r-abundance.tsv"
 		done
-		# printf "%s\n" $files
 		time fasda normalize --output \
 		    $condition-all-norm-$r0.tsv $files \
 		    > $log_dir/normalize-$condition-$r0-MW.out \
@@ -127,19 +126,26 @@ if [ $tr -ge 8 ]; then
     done
 fi
 
-if [ $tr -ge 8 ]; then
-    head WT-SNF2-FC-NE-*.txt WT-SNF2-FC-MW-*.txt | more
-fi
-
+head WT-SNF2-FC-NE-*.txt WT-SNF2-FC-MW-*.txt | more
 printf "\n%-25s %10s %10s\n" "File" "Features" "P < 0.05"
 for file in WT-SNF2-FC-NE-*.txt; do
     printf "%-25s %10s %10s\n" $file: \
 	$(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)
 done | more
 
-if [ $tr -ge 8 ] && [ -n "$(ls WT-SNF2-FC-MW-*.txt)" ]; then
+if [ -n "$(ls WT-SNF2-FC-MW-*.txt)" ]; then
     for file in WT-SNF2-FC-MW-*.txt; do
 	printf "%-25s %10s %10s\n" $file: \
 	    $(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)
     done | more
 fi
+
+printf "\nHisat2:\n"
+for feature in YPL071C_mRNA YLL050C_mRNA YMR172W_mRNA YOR185C_mRNA; do
+    grep -h $feature WT-SNF2-FC-NE-03.txt
+done
+printf "\nKallisto:\n"
+for feature in YPL071C_mRNA YLL050C_mRNA YMR172W_mRNA YOR185C_mRNA; do
+    grep -h $feature ../07-fasda-kallisto/WT-SNF2-FC-NE-03.txt
+done
+

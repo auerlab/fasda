@@ -3,10 +3,6 @@
 ##########################################################################
 #   Description:
 #       Remove output files and logs from a previous run and resubmit
-#       
-#   History:
-#   Date        Name        Modification
-#   2021-11-27  Jason Bacon Begin
 ##########################################################################
 
 usage()
