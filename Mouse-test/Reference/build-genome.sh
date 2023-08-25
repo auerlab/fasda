@@ -29,7 +29,8 @@ if [ ! -e $genome ]; then
     printf "Concatenating chromosome FASTAs...\n"
     for chrom in $(seq 1 19) X Y; do
 	printf "$chrom "
-	zcat Mus_musculus.GRCm$build.dna.chromosome.$chrom.fa.gz >> $genome
+	# macOS zcat looks for .Z extension, while Linux does not have gzcat
+	gunzip -c Mus_musculus.GRCm$build.dna.chromosome.$chrom.fa.gz >> $genome
     done
     printf "\n"
 else

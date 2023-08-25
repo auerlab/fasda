@@ -1,1 +1,1 @@
-../Test/05-kallisto-index.sh
+../Yeast-test/05-kallisto-index.sh

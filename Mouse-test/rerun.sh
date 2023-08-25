@@ -1,1 +1,1 @@
-../Test/rerun.sh
+../Yeast-test/rerun.sh
