@@ -41,10 +41,14 @@ for zst1 in ../02-trim/cond*-rep*-R1.fq.zst; do
 	# Raw files are huge, so use gzip to reduce I/O
 	gz1=${zst1%.zst}.gz
 	gz2=${zst2%.zst}.gz
+	if [ ! -e $gz1 ] || [ ! -e $gz2 ]; then
+	    printf "Converting to gzip so hisat2 can seek...\n"
+	    zstdcat $zst1 | gzip -1 > $gz1 &
+	    zstdcat $zst2 | gzip -1 > $gz2
+	    wait    # Let backgrounded recompress finish
+	fi
 	set -x
-	zstdcat $zst1 | gzip -1 > $gz1 &
-	zstdcat $zst2 | gzip -1 > $gz2
-	wait    # Let backgrounded recompress finish
+	# More than 4 threads doesn't really help.  CPU not much over 400%.
 	hisat2 --threads 4 -x ../08-hisat2-index/$genome -1 $gz1 -2 $gz2 \
 	    2> $log | samtools sort > $bam
 	cat $log
