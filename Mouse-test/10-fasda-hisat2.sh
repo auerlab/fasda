@@ -16,7 +16,9 @@ pause()
 PATH=../../local/bin:${PATH}
 export PATH
 
-gff_filename=Results/04-reference/$(Reference/gff-filename.sh)
+# FIXME: stringtie requires a GTF for gene-level abundances, while
+# our tools use gff3
+gff_filename=Results/04-reference/$(Reference/gtf-filename.sh)
 ab_dir=Results/10-fasda-hisat2
 
 for bam in Results/09-hisat2-align/*.bam; do
