@@ -13,6 +13,9 @@ pause()
     read junk
 }
 
+PATH=../../local/bin:${PATH}
+export PATH
+
 gff_filename=Results/04-reference/$(Reference/gff-filename.sh)
 ab_dir=Results/10-fasda-hisat2
 

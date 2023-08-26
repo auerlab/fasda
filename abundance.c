@@ -464,6 +464,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 {
     FILE    *gtf_stream;
     char    cmd[MAX_CMD_LEN + 1],
+	    gene_abundance[PATH_MAX + 1],
 	    *gtf_feature_type,
 	    *gtf_attributes,
 	    *field,
@@ -483,8 +484,15 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	// Note: BAMs must be properly sorted (samtools sort default order)
 	// Write stringtie GTF to a file so we can use seek() while reading
 	// It's also just nice to have the GTFs to look at
-	snprintf(cmd, MAX_CMD_LEN + 1, "stringtie -e -G %s -o %s %s",
-		 feature_file, gtf_files[c], sam_files[c]);
+	strlcpy(gene_abundance, gtf_files[c], PATH_MAX + 1);
+	if ( (p = strstr(gene_abundance, ".gtf")) == NULL )
+	{
+	    fprintf(stderr, "stringtie_abundance(): GTF filename does not contain \".gtf\"\n");
+	    exit(EX_SOFTWARE);
+	}
+	strlcpy(p, "-stringtie-genes.tsv", PATH_MAX + 1);
+	snprintf(cmd, MAX_CMD_LEN + 1, "stringtie -e -G %s -o %s -A %s %s",
+		 feature_file, gtf_files[c], gene_abundance, sam_files[c]);
 	
 	fprintf(stderr, "Running %s...\n", cmd);
 	if ( (status = system(cmd)) != 0 )
