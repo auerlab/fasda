@@ -54,12 +54,16 @@ for r in $(seq 1 $replicates); do
 	out_dir=Results/06-kallisto-quant/$stem
 	mkdir -p $out_dir
     
-	set -x
-	kallisto quant \
-	    --single --fragment-length=190 --sd=10 \
-	    --threads=$threads \
-	    --index=Results/05-kallisto-index/transcriptome.index \
-	    --output-dir=$out_dir $file 2>&1 | tee $log
-	set +x
+	if [ ! -e $out_dir/abundance.tsv ]; then
+	    set -x
+	    kallisto quant \
+		--single --fragment-length=190 --sd=10 \
+		--threads=$threads \
+		--index=Results/05-kallisto-index/transcriptome.index \
+		--output-dir=$out_dir $file 2>&1 | tee $log
+	    set +x
+	else
+	    printf "$out_dir/abundance.tsv already exists.\n"
+	fi
     done
 done

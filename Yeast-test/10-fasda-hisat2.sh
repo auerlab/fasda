@@ -56,15 +56,16 @@ log_dir=../../Logs/10-fasda-hisat2
 for condition in 1 2; do
     for r in $(seq 1 $replicates); do
 	r2=$(printf "%02d" $r)
-	file=cond$condition-rep$r2.bam
-	ab=$hisat2_dir/${file%.bam}-abundance.tsv
+	bam=cond$condition-rep$r2.bam
+	ab=${bam%.bam}-abundance.tsv
 	if [ ! -e $ab ]; then
 	    printf "Computing abundances for $condition replicate $r2...\n"
 	    set -x
-	    time fasda abundance 50 \
+	    time fasda abundance --output-dir . 50 \
 		$reference_dir/Saccharomyces_cerevisiae.R64-1-1.106.gff3 \
-		$hisat2_dir/$file
+		$hisat2_dir/$bam
 	    set +x
+	    # tr ' ' '-' < ${bam%.bam}-stringtie-genes.tsv | column -t | sort | more
 	fi
 	
 	column -t $ab | head
@@ -83,7 +84,7 @@ for condition in 1 2; do
 	files=""
 	for r in $(seq 1 $replicates); do
 	    r2=$(printf "%02d" $r)
-	    files="$files $hisat2_dir/cond$condition-rep$r2-abundance.tsv"
+	    files="$files cond$condition-rep$r2-abundance.tsv"
 	done
 	printf "%s\n" $files
 	set -x

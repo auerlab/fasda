@@ -647,7 +647,8 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 		    }
 		    est_count = (double)cov * length / read_length;
 		    // FIXME: Explore how kallisto computes this
-		    eff_length = length;
+		    // For now, flag it as invalid
+		    eff_length = 0;
 		    //fprintf(stderr, "Outputting %s...\n", transcript_id);
 		    fprintf(abundance_streams[c],
 			    "%s\t%lu\t%0.1f\t%0.1f\t%s\t%s\n",
@@ -1048,7 +1049,7 @@ void    usage(char *argv[])
 	    "\t[--feature-type mRNA|transcript|gene (default=mRNA)] \\\n"
 	    "\t[--output-dir dir (default=same as SAM/BAM/CRAM input)] \\\n"
 	    "\tread-length \\\n"
-	    "\tfeatures.gff3 \\\n"
+	    "\tfeatures.gff3 (gtf also works with --stringtie)\\\n"
 	    "\tfile.[sam|bam|cram]" XT_COMPRESSION_EXTENSIONS " \\\n"
 	    "\t[file.[sam|bam|cram]" XT_COMPRESSION_EXTENSIONS " ...]\n", argv[0]);
     exit(EX_USAGE);
