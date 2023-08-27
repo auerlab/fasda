@@ -31,10 +31,14 @@ mode=$2
 case $mode in
 test)
     # Just download 1,000,000 spots (fragments)
-    dump_flags='-X 1000000'
+    # fasterq-dump is newer, but does not support -X clipping
+    dump=fastq-dump
+    dump_flags='-X 1000000 -v --split-3'
     ;;
 
 full)
+    dump=fasterq-dump
+    dump_flags='--progress'
     ;;
 
 *)
@@ -81,7 +85,7 @@ for condition in $conditions; do
 	if [ ! -e $raw/$fq1.zst ] || [ ! -e $raw/$fq2.zst ]; then
 	    if [ ! -e $raw/$fq1 ] || [ ! -e $raw/$fq2 ]; then
 		set -x
-		fasterq-dump $dump_flags --outdir $raw --progress $sample
+		$dump $dump_flags --outdir $raw $sample
 		set +x
 	    else
 		printf "$raw/$fq1 exists.\n"

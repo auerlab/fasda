@@ -8,7 +8,7 @@
 
 usage()
 {
-    printf "Usage: $0\n"
+    printf "Usage: $0 test|full\n"
     exit 1
 }
 
@@ -25,9 +25,19 @@ header()
 #   Main
 ##########################################################################
 
-if [ $# != 0 ]; then
+if [ $# != 1 ]; then
     usage
 fi
+mode=$1
+
+case $mode in
+test|full)
+    ;;
+
+*)
+    usage
+    ;;
+esac
 
 cd ..
 ./cave-man-install.sh || true
@@ -35,7 +45,7 @@ cd Mouse-test
 
 ./00-organize.sh
 header "Fetching mouse read data..."
-time ./01-fetch.sh PRJNA1004253
+time ./01-fetch.sh PRJNA1004253 $mode
 
 # FIXME: Let 02-trim.sh handle the count check?
 raw_count=$(ls Results/01-fetch/Raw-renamed/*.gz 2> /dev/null | wc -l)
