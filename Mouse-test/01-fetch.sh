@@ -13,7 +13,7 @@
 
 usage()
 {
-    printf "Usage: $0 PRJ\n"
+    printf "Usage: $0 PRJ test|full\n"
     exit 1
 }
 
@@ -22,10 +22,26 @@ usage()
 #   Main
 ##########################################################################
 
-if [ $# != 1 ]; then
+if [ $# != 2 ]; then
     usage
 fi
 prj=$1
+mode=$2
+
+case $mode in
+test)
+    # Just download 1,000,000 spots (fragments)
+    dump_flags='-X 1000000'
+    ;;
+
+full)
+    ;;
+
+*)
+    usage
+    ;;
+
+esac
 
 # Document software versions used for publication
 uname -a
@@ -65,7 +81,7 @@ for condition in $conditions; do
 	if [ ! -e $raw/$fq1.zst ] || [ ! -e $raw/$fq2.zst ]; then
 	    if [ ! -e $raw/$fq1 ] || [ ! -e $raw/$fq2 ]; then
 		set -x
-		fasterq-dump --outdir $raw --progress $sample
+		fasterq-dump $dump_flags --outdir $raw --progress $sample
 		set +x
 	    else
 		printf "$raw/$fq1 exists.\n"
