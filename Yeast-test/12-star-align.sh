@@ -22,7 +22,7 @@ genome=$(Reference/genome-filename.sh)
 cd Results/12-star-align
 pwd
 
-for fastq in $(ls ../02-trim/*.fastq.gz); do
+for fastq in $(ls ../02-trim/cond*-rep*.fastq.gz); do
     base=$(basename $fastq)
     sample=${base%.fastq.gz}
     mkdir -p $sample

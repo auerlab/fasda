@@ -46,13 +46,13 @@ for file in $dir/ERR*[0-9].fastq.gz; do
     fi
 done
 
-if [ ! -e Results/04-reference/all-but-xy.genome.fa.fai ]; then
+if [ ! -e Results/04-reference/transcriptome.genome.fa.fai ]; then
     ./04-reference.sh
 else
     printf "04-reference.sh already done.\n"
 fi
 
-if [ ! -e Results/05-kallisto-index/all-but-xy.index ]; then
+if [ ! -e Results/05-kallisto-index/transcriptome.index ]; then
     ./05-kallisto-index.sh
 else
     printf "05-kallisto-index.sh already done.\n"
@@ -73,11 +73,8 @@ if [ $quant_count -ne $raw_count ]; then
 	    set -x
 	    kallisto quant \
 		--single --fragment-length=190 --sd=10 \
-		--genomebam \
-		    --gtf=Results/04-reference/$gtf \
-		    --chromosomes=Results/04-reference/chromosome-sizes.tsv \
 		--threads=$threads \
-		--index=Results/05-kallisto-index/all-but-xy.index \
+		--index=Results/05-kallisto-index/transcriptome.index \
 		--output-dir=$out_dir/$sample $file
 	    set +x
 	else
@@ -88,4 +85,7 @@ else
     printf "kallisto-quant already done.\n"
 fi
 
-head -5 $out_dir/ERR45849*/abundance.tsv
+for file in $out_dir/ERR45849*/abundance.tsv; do
+    printf "\n===> $file\n"
+    column -t $file | head -5
+done

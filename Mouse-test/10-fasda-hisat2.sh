@@ -31,15 +31,16 @@ for bam in Results/09-hisat2-align/*.bam; do
 done
 
 # Transcripts with modest to high coverage and likely significant
-transcripts='ENSMUST00000000090 ENSMUST00000000109 ENSMUST00000029451'
+# transcripts='ENSMUST00000000090 ENSMUST00000000109 ENSMUST00000029451'
+transcripts=$(sort --random-sort Results/10-fasda-hisat2/fc-1-2-3.txt \
+    | awk '$1 != "Feature" && ($2 > 100 || $3 > 100) { print $1 }' | head -n 5)
+echo $transcripts
 
-if false; then
 for transcript in $transcripts; do
     printf "\nCondition 1 abundances:\n"
     awk -v t=$transcript '$1 == t { print $1, $4 }' Results/10-fasda-hisat2/cond1-rep*
 done
 pause
-fi
 
 # Now compute fold-changes and P-values for various sets of 3 replicates
 # out of the 6 available
