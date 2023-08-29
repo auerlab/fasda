@@ -30,18 +30,6 @@ for bam in Results/09-hisat2-align/*.bam; do
     fi
 done
 
-# Transcripts with modest to high coverage and likely significant
-# transcripts='ENSMUST00000000090 ENSMUST00000000109 ENSMUST00000029451'
-transcripts=$(sort --random-sort Results/10-fasda-hisat2/fc-1-2-3.txt \
-    | awk '$1 != "Feature" && ($2 > 100 || $3 > 100) { print $1 }' | head -n 5)
-echo $transcripts
-
-for transcript in $transcripts; do
-    printf "\nCondition 1 abundances:\n"
-    awk -v t=$transcript '$1 == t { print $1, $4 }' Results/10-fasda-hisat2/cond1-rep*
-done
-pause
-
 # Now compute fold-changes and P-values for various sets of 3 replicates
 # out of the 6 available
 for first in $(seq 1 4); do
@@ -82,13 +70,29 @@ if [ ! -e $ab_dir/fc-all.txt ]; then
 	$ab_dir/norm-cond1-all.tsv $ab_dir/norm-cond2-all.tsv
 fi
 
+# Transcripts with modest to high coverage and likely significant
+# transcripts='ENSMUST00000000090 ENSMUST00000000109 ENSMUST00000029451'
+transcripts=$(sort --random-sort Results/10-fasda-hisat2/fc-1-2-3.txt \
+    | awk '$1 != "Feature" && ($2 > 100 || $3 > 100) { print $1 }' | head -n 5)
+printf "Randomly selected transcripts:\n$transcripts\n"
+
+for transcript in $transcripts; do
+    printf "\nAbundances for $transcript:\n"
+    awk -v t=$transcript '$1 == t { split(FILENAME, a, "/"); print a[3], $4 }' \
+	Results/10-fasda-hisat2/cond1-rep*
+done
+pause
+
 cd $ab_dir
 for transcript in $transcripts; do
     printf "\n=== $transcript ===\n"
+    printf "%-20s %10s %10s %10s\n" "Replicate group" "1" "2" "3" "Mean"
     awk -v t=$transcript \
-	'$1 == t { printf("%-20s %10.1f %10.1f %10.1f\n", FILENAME, $2, $3, $4); }' \
+	'$1 == t { printf("%-20s %10.1f %10.1f %10.1f %10.1f\n", \
+		    FILENAME, $2, $3, $4, ($2 + $3 + $4) / 3.0); }' \
 	norm-cond1-1-2-3.tsv norm-cond1-4-5-6.tsv
 done
+pause
 
 for transcript in $transcripts; do
     printf "\n=== $transcript ===\n"
