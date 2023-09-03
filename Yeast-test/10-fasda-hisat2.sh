@@ -78,7 +78,7 @@ r0=$(printf '%02d' $replicates)
 for condition in 1 2; do
     norm_file=cond$condition-all-norm-$r0.tsv
     # Debug
-    rm -f $norm_file
+    # rm -f $norm_file
     if [ ! -e $norm_file ]; then
 	printf "Normalizing condition $condition: $replicates replicates\n"
 	files=""

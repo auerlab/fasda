@@ -36,8 +36,10 @@ for first in $(seq 1 4); do
     for second in $(seq $(($first + 1)) 5); do
 	for third in $(seq $(($second + 1)) 6); do
 	    for cond in 1 2; do
+		# Debug
+		rm -f $ab_dir/norm-cond$cond-$first-$second-$third.tsv
 		if [ ! -e $ab_dir/norm-cond$cond-$first-$second-$third.tsv ]; then
-		    printf "Normalizing cond1 replicates $first $second $third...\n"
+		    printf "==> $ab_dir/norm-cond$cond-$first-$second-$third.tsv...\n"
 		    fasda normalize --output \
 			$ab_dir/norm-cond$cond-$first-$second-$third.tsv \
 			$ab_dir/cond$cond-rep$first-abundance.tsv \
@@ -86,7 +88,7 @@ pause
 cd $ab_dir
 for transcript in $transcripts; do
     printf "\n=== $transcript ===\n"
-    printf "%-20s %10s %10s %10s\n" "Replicate group" "1" "2" "3" "Mean"
+    printf "%-20s %10s %10s %10s %10s\n" "Replicate-group" "1" "2" "3" "Mean"
     awk -v t=$transcript \
 	'$1 == t { printf("%-20s %10.1f %10.1f %10.1f %10.1f\n", \
 		    FILENAME, $2, $3, $4, ($2 + $3 + $4) / 3.0); }' \
@@ -103,4 +105,3 @@ for transcript in $transcripts; do
 	    FILENAME, $2, $3, $4, $5, $6, $7, $8); }' \
 	*.txt | sort -k 8 -n
 done
-

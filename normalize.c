@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <limits.h>         // PATH_MAX OpenIndiana
+#include <stdbool.h>
 #include <sys/param.h>      // PATH_MAX
 #include <xtend/dsv.h>
 #include <xtend/file.h>
@@ -32,6 +33,8 @@
 #include <xtend/math.h>     // double_cmp()
 #include <xtend/string.h>   // strlcpy() on Linux
 #include "normalize.h"
+
+bool    Debug = false;
 
 int     main(int argc, const char *argv[])
 
@@ -47,6 +50,9 @@ int     main(int argc, const char *argv[])
 	// Only median ratios is supported for now, so ignore
 	if ( strcmp(argv[arg], "--mrn") == 0 )
 	    ;
+	
+	if ( strcmp(argv[arg], "--debug") == 0 )
+	    Debug = true;
 	
 	else if ( strcmp(argv[arg], "--output") == 0 )
 	{
@@ -126,7 +132,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
     char        *end, *target_id,
 		norm_sample_file[PATH_MAX + 1], *p;
     double      count, sum_lcs, lc[FASDA_MAX_SAMPLES],
-		pseudo_ref, *ratios, median_ratio[FASDA_MAX_SAMPLES],
+		feature_mean, *ratios, median_ratio[FASDA_MAX_SAMPLES],
 		scaling_factor[FASDA_MAX_SAMPLES];
     
     for (sample_count = 0; abundance_files[sample_count] != NULL; ++sample_count)
@@ -167,10 +173,8 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	    {
 		target_id = dsv_line_get_fields_ae(dsv_lines[sample], 0);
 		
-		// Dummy output: Just echo non-normalized counts to test UI
-		// count_str = dsv_line_get_fields_ae(dsv_lines[sample], 3);
-		// printf("%s\t%s\n", target_id, count_str);
-		
+		// Corresponding lines in each abundance file should
+		// contain the same feature
 		if ( (sample > 0) && (strcmp(target_id,
 			dsv_line_get_fields_ae(dsv_lines[sample - 1], 0)) != 0) )
 		{
@@ -193,8 +197,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		 *  Read raw counts for all genes and all samples
 		 *
 		 *  1.  Take log of every count (just for filtering in step 3?)
-		 *  2.  Average of all log(counts) for the feature
-		 *      (compute pseudo-reference)
+		 *  2.  Mean of all log(counts) for feature (pseudo-reference)
 		 */
 		
 		count = strtof(dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
@@ -205,6 +208,10 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		    return EX_DATAERR;
 		}
 		lc[sample] = log(count);
+		/*
+		if ( Debug )
+		    fprintf(stderr, "%0.1f ", lc[sample]);
+		*/
 		sum_lcs += lc[sample];
 	    }
 	}
@@ -212,19 +219,28 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	/*
 	 *  3.  Remove genes with -inf as pseudo-reference
 	 *  4.  Subtract pseudo-reference from each log(expression)
-	 *      This is actually a ratio since subtracting from log(v)
-	 *      is dividing v. We'll need to store this value and later
-	 *      sort to find median.
+	 *      This is actually computing a ratio since subtracting from
+	 *      log(v) is dividing v. We'll need to store this value and
+	 *      later sort to find median.
 	 */   
 	
+	// FIXME: Is this check redundant?
 	if ( ! feof(abundance_streams[0]) )
 	{
-	    pseudo_ref = sum_lcs / sample_count;
-	    //printf("pseudo_ref [avg log(count)] = %f\n", pseudo_ref);
-	    if ( pseudo_ref != -INFINITY )
+	    feature_mean = sum_lcs / sample_count;
+	    /*
+	    if ( Debug )
+		fprintf(stderr, "feature mean [avg log(count)] = %f\n",
+			feature_mean);
+	    */
+	    
+	    // Filter out genes with -inf mean
+	    if ( feature_mean != -INFINITY )
+	    {
 		for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
 		    fprintf(tmp_streams[sample], "%f\n",
-			    lc[sample] - pseudo_ref);
+			    lc[sample] - feature_mean);
+	    }
 	    ++feature_count;
 	}
     }
@@ -250,25 +266,37 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	rewind(tmp_streams[sample]);
 	
 	for (c = 0; c < feature_count; ++c)
+	{
 	    fscanf(tmp_streams[sample], "%lf", &ratios[c]);
+	}
+	
 	qsort(ratios, feature_count, sizeof(*ratios),
 	      (int (*)(const void *,const void *))double_cmp);
-	/*
-	printf("Sorted %zu:\n", feature_count);
-	for (c = 0; c < feature_count; ++c)
+
+	if ( Debug )
 	{
-	    if ( c % 1000 == 0 )
-		printf("%f\n", ratios[c]);
+	    fprintf(stderr, "Sorted %zu ratios:\n", feature_count);
+	    for (c = 0; c < feature_count; ++c)
+	    {
+		if ( c % 10000 == 0 )
+		    fprintf(stderr, "%7zu %f\n", c, ratios[c]);
+	    }
 	}
-	*/
+	
+	// If odd count, media is middle, otherwise mean of two middles
 	if ( feature_count % 2 == 1 )
 	    median_ratio[sample] = ratios[feature_count / 2];
 	else
 	    median_ratio[sample] = (ratios[feature_count / 2] +
 			    ratios[feature_count / 2 + 1]) / 2;
-	//printf("Median ratio = %f\n", median_ratio[sample]);
 	scaling_factor[sample] = exp(median_ratio[sample]);
-	// printf("Scaling factor[%zu] = %f\n", sample + 1, scaling_factor[sample]);
+	
+	if ( Debug )
+	{
+	    fprintf(stderr, "Median ratio = %f\n", median_ratio[sample]);
+	    fprintf(stderr, "Scaling factor[%zu] = %f\n",
+		    sample + 1, scaling_factor[sample]);
+	}
     }
     
     /*
