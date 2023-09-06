@@ -398,7 +398,7 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 unsigned long   sum_exons(FILE *gtf_stream)
 
 {
-    dsv_line_t  *dsv_line = dsv_line_new();
+    xt_dsv_line_t  *dsv_line = xt_dsv_line_new();
     int         delim;
     off_t       pos;
     bool        is_exon;
@@ -412,15 +412,15 @@ unsigned long   sum_exons(FILE *gtf_stream)
     do 
     {
 	pos = ftello(gtf_stream);
-	if ( (delim = dsv_line_read(dsv_line, gtf_stream, "\t")) != EOF )
+	if ( (delim = xt_dsv_line_read(dsv_line, gtf_stream, "\t")) != EOF )
 	{
-	    gtf_feature_type = dsv_line_get_fields_ae(dsv_line, 2);
+	    gtf_feature_type = xt_dsv_line_get_fields_ae(dsv_line, 2);
 	    // fprintf(stderr, "Feature = %s\n", gtf_feature_type);
 	    is_exon = (strcmp(gtf_feature_type, "exon") == 0);
 	    if ( is_exon )
 	    {
-		gtf_start_text = dsv_line_get_fields_ae(dsv_line, 3);
-		gtf_end_text = dsv_line_get_fields_ae(dsv_line, 4);
+		gtf_start_text = xt_dsv_line_get_fields_ae(dsv_line, 3);
+		gtf_end_text = xt_dsv_line_get_fields_ae(dsv_line, 4);
 		
 		start = strtol(gtf_start_text, &endp, 10);
 		if ( *endp != '\0' )
@@ -475,7 +475,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
     unsigned long   length;
     double  eff_length, cov, est_count;
     int     c, status;
-    dsv_line_t  *dsv_line = dsv_line_new();
+    xt_dsv_line_t  *dsv_line = xt_dsv_line_new();
     bool    field_ok;
     
     for (c = 0; c < file_count; ++c)
@@ -509,18 +509,18 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	}
 	
 	// FIXME: Create GTF class in biolibc?
-	while ( dsv_line_read(dsv_line, gtf_stream, "\t") != EOF )
+	while ( xt_dsv_line_read(dsv_line, gtf_stream, "\t") != EOF )
 	{
 	    // Skip header and comment lines
-	    if ( *dsv_line_get_fields_ae(dsv_line, 0) != '#' )
+	    if ( *xt_dsv_line_get_fields_ae(dsv_line, 0) != '#' )
 	    {
-		gtf_feature_type = dsv_line_get_fields_ae(dsv_line, 2);
-		gtf_attributes = dsv_line_get_fields_ae(dsv_line, 8);
+		gtf_feature_type = xt_dsv_line_get_fields_ae(dsv_line, 2);
+		gtf_attributes = xt_dsv_line_get_fields_ae(dsv_line, 8);
 		if ( strcmp(gtf_feature_type, "transcript") == 0 )
 		{
 		    if ( Debug )
 			fprintf(stderr, "Seq: %s  Feature type: %s\n",
-			    dsv_line_get_fields_ae(dsv_line, 0),
+			    xt_dsv_line_get_fields_ae(dsv_line, 0),
 			    gtf_feature_type);
 		    //printf("%s\n", gtf_start_text);
 		    //printf("%s\n", gtf_end_text);
@@ -655,7 +655,7 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 			    transcript_id, length, eff_length, est_count, tpm, fpkm);
 		}
 	    }
-	    dsv_line_free(dsv_line);
+	    xt_dsv_line_free(dsv_line);
 	}
 	
 	fclose(gtf_stream);

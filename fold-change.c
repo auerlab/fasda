@@ -77,7 +77,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
     double      cond_tot_counts[MAX_CONDITIONS],
 		condition_stddevs[MAX_CONDITIONS],
 		*rep_counts[MAX_REPLICATES];    // 2D conditions x replicates
-    dsv_line_t  *dsv_lines[MAX_REPLICATES];
+    xt_dsv_line_t  *dsv_lines[MAX_REPLICATES];
     // Silence GCC 7 uninit warning, later versions OK
     char        *id = NULL, *new_id = NULL;
     int         delim;
@@ -92,16 +92,16 @@ int     fold_change(FILE *condition_streams[], int conditions,
     // Skip header line if present
     for (condition = 0; condition < conditions; ++condition)
     {
-	dsv_lines[condition] = dsv_line_new();
-	if ( dsv_line_read(dsv_lines[condition],
+	dsv_lines[condition] = xt_dsv_line_new();
+	if ( xt_dsv_line_read(dsv_lines[condition],
 	    condition_streams[condition], "\t") != '\n' )
 	{
 	    fprintf(stderr, "fold-change: Error reading first feature.\n");
 	    return EX_DATAERR;
 	}
-	id = dsv_line_get_fields_ae(dsv_lines[condition], 0);
+	id = xt_dsv_line_get_fields_ae(dsv_lines[condition], 0);
 	if ( strcmp(id, "target_id") == 0 )
-	    dsv_skip_rest_of_line(condition_streams[condition]);
+	    xt_dsv_skip_rest_of_line(condition_streams[condition]);
 	else
 	    rewind(condition_streams[condition]);
     
@@ -122,7 +122,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
 	for (condition = 0; condition < conditions; ++condition)
 	{
 	    // Read counts for all replicates of one feature
-	    delim = dsv_line_read(dsv_lines[condition],
+	    delim = xt_dsv_line_read(dsv_lines[condition],
 				  condition_streams[condition], "\t");
 	    if ( delim != EOF )
 	    {
@@ -139,11 +139,11 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		 *  on corresponding lines from each abundances file.
 		 */
 		
-		new_id = dsv_line_get_fields_ae(dsv_lines[condition], 0);
+		new_id = xt_dsv_line_get_fields_ae(dsv_lines[condition], 0);
 		if ( (condition > 0) && (strcmp(new_id, id) != 0) )
 		{
 		    fprintf(stderr, "fold-change: Abundances files out of sync: %s %s\n",
-			    id, dsv_line_get_fields_ae(dsv_lines[condition], 0));
+			    id, xt_dsv_line_get_fields_ae(dsv_lines[condition], 0));
 		    return EX_DATAERR;
 		}
 		
@@ -156,7 +156,7 @@ int     fold_change(FILE *condition_streams[], int conditions,
 		
 		if ( rep_counts[condition] == NULL )
 		{
-		    num_repls[condition] = dsv_line_get_num_fields(dsv_lines[0]) - 1;
+		    num_repls[condition] = xt_dsv_line_get_num_fields(dsv_lines[0]) - 1;
 		    rep_counts[condition] =
 			xt_malloc(num_repls[condition],
 				  sizeof(*rep_counts[condition]));
@@ -385,7 +385,7 @@ unsigned agreement(int c1, int c2, size_t num_repls[], double *rep_counts[])
  *  2022-05-16  Jason Bacon Begin
  ***************************************************************************/
 
-double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[],
+double  dsv_total_counts(xt_dsv_line_t *dsv_line, double rep_counts[],
 			 double *condition_stddevs)
 
 {
@@ -394,13 +394,13 @@ double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[],
     char    *end;
     
     // All but first field are counts
-    for (f = 1, total_counts = 0.0; f < dsv_line_get_num_fields(dsv_line); ++f)
+    for (f = 1, total_counts = 0.0; f < xt_dsv_line_get_num_fields(dsv_line); ++f)
     {
-	rep_counts[f-1] = strtof(dsv_line_get_fields_ae(dsv_line, f), &end);
+	rep_counts[f-1] = strtof(xt_dsv_line_get_fields_ae(dsv_line, f), &end);
 	if ( *end != '\0' )
 	{
 	    fprintf(stderr, "fold-change: Invalid abundance: %s\n",
-		    dsv_line_get_fields_ae(dsv_line, f));
+		    xt_dsv_line_get_fields_ae(dsv_line, f));
 	    return EX_DATAERR;
 	}
 	total_counts += rep_counts[f-1];
@@ -408,10 +408,10 @@ double  dsv_total_counts(dsv_line_t *dsv_line, double rep_counts[],
 	//getchar();
     }
     
-    mean = total_counts / dsv_line_get_num_fields(dsv_line);
-    for (f = 1, sum_sq = 0; f < dsv_line_get_num_fields(dsv_line); ++f)
+    mean = total_counts / xt_dsv_line_get_num_fields(dsv_line);
+    for (f = 1, sum_sq = 0; f < xt_dsv_line_get_num_fields(dsv_line); ++f)
 	sum_sq += (rep_counts[f-1] - mean) * (rep_counts[f-1] - mean);
-    variance = sum_sq / dsv_line_get_num_fields(dsv_line);
+    variance = sum_sq / xt_dsv_line_get_num_fields(dsv_line);
     *condition_stddevs = sqrt(variance);
     return total_counts;
 }
