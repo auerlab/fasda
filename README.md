@@ -319,8 +319,8 @@ However, if you're a little bit Unix-savvy, you can very quickly set up a
 workstation, laptop, or VM using
 [desktop-installer](http://www.acadix.biz/desktop-installer.php).
 [GhostBSD](https://ghostbsd.org/) offers an experience very similar
-to Ubuntu, but is build on FreeBSD rather than Debian Linux.  GhostBSD
-packages lag behind FreeBSD by a few months, but this is not generally
+to Ubuntu, but is built on FreeBSD rather than Debian Linux.  GhostBSD
+packages lag behind FreeBSD ports slightly, but this is not generally
 an issue and there are workarounds.
 
 To install the binary package on FreeBSD:
@@ -371,49 +371,3 @@ See the pkgsrc documentation for more information.
 
 Community support for pkgsrc is available through the
 [pkgsrc-users](http://netbsd.org/mailinglists) mailing list.
-
-### Building FASDA locally
-
-Below are caveman install instructions for development purposes, not
-recommended for regular use.
-FASDA depends on [biolibc](https://github.com/auerlab/biolibc).
-Install biolibc before attempting to build FASDA.
-
-1. Clone the repository
-2. Run "make depend" to update Makefile.depend
-3. Run "make install"
-
-The default install prefix is ../local.  Clone FASDA, biolibc and dependent
-apps into sibling directories so that ../local represents a common path to all
-of them.
-
-To facilitate incorporation into package managers, the Makefile respects
-standard make/environment variables such as CC, CFLAGS, PREFIX, etc.  
-
-Add-on libraries required for the build, such as biolibc, should be found
-under `${LOCALBASE}`, which defaults to ../local.
-The library, headers, and man pages are installed under
-`${DESTDIR}${PREFIX}`.  DESTDIR is empty by default and is primarily used by
-package managers to stage installations.  PREFIX defaults to `${LOCALBASE}`.
-
-To install directly to /myprefix, assuming biolibc is installed there as well,
-using a make variable:
-
-```
-make LOCALBASE=/myprefix clean depend install
-```
-
-Using an environment variable:
-
-```
-# C-shell and derivatives
-setenv LOCALBASE /myprefix
-make clean depend install
-
-# Bourne shell and derivatives
-LOCALBASE=/myprefix
-export LOCALBASE
-make clean depend install
-```
-
-View the Makefile for full details.
