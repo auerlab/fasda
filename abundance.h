@@ -1,6 +1,6 @@
 #ifndef __ABUNDANCE_H__
 
-#define MAX_CMD_LEN         1024
+#define MAX_CMD_LEN         8192
 #define MAX_FILE_COUNT      1024    // SAM stream args to abundance.c
 #define MAX_SEQ_LEN         1024
 #define MAX_GTF_LINE_LEN    8192

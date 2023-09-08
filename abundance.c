@@ -514,6 +514,10 @@ int     stringtie_abundance(const char *feature_file, char *sam_files[],
 	    // Skip header and comment lines
 	    if ( *xt_dsv_line_get_fields_ae(dsv_line, 0) != '#' )
 	    {
+		// gcc 8 warnings
+		fpkm = tpm = 0;
+		coverage = transcript_id = NULL;
+		
 		gtf_feature_type = xt_dsv_line_get_fields_ae(dsv_line, 2);
 		gtf_attributes = xt_dsv_line_get_fields_ae(dsv_line, 8);
 		if ( strcmp(gtf_feature_type, "transcript") == 0 )
