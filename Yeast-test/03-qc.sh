@@ -7,7 +7,7 @@
 
 usage()
 {
-    printf "Usage: $0\n"
+    printf "Usage: $0 replicates\n"
     exit 1
 }
 
