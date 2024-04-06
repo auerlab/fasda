@@ -733,7 +733,11 @@ int     bl_gff3_find_overlapping_alignment(bl_gff3_t *feature,
 	// Discard all buffered alignments.  If they didn't overlap this
 	// gene, they won't overlap the next either, since they're sorted.
 	rewind(buffer_stream);
-	ftruncate(fileno(buffer_stream), 0);
+	if ( ftruncate(fileno(buffer_stream), 0) != 0 )
+	{
+	    fprintf(stderr, "%s(): Could not truncate file.\n", __FUNCTION__);
+	    exit(EX_OSERR);
+	}
 	
 	while ( ((status = bl_sam_read(alignment, sam_stream, SAM_MASK)) == BL_READ_OK) &&
 		(bl_sam_gff3_cmp(alignment, feature) < 0) )
@@ -852,7 +856,11 @@ double  count_coverage(bl_gff3_t *feature, bl_sam_t *alignment,
 	// Discard all buffered alignments.  If they didn't overlap this
 	// gene, they won't overlap the next either, since they're sorted.
 	rewind(buffer_stream);
-	ftruncate(fileno(buffer_stream), 0);
+	if ( ftruncate(fileno(buffer_stream), 0) != 0 )
+	{
+	    fprintf(stderr, "%s(): Could not truncate file.\n", __FUNCTION__);
+	    exit(EX_OSERR);
+	}
 	buffer_pos = 0;     // rewind() obsoletes ftell() above
 	
 	while ( (bl_sam_read(alignment, sam_stream, SAM_MASK) == BL_READ_OK)
@@ -1030,13 +1038,31 @@ void    sort_abundance(char *abundance_files[], int file_count)
     {
 	snprintf(cmd, MAX_CMD_LEN + 1, "head -n 1 %s > %s.sorted",
 		 abundance_files[c], abundance_files[c]);
-	system(cmd);
-	snprintf(cmd, MAX_CMD_LEN + 1, "fgrep -v eff_length %s | sort >> %s.sorted",
-		 abundance_files[c], abundance_files[c]);
-	system(cmd);
-	snprintf(cmd, MAX_CMD_LEN + 1, "mv -f %s.sorted %s",
-		 abundance_files[c], abundance_files[c]);
-	system(cmd);
+	if ( system(cmd) == 0 )
+	{
+	    snprintf(cmd, MAX_CMD_LEN + 1, "fgrep -v eff_length %s | sort >> %s.sorted",
+		     abundance_files[c], abundance_files[c]);
+	    if ( system(cmd) == 0 )
+	    {
+		snprintf(cmd, MAX_CMD_LEN + 1, "mv -f %s.sorted %s",
+			 abundance_files[c], abundance_files[c]);
+		if ( system(cmd) != 0 )
+		{
+		    fprintf(stderr, "%s(): mv command failed.\n", __FUNCTION__);
+		    exit(EX_DATAERR);
+		}
+	    }
+	    else
+	    {
+		fprintf(stderr, "%s(): fgrep command failed.\n", __FUNCTION__);
+		exit(EX_DATAERR);
+	    }
+	}
+	else
+	{
+	    fprintf(stderr, "%s(): head command failed.\n", __FUNCTION__);
+	    exit(EX_DATAERR);
+	}
     }
 }
 

@@ -267,7 +267,11 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	
 	for (c = 0; c < feature_count; ++c)
 	{
-	    fscanf(tmp_streams[sample], "%lf", &ratios[c]);
+	    if ( fscanf(tmp_streams[sample], "%lf", &ratios[c]) != 1 )
+	    {
+		fprintf(stderr, "%s(): fscanf() failed.\n", __FUNCTION__);
+		exit(EX_DATAERR);
+	    }
 	}
 	
 	qsort(ratios, feature_count, sizeof(*ratios),
