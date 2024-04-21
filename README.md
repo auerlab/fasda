@@ -51,6 +51,8 @@ a non-parametric test that provides high stability and low FDR.  The main
 limitation of Mann-Whitney is that it requires a minimum of 8 samples
 to achieve reasonable statistical power.  As a result, it is not
 useful for typical RNA-Seq or ATAC-Seq experiments with only 3 replicates.
+However, exact P-values are preferable anyway, and FASDA computes them
+almost instantaneously for 3 or 4 replicates.
 
 Parametric tests used by popular tools can provide reasonable power at very
 low sample sizes, in exchange for high FDR when the data do not fit the
