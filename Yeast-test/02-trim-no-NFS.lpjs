@@ -8,6 +8,7 @@
 #lpjs cores-per-job 3
 #lpjs min-cores-per-node all
 #lpjs mem-per-core 50MiB
+#lpjs push-command rsync -av %w/*.stdout %w/*.stderr %h:%d/Logs/02-trim
 
 # FreeBSD ports are installed under /usr/local
 # pkgsrc packages in a non-priveleged tree installed by auto-pkgsrc-setup
@@ -64,3 +65,5 @@ outfile_snf2=$(basename ${infile_snf2%.fastq.gz}-trimmed.fastq.zst)
 set -x
 time fastq-trim --3p-adapter1 $adapter $infile_wt $outfile_wt
 time fastq-trim --3p-adapter1 $adapter $infile_snf2 $outfile_snf2
+rsync -av $outfile_wt $outfile_snf2 \
+    ${LPJS_SUBMIT_HOST}:${LPJS_SUBMIT_DIRECTORY}/Results/02-trim
