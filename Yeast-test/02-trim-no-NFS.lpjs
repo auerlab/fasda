@@ -1,0 +1,66 @@
+#!/bin/sh
+
+##########################################################################
+#   Note: Use fetch-fastas.sh on the submit node to download input files
+##########################################################################
+
+#lpjs jobs 10
+#lpjs cores-per-job 3
+#lpjs min-cores-per-node all
+#lpjs mem-per-core 50MiB
+
+# FreeBSD ports are installed under /usr/local
+# pkgsrc packages in a non-priveleged tree installed by auto-pkgsrc-setup
+# are installed under ~/Pkgsrc/pkg by default
+# pkgsrc packages in a priveleged tree (installed by root) on Linux and netBSD
+# are found under /usr/pkg by default
+# pkgsrc packages in a priveleged tree (installed by root) on macOS
+# are found under /opt/pkg by default (/usr is read-only on Macs)
+# $HOME is not set on Darwin
+if [ $(uname) = Darwin ]; then
+    export PATH=/usr/local/bin:/Users/bacon/Pkgsrc/pkg/bin:/usr/pkg/bin:/opt/pkg/bin:$PATH
+else
+    export PATH=/usr/local/bin:$HOME/Pkgsrc/pkg/bin:/usr/pkg/bin:/opt/pkg/bin:$PATH
+fi
+
+# Put some job info in the output
+hostname
+pwd
+printenv | fgrep LPJS_
+which rsync
+
+# Fake index for script testing
+: ${LPJS_ARRAY_INDEX:=1}
+
+input_dir=Results/01-fetch/Raw-renamed
+index=$(printf "%02d" $LPJS_ARRAY_INDEX)
+# Each job will trim one raw input file
+infile_wt=$input_dir/WT-$index.fastq.gz
+infile_snf2=$input_dir/SNF2-$index.fastq.gz
+
+# File created by lpjs submit so we can detect a shared filesystem
+# If this file does not exist, fetch it.  This script assumes it is present
+# on the submit host in the directory from which the job was submitted.
+marker=lpjs-$LPJS_SUBMIT_HOST-shared-fs-marker
+if [ ! -e $marker ]; then
+    printf "$marker does not exist.  Pulling files from submit node.\n"
+    set -x
+    # Don't use rsync -a if files are symbolic links
+    printf "Fetching $LPJS_SUBMIT_HOST:$LPJS_SUBMIT_DIRECTORY/$infile_wt\n"
+    rsync --copy-links ${LPJS_SUBMIT_HOST}:$LPJS_SUBMIT_DIRECTORY/$infile_wt .
+    printf "Fetching $LPJS_SUBMIT_HOST:$LPJS_SUBMIT_DIRECTORY/$infile_snf2\n"
+    rsync --copy-links ${LPJS_SUBMIT_HOST}:$LPJS_SUBMIT_DIRECTORY/$infile_snf2 .
+    set +x
+else
+    printf "$marker found.  No need to transfer files.\n"
+fi
+
+# Run the trim command
+adapter=AGATCGGAAGAG
+infile_wt=$(basename $infile_wt)
+infile_snf2=$(basename $infile_snf2)
+outfile_wt=$(basename ${infile_wt%.fastq.gz}-trimmed.fastq.zst)
+outfile_snf2=$(basename ${infile_snf2%.fastq.gz}-trimmed.fastq.zst)
+set -x
+time fastq-trim --3p-adapter1 $adapter $infile_wt $outfile_wt
+time fastq-trim --3p-adapter1 $adapter $infile_snf2 $outfile_snf2
