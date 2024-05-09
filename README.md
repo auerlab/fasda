@@ -14,9 +14,18 @@ simple perl or python scripts.
 
 The differential analysis step itself has been problematic,
 however, with few well-developed tools available and many of them requiring
-fairly sophisticated R scripting for basic use.  Code maintenance
+fairly sophisticated R scripting for basic use.  R is a wondrous tool
+for quick-and-dirty statistical computations.  It embodies immense
+knowledge of statistics that most of us lack, and hence enables us
+to perform many statistical analyses that we could not do otherwise.
+However, Rscript suffers from severe limitations as a programming language,
+which partly explains the difficulties in using R-based tools.  For
+application development, I choose to use a compiled language (and compare
+the results to what R produces as part of the verification process).
+
+Code maintenance
 has also been an issue, with even the most popular tools falling into
-disrepair at times and frequently presenting installation issues due to
+disrepair at times, and frequently presenting installation issues due to
 incompatibility with the latest version of R or other dependencies.
 
 FASDA is a fast and simple differential analysis tool that
@@ -25,7 +34,9 @@ skills.  It uses a simple command-line interface (CLI) analogous
 to popular tools such as bedtools, BWA, and samtools.
 The code is written entirely in C and built on
 [biolibc](https://github.com/auerlab/biolibc) to maximize efficiency,
-portability, and interoperability with other tools.
+portability, and interoperability with other tools.  Statistical
+analysis results were verified to match those of R tools, in addition
+to being carefully studied at the mathematical level.
 
 Starting with kallisto output, computing fold-change and associated P-values
 for two conditions can typically be completed in a few seconds with three
