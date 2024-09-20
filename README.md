@@ -4,8 +4,9 @@
 
 There are mature, easy-to-use, and efficient tools for all steps in a typical
 differential analysis pipeline up to and including alignment (read mapping)
-and peak calling.  Well-maintained tools such as FastQC, cutadapt, fastq-trim,
-BWA, Bowtie2, HISAT2, samtools, bedtools, and MACS2 make the early stages of
+and peak calling.  Well-maintained tools such as FastQC, fastq-trim, cutadapt,
+kallisto, BWA, Bowtie2, HISAT2, samtools, bedtools, and MACS2/MACS3
+make the early stages of
 an RNA-Seq, ATAC-Seq, or ChIP-Seq analysis fairly straightforward.
 
 Data-massaging before and after differential analysis is also relatively
@@ -13,34 +14,35 @@ simple using standard Unix tools such as awk, cut, grep, sed, and tr, or
 simple perl or python scripts.
 
 The differential analysis step itself has been problematic,
-however, with few well-developed tools available and many of them requiring
+however, with few well-developed tools available, and many of them requiring
 fairly sophisticated R scripting for basic use.  R is a wondrous tool
 for quick-and-dirty statistical computations.  It embodies immense
 knowledge of statistics that most of us lack, and hence enables us
-to perform many statistical analyses that we could not do otherwise.
-However, Rscript suffers from severe limitations as a programming language,
-which partly explains the difficulties in using R-based tools.  For
-application development, I choose to use a compiled language (and compare
-the results to what R produces as part of the verification process).
+to perform many standard analyses without the aid of a statistician.
+However, Rscript suffers from severe limitations as an application development
+language, which partly explains the difficulties in using R-based tools.  For
+application development, it is often preferable to use a compiled
+language (and compare the results to what R produces as part of the
+verification process).
 
-Code maintenance
-has also been an issue, with even the most popular tools falling into
+Code maintenance has also historically been problematic,
+with even the most popular tools falling into
 disrepair at times, and frequently presenting installation issues due to
 incompatibility with the latest version of R or other dependencies.
 
 FASDA is a fast and simple differential analysis tool that
-just works and does not require any knowledge beyond basic Unix command-line
+just works, and does not require any knowledge beyond basic Unix command-line
 skills.  It uses a simple command-line interface (CLI) analogous
 to popular tools such as bedtools, BWA, and samtools.
-The code is written entirely in C and built on
-[biolibc](https://github.com/auerlab/biolibc) to maximize efficiency,
-portability, and interoperability with other tools.  Statistical
+To maximize efficiency, portability, and interoperability with other
+tools, the code is written entirely in C and built on
+[biolibc](https://github.com/auerlab/biolibc).  Statistical
 analysis results were verified to match those of R tools, in addition
 to being carefully studied at the mathematical level.
 
 Starting with kallisto output, computing fold-change and associated P-values
 for two conditions can typically be completed in a few seconds with three
-simple commands:
+simple commands, for example:
 
 ```
 fasda normalize --output c1-all-norm.tsv c1-*/abundance.tsv
@@ -48,15 +50,26 @@ fasda normalize --output c2-all-norm.tsv c2-*/abundance.tsv
 fasda fold-change --output FC.txt c1-all-norm.tsv c2-all-norm.tsv
 ```
 
+For other read mappers that output SAM format alignments,
+a kallisto-format .tsv
+file can be generated from the alignment files and a GFF3 file using
+fasda abundance, for example:
+
+```
+fasda abundance features.gff3 alignments.bam
+```
+
 Another issue addressed by FASDA is the fact that most popular
 differential analysis tools suffer from a high
 false discovery rate (FDR) (Li, et al:
 [https://doi.org/10.1186/s13059-022-02648-4](https://doi.org/10.1186/s13059-022-02648-4))
 
-FASDA computes exact P-values for experiments with
+FASDA computes *exact* P-values for experiments with
 fewer than 5 replicates and near-exact P-values for 5 to 7 replicates
 (possible count pairs are down-sampled to control run time, but resulting
-P-values are generally stable to 2 decimal places).  For 8 or more replicates,
+P-values are generally stable to 2 decimal places).
+
+For 8 or more replicates,
 we use the Mann-Whitney U-test (A.K.A. Wilcoxon rank-sum test),
 a non-parametric test that provides high stability and low FDR.  The main
 limitation of Mann-Whitney is that it requires a minimum of 8 samples
@@ -78,7 +91,7 @@ prior to computing fold-changes and P-values.
 
 ## Status
 
-FASDA is currently undergoing alpha-testing.
+FASDA is currently alpha-quality.
 
 The kallisto abundance.tsv file format is used as input for
 normalization and computing fold-change and P-values.  The "fasda abundance"
@@ -88,9 +101,9 @@ aligners can be used.  This is currently used to support output from hisat2,
 and will support ChIP-Seq and ATAC-Seq peak data in the future.
 
 FASDA's abundance estimates are currently about 40% higher than kallisto's,
-but they are proportional.  I would assume that kallisto's estimates are
-more accurate, but the resulting fold-changes are the same.  This
-will be explored further when time permits.
+but they are proportional, so the resulting fold-changes are the same.
+This is likely due to higher alignment rates produced by hisat2 in our
+tests.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
