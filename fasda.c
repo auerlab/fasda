@@ -57,7 +57,8 @@ int     main(int argc,char *argv[])
     else if ( argc < 2 )
     {
 	// LIBEXECDIR must be set by Makefile
-	fprintf(stderr, "Usage: %s subcommand [args]\n", argv[0]);
+	fprintf(stderr, "Usage: %s --version\n", argv[0]);
+	fprintf(stderr, "       %s subcommand [args]\n", argv[0]);
 	fprintf(stderr, "\nSubcommands:\n\n");
 	if ( (dp = opendir(LIBEXECDIR)) != NULL )
 	{
