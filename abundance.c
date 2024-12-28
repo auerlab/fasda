@@ -370,8 +370,9 @@ int     exact_abundance(const char *feature_file, char *sam_files[],
 	    ++features_processed;
 	    if ( isatty(fileno(stdout)) && (features_processed % 100 == 0) )
 	    {
-		printf("Chrom: %3s  Features processed: %lu\r",
-			BL_GFF3_SEQID(&feature), features_processed);
+		if ( isatty(1) )
+		    printf("Chrom: %3s  Features processed: %lu\r",
+			    BL_GFF3_SEQID(&feature), features_processed);
 		fflush(stdout);
 	    }
 	}
