@@ -269,7 +269,8 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	{
 	    if ( fscanf(tmp_streams[sample], "%lf", &ratios[c]) != 1 )
 	    {
-		fprintf(stderr, "%s(): fscanf() failed.\n", __FUNCTION__);
+		fprintf(stderr, "%s(): fscanf() failed reading feature %zu in %s.\n",
+			__FUNCTION__, c, abundance_files[sample]);
 		exit(EX_DATAERR);
 	    }
 	}
