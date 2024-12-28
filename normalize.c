@@ -236,6 +236,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	    */
 	    
 	    // Filter out genes with -inf mean
+	    // FIXME: This check does not seem to work on all CPUs
 	    if ( feature_mean != -INFINITY )
 	    {
 		for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
@@ -247,7 +248,12 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	    }
 	    ++original_feature_count;
 	}
-	fprintf(stderr, "%s(): After removing features with man = -INFINITY:\n",
+    }
+    
+    // if ( Debug )
+    if ( 1 )
+    {
+	fprintf(stderr, "%s(): After removing features with mean = -INFINITY:\n",
 		__FUNCTION__);
 	fprintf(stderr, "%s(): Info: feature_count = %zu\n",
 		__FUNCTION__, feature_count);
