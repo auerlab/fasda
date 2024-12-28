@@ -125,7 +125,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 
 {
     xt_dsv_line_t  *dsv_lines[FASDA_MAX_SAMPLES];
-    size_t      sample, sample_count, feature_count = 0, c;
+    size_t      sample, sample_count, feature_count, original_feature_count, c;
     FILE        *abundance_streams[FASDA_MAX_SAMPLES],
 		*tmp_streams[FASDA_MAX_SAMPLES],
 		*norm_sample_streams[FASDA_MAX_SAMPLES];
@@ -159,6 +159,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
     // Abundance file format:
     // target_id       length  eff_length      est_counts      tpm
     
+    feature_count = original_feature_count = 0;
     while ( ! feof(abundance_streams[0]) )
     {
 	for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
@@ -240,9 +241,18 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
 		    fprintf(tmp_streams[sample], "%f\n",
 			    lc[sample] - feature_mean);
+		// FIXME: This was outside the if, which caused
+		// problems reading back the tmp files
+		++feature_count;
 	    }
-	    ++feature_count;
+	    ++original_feature_count;
 	}
+	fprintf(stderr, "%s(): After removing features with man = -INFINITY:\n",
+		__FUNCTION__);
+	fprintf(stderr, "%s(): Info: feature_count = %zu\n",
+		__FUNCTION__, feature_count);
+	fprintf(stderr, "%s(): Info: original_feature_count = %zu\n",
+		__FUNCTION__, original_feature_count);
     }
     
     /*
@@ -269,8 +279,8 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	{
 	    if ( fscanf(tmp_streams[sample], "%lf", &ratios[c]) != 1 )
 	    {
-		fprintf(stderr, "%s(): fscanf() failed reading feature %zu in %s.\n",
-			__FUNCTION__, c, abundance_files[sample]);
+		fprintf(stderr, "%s(): fscanf() failed c = %zu in tmp_streams[%zu]\n.\n",
+			__FUNCTION__, c, sample);
 		exit(EX_DATAERR);
 	    }
 	}
