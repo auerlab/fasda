@@ -125,14 +125,14 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 
 {
     xt_dsv_line_t  *dsv_lines[FASDA_MAX_SAMPLES];
-    size_t      sample, sample_count, feature_count, original_feature_count, c;
+    size_t      sample, sample_count, feature_count, non_zero_feature_count, c;
     FILE        *abundance_streams[FASDA_MAX_SAMPLES],
 		*tmp_streams[FASDA_MAX_SAMPLES],
 		*norm_sample_streams[FASDA_MAX_SAMPLES];
     char        *end, *target_id,
 		norm_sample_file[PATH_MAX + 1], *p;
-    double      count, sum_lcs, lc[FASDA_MAX_SAMPLES],
-		feature_mean, *ratios, median_ratio[FASDA_MAX_SAMPLES],
+    double      read_count, sum_log_count, log_count[FASDA_MAX_SAMPLES],
+		mean_log_count, *ratios, median_ratio[FASDA_MAX_SAMPLES],
 		scaling_factor[FASDA_MAX_SAMPLES];
     
     for (sample_count = 0; abundance_files[sample_count] != NULL; ++sample_count)
@@ -159,10 +159,10 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
     // Abundance file format:
     // target_id       length  eff_length      est_counts      tpm
     
-    feature_count = original_feature_count = 0;
+    feature_count = non_zero_feature_count = 0;
     while ( ! feof(abundance_streams[0]) )
     {
-	for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
+	for (sample = 0, sum_log_count = 0; sample < sample_count; ++sample)
 	{
 	    if ( xt_dsv_line_read(dsv_lines[sample], abundance_streams[sample],
 				"\t") == EOF )
@@ -201,19 +201,19 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		 *  2.  Mean of all log(counts) for feature (pseudo-reference)
 		 */
 		
-		count = strtof(xt_dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
+		read_count = strtof(xt_dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
 		if ( *end != '\0' )
 		{
 		    fprintf(stderr, "normalize: Invalid count: %s\n",
 			    xt_dsv_line_get_fields_ae(dsv_lines[sample_count],0));
 		    return EX_DATAERR;
 		}
-		lc[sample] = log(count);
+		log_count[sample] = log(read_count);
 		/*
 		if ( Debug )
-		    fprintf(stderr, "%0.1f ", lc[sample]);
+		    fprintf(stderr, "%0.1f ", log_count[sample]);
 		*/
-		sum_lcs += lc[sample];
+		sum_log_count += log_count[sample];
 	    }
 	}
 
@@ -228,7 +228,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	// FIXME: Is this check redundant?
 	if ( ! feof(abundance_streams[0]) )
 	{
-	    feature_mean = sum_lcs / sample_count;
+	    mean_log_count = sum_log_count / sample_count;
 	    /*
 	    if ( Debug )
 		fprintf(stderr, "feature mean [avg log(count)] = %f\n",
@@ -237,28 +237,29 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	    
 	    // Filter out genes with -inf mean
 	    // FIXME: This check does not seem to work on all CPUs
-	    if ( feature_mean != -INFINITY )
+	    if ( mean_log_count != -INFINITY )
 	    {
-		for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
+		for (sample = 0, sum_log_count = 0; sample < sample_count; ++sample)
 		    fprintf(tmp_streams[sample], "%f\n",
-			    lc[sample] - feature_mean);
+			    log_count[sample] - mean_log_count);
 		// FIXME: This was outside the if, which caused
 		// problems reading back the tmp files
-		++feature_count;
+		// How was this working on some systems?? (barracuda)
+		++non_zero_feature_count;
 	    }
-	    ++original_feature_count;
+	    ++feature_count;
 	}
     }
     
     // if ( Debug )
     if ( 1 )
     {
-	fprintf(stderr, "%s(): After removing features with mean = -INFINITY:\n",
+	fprintf(stderr, "%s(): After removing features with mean log count = -INFINITY:\n",
 		__FUNCTION__);
 	fprintf(stderr, "%s(): Info: feature_count = %zu\n",
 		__FUNCTION__, feature_count);
-	fprintf(stderr, "%s(): Info: original_feature_count = %zu\n",
-		__FUNCTION__, original_feature_count);
+	fprintf(stderr, "%s(): Info: non_zero_feature_count = %zu\n",
+		__FUNCTION__, non_zero_feature_count);
     }
     
     /*
@@ -281,7 +282,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
     {
 	rewind(tmp_streams[sample]);
 	
-	for (c = 0; c < feature_count; ++c)
+	for (c = 0; c < non_zero_feature_count; ++c)
 	{
 	    if ( fscanf(tmp_streams[sample], "%lf", &ratios[c]) != 1 )
 	    {
@@ -353,7 +354,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
     feature_count = 0;
     while ( ! feof(abundance_streams[0]) )
     {
-	for (sample = 0, sum_lcs = 0; sample < sample_count; ++sample)
+	for (sample = 0, sum_log_count = 0; sample < sample_count; ++sample)
 	{
 	    if ( xt_dsv_line_read(dsv_lines[sample], abundance_streams[sample],
 				"\t") == EOF )
@@ -372,7 +373,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		for (c = 0; c < xt_dsv_line_get_num_fields(dsv_lines[sample]); ++c)
 		    fprintf(norm_sample_streams[sample], "%s\t",
 			    xt_dsv_line_get_fields_ae(dsv_lines[sample], c));
-		count = strtof(xt_dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
+		read_count = strtof(xt_dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
 		if ( *end != '\0' )
 		{
 		    fprintf(stderr, "normalize: Invalid count: %s\n",
@@ -382,7 +383,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		
 		// Add normalized count
 		fprintf(norm_sample_streams[sample], "%f\n",
-			count * scaling_factor[sample]);
+			read_count * scaling_factor[sample]);
 		//fprintf(stderr, "sample %zu  nc = %f\n",
 		//        sample, count * scaling_factor[sample]);
 		//getchar();
@@ -398,7 +399,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 			    xt_dsv_line_get_fields_ae(dsv_lines[0],0));
 		
 		fprintf(norm_all_stream, "\t%f",
-			count * scaling_factor[sample]);
+			read_count * scaling_factor[sample]);
 	    }
 	}
 	
