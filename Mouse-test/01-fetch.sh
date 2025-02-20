@@ -2,7 +2,7 @@
 
 ##########################################################################
 #   Description:
-#       Fetch Yeast sample data and create symlinks with descriptive names
+#       Fetch mouse sample data and create symlinks with descriptive names
 #
 #       All necessary tools are assumed to be in PATH.  If this is not
 #       the case, add whatever code is needed here to gain access.
@@ -13,7 +13,7 @@
 
 usage()
 {
-    printf "Usage: $0 PRJ test|full\n"
+    printf "Usage: $0 PRJNA1004253|PRJNA1004652 test|full\n"
     exit 1
 }
 
