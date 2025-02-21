@@ -37,10 +37,10 @@ test)
     ;;
 
 full)
-    #dump=fasterq-dump
-    #dump_flags='--progress --debug'
-    dump=fastq-dump
-    dump_flags='-v --split-3'
+    dump=fasterq-dump
+    dump_flags='--progress --debug'
+    #dump=fastq-dump
+    #dump_flags='-v --split-3'
     ;;
 
 *)
@@ -51,7 +51,7 @@ esac
 
 # Document software versions used for publication
 uname -a
-fasterq-dump --version || true
+$dump --version || true
 pwd
 
 raw=Results/01-fetch/Raw
@@ -86,9 +86,15 @@ for condition in $conditions; do
 	printf "$sample = cond$cond_num-rep$biorep...\n"
 	if [ ! -e $raw/$fq1.zst ] || [ ! -e $raw/$fq2.zst ]; then
 	    if [ ! -e $raw/$fq1 ] || [ ! -e $raw/$fq2 ]; then
+		if [ $dump = fasterq-dump ]; then
+		    prefetch --progress $sample
+		fi
 		set -x
+		# fasterq-dump will fail if a directory named after the
+		# accession does not exist
 		$dump $dump_flags --outdir $raw $sample
 		set +x
+		rm -rf $sample
 	    else
 		printf "$raw/$fq1 exists.\n"
 	    fi
