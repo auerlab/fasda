@@ -5,34 +5,18 @@
 #lpjs threads-per-process processors-per-job
 # FIXME: 
 #lpjs pmem-per-processor 412MiB
-#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/pkg/java/openjdk17/bin:/usr/local/bin:/usr/bin:/bin
+##lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/pkg/java/openjdk17/bin:/usr/local/bin:/usr/bin:/bin
 
 ##########################################################################
 #   Description:
 #       Fetch Yeast sample data and create symlinks with descriptive names
 ##########################################################################
 
-usage()
-{
-    printf "Usage: $0 replicates\n"
-    printf "Example: $0 10\n"
-    exit 1
-}
-
-
 ##########################################################################
 #   Main
 ##########################################################################
 
-if [ $# != 1 ]; then
-    usage
-fi
-replicates=$1
-
-if [ $replicates -lt 3 ]; then
-    printf "Sample count must be at least 3.\n"
-    exit 1
-fi
+replicates=3
 
 # Document software versions used for publication
 uname -a
@@ -60,7 +44,7 @@ for condition in WT SNF2; do
     printf "$condition:\n"
 
     for sample in $(awk '{ print $1 }' $condition.tsv); do
-	fq="$sample.fastq.gz"
+	fq="$sample.fastq.zst"
 	biorep=$(awk -v sample=$sample '$1 == sample { print $4 }' $condition.tsv)
 	# Use 2 digits for all replicates in filenames for easier viewing
 	biorep=$(printf "%02d" $biorep)
@@ -74,10 +58,10 @@ for condition in WT SNF2; do
 	    set +x
 	    printf "Compressing...\n"
 	    # Background so next download can start
-	    gzip $raw/$sample.fastq &
+	    zstd -f $raw/$sample.fastq
 	fi
-	(cd $raw_renamed && ln -fs ../Raw/$fq $condition-$biorep.fastq.gz)
-	(cd $raw_renamed && ln -fs ../Raw/$fq cond$cond_num-rep$biorep.fastq.gz)
+	(cd $raw_renamed && ln -fs ../Raw/$fq $condition-$biorep.fastq.zst)
+	(cd $raw_renamed && ln -fs ../Raw/$fq cond$cond_num-rep$biorep.fastq.zst)
     done
     rm -f $condition.tsv
     cond_num=$(($cond_num + 1))
