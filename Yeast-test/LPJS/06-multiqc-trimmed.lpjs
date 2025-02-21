@@ -1,0 +1,47 @@
+#!/bin/sh -e
+
+#########################################################################
+#   Description:
+#   MultiQC is optional, but helpful for visualizing raw read quality
+#   and trimming results
+#
+#   Dependencies:
+#       Requires raw FastQC results.  Run after *-qc-raw.lpjs.
+##########################################################################
+
+##########################################################################
+#   Main
+##########################################################################
+
+#lpjs jobs 1
+#lpjs processors-per-job 1
+#lpjs threads-per-process processors-per-job
+# From lpjs peak mem:
+#lpjs pmem-per-processor 183MiB
+#lpjs log-dir Logs/06-multiqc-trimmed
+##############################################################################
+# Update PATH on a chimeric cluster (multiple operating systems used for
+# compute nodes)
+#
+# The PATH used by the package manager that installed LPJS (/usr/local for
+# FreeBSD ports, usually /usr/pkg or /*/pkg for pkgsrc), is automatically
+# prepended to the default PATH.  This is overridden by "#lpjs path", so
+# if we use it, we must add all directories ourselves.
+#
+# Add the default non-priveleged pkgsrc prefix used by auto-pkgsrc-setup.
+#
+# Caution: Different versions of rsync behave differently with respect
+# to creating path components at the destination.  Newer rsync requires
+# --mkpath while older ones included with macOS and RHEL do not support
+# this flag. Set path to use pkgsrc rsync in ~/Pkgsrc/pkg or /*/pkg.
+#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/local/bin:/usr/bin:/bin
+
+# multiqc: LC_ALL and LANG must be set to a UTF-8 character set
+# in your environment in order for the click module to function.
+export LC_ALL=en_US.UTF-8
+
+mkdir -p Results/06-multiqc-trimmed
+cd Results/06-multiqc-trimmed
+rm -rf *
+multiqc --version > ../../Logs/06-multiqc-trimmed/multiqc-version.txt 2>&1
+multiqc ../05-qc-trimmed 2>&1 | tee ../../Logs/06-multiqc-trimmed/multiqc.out

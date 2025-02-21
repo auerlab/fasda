@@ -1,0 +1,119 @@
+#!/bin/sh -e
+
+##########################################################################
+#   Script description:
+#       Trim adapters and low quality ends from Lumina reads
+#       Based on work of Dr. Andrea Rau:
+#       https://github.com/andreamrau/OpticRegen_2019
+#
+#   Dependencies:
+#       Requires directory structure.  Run after *-organize.sh.
+#
+#       All necessary tools are assumed to be in PATH.  If this is not
+#       the case, add whatever code is needed here to gain access.
+#       (Adding such code to your .bashrc or other startup script is
+#       generally a bad idea since it's too complicated to support
+#       every program with one environment.)
+##########################################################################
+
+##########################################################################
+# Fastq-trim:
+# Limit concurrent jobs to 9 to avoid becoming I/O-bound.
+# Fastq-trim is so fast it ends up using only about 40% CPU while waiting
+# for NFS on our albacore cluster (only gigabit Ethernet).  Clusters with
+# higher speed networks and file servers can handle more jobs.
+# We'll finish the job array just as fast running only 9 at a time and
+# getting better CPU utilization.  This will leave more processors
+# available for other jobs at the same time.
+# 2 xzcat, 2 zstd, and 1 fastq-trim, but xzcat and gzip use less than
+# half a core each
+# Set job array to number of samples.
+#lpjs jobs 6
+#lpjs processors-per-job 2
+#lpjs threads-per-process processors-per-job
+# From lpjs peak-mem:
+#lpjs pmem-per-processor 66MiB
+#lpjs log-dir Logs/04-trim
+##############################################################################
+# Update PATH on a chimeric cluster (multiple operating systems used for
+# compute nodes)
+#
+# The PATH used by the package manager that installed LPJS (/usr/local for
+# FreeBSD ports, usually /usr/pkg or /*/pkg for pkgsrc), is automatically
+# prepended to the default PATH.  This is overridden by "#lpjs path", so
+# if we use it, we must add all directories ourselves.
+#
+# Add the default non-priveleged pkgsrc prefix used by auto-pkgsrc-setup.
+#
+# Caution: Different versions of rsync behave differently with respect
+# to creating path components at the destination.  Newer rsync requires
+# --mkpath while older ones included with macOS and RHEL do not support
+# this flag. Set path to use pkgsrc rsync in ~/Pkgsrc/pkg or /*/pkg.
+#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/local/bin:/usr/bin:/bin
+#lpjs pull-command rsync --mkpath --copy-links %h:%s/Results/01-fetch/Raw-renamed/\*-sample%i-\*.xz Results/01-fetch/Raw-renamed
+#lpjs push-command rsync --mkpath -av %w/Results/04-trim %h:%s/Results
+
+# Document software versions used for publication
+uname -a
+hostname
+pwd
+which fastq-trim
+fastq-trim --version
+printenv
+
+##############################################################################
+# If this node cannot access the input files using NFS, pull them from
+# the submit node.  If all nodes use NFS, this can be removed.  Out macOS
+# node currently does not use NFS due to issues with Apple's full disk
+# access security feature.
+##############################################################################
+
+pwd
+ls
+
+: ${LPJS_ARRAY_INDEX:=1}
+
+sample=$LPJS_ARRAY_INDEX
+input1=$(ls Results/01-fetch/Raw-renamed/sample${sample}*)
+
+# In case this node uses file transfer and a temp working directory
+mkdir -p Results/04-trim
+
+# https://www.rootusers.com/gzip-vs-bzip2-vs-xz-performance-comparison/
+# xz offers the best compression by far, but is slow at mid (-5) to high (-9)
+# compression levels.  At -1, xz is faster than bzip2 while providing
+# comparable compression.  The newer zstd is both faster than gzip and
+# produces better compression, so gzip is essentially obsolete.
+# Experiment with compression levels (zstd -1, zstd-2, etc.) to optimize
+# for your hardware.
+#
+# A ZFS filesystem with lz4 compression should provide
+# enough compression for intermediate files without gzip, bzip2, or zstd.
+# However, this may cause a network bottleneck as all processes send
+# uncompressed FASTQ over NFS before it is compressed by the file server.
+# Using a compression tool on the compute node, so data are compressed before
+# being sent over the network, will reduce NFS traffic considerably.
+
+# zstd is faster than gzip and provides slightly better compression, but
+# kallisto can't read .zst files
+# https://github.com/pachterlab/kallisto/issues/383
+base=$(basename $input1)
+stem=${base%%-R*.fastq.xz}
+# suffix=gz
+# export GZIP=--fast  # Minimal compression to avoid CPU bottleneck
+suffix=zst
+output1=Results/04-trim/${stem}-R1.fastq.$suffix
+
+# This script is used for both RNA-Seq and ATAC-Seq
+adapter=AGATCGGAAGAG
+
+##############################################################################
+# Remove ~15 bases at 5' end due to bias and last base at 3' end
+# 5' bias is probably due to non-random cleavage and not a
+# quality issue, so -u +15 -U +15 is probably not necessary
+# -u +15 -U +15 \
+# fastq-trim is 2.5x faster with 1 core than cutadapt with 2 cores
+
+set -x
+time fastq-trim --3p-adapter1 $adapter --3p-adapter2 $adapter \
+    --min-qual 24 --polya-min-length 4 $input1 $output1

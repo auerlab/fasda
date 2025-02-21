@@ -24,7 +24,7 @@
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
 #lpjs pmem-per-processor 412MiB
-#lpjs log-dir Logs/02-qc-raw
+#lpjs log-dir Logs/05-qc-trimmed
 ##############################################################################
 # Update PATH on a chimeric cluster (multiple operating systems used for
 # compute nodes)
@@ -42,8 +42,8 @@
 # this flag. Set path to use pkgsrc rsync in ~/Pkgsrc/pkg or /*/pkg.
 # /usr/pkg/java is for NetBSD
 #lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/pkg/java/openjdk17/bin:/usr/local/bin:/usr/bin:/bin
-#lpjs pull-command rsync --mkpath --copy-links %h:%s/Results/01-fetch/Raw-renamed/\*-sample%i-* Results/01-fetch/Raw-renamed
-#lpjs push-command rsync -r Results/02-qc-raw %h:%s/Results
+#lpjs pull-command rsync --mkpath --copy-links %h:%s/Results/04-trim/\*-sample%i-* Results/04-trim
+#lpjs push-command rsync -r Results/05-qc-trimmed %h:%s/Results
 
 # Set a default value for testing outside the LPJS environment
 : ${LPJS_ARRAY_INDEX:=1}
@@ -56,15 +56,15 @@ which fastqc
 fastqc --version
 printenv
 
-input_dir='Results/01-fetch/Raw-renamed'
-output_dir='Results/02-qc-raw'
+input_dir='Results/04-trim'
+output_dir='Results/05-qc-trimmed'
 sample=$LPJS_ARRAY_INDEX
 # Example: chondro-sample1-rep1-time1-R1.fastq.xz
 input1=$(ls $input_dir/sample$sample-*)
 
 # Filename stems for fastqc output
 base1=$(basename $input1)
-stem_input1=${base1%.fastq.xz}
+stem_input1=${base1%.fastq.zst}
 printf "Processing $stem_input1 on $(hostname)...\n"
 
 # In case we're using file transfer, not NFS
@@ -72,4 +72,4 @@ mkdir -p $output_dir
 
 # Background the first three to run 4 jobs in parallel
 set -x
-zstdcat $input1 | fastqc -o Results/02-qc-raw stdin:$stem_input1
+zstdcat $input1 | fastqc -o Results/05-qc-trimmed stdin:$stem_input1
