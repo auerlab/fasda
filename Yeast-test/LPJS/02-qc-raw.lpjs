@@ -1,0 +1,75 @@
+#!/bin/sh -e
+
+##########################################################################
+#   Script description:
+#       Run quality checks on raw data
+#       Based on work of Dr. Andrea Rau:
+#       https://github.com/andreamrau/OpticRegen_2019
+#
+#   Dependencies:
+#       Requires directory structure.  Run after *-organize.sh.
+#
+#       All necessary tools are assumed to be in PATH.  If this is not
+#       the case, add whatever code is needed here to gain access.
+#       (Adding such code to your .bashrc or other startup script is
+#       generally a bad idea since it's too complicated to support
+#       every program with one environment.)
+##########################################################################
+
+# Set job array to number of samples.
+# Each invocation of this script will run 2 fastqc processes, forward
+# and reverse.
+#lpjs jobs 6
+#lpjs processors-per-job 2
+#lpjs threads-per-process processors-per-job
+# From lpjs peak-mem:
+#lpjs pmem-per-processor 412MiB
+#lpjs log-dir Logs/02-qc-raw
+##############################################################################
+# Update PATH on a chimeric cluster (multiple operating systems used for
+# compute nodes)
+#
+# The PATH used by the package manager that installed LPJS (/usr/local for
+# FreeBSD ports, usually /usr/pkg or /*/pkg for pkgsrc), is automatically
+# prepended to the default PATH.  This is overridden by "#lpjs path", so
+# if we use it, we must add all directories ourselves.
+#
+# Add the default non-priveleged pkgsrc prefix used by auto-pkgsrc-setup.
+#
+# Caution: Different versions of rsync behave differently with respect
+# to creating path components at the destination.  Newer rsync requires
+# --mkpath while older ones included with macOS and RHEL do not support
+# this flag. Set path to use pkgsrc rsync in ~/Pkgsrc/pkg or /*/pkg.
+# /usr/pkg/java is for NetBSD
+#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/pkg/java/openjdk17/bin:/usr/local/bin:/usr/bin:/bin
+#lpjs pull-command rsync --mkpath --copy-links %h:%s/Results/01-fetch/Raw-renamed/\*-sample%i-* Results/01-fetch/Raw-renamed
+#lpjs push-command rsync -r Results/02-qc-raw %h:%s/Results
+
+# Set a default value for testing outside the LPJS environment
+: ${LPJS_ARRAY_INDEX:=1}
+
+# Document software versions used for publication
+uname -a
+hostname
+pwd
+which fastqc
+fastqc --version
+printenv
+
+input_dir='Results/01-fetch/Raw-renamed'
+output_dir='Results/02-qc-raw'
+sample=$LPJS_ARRAY_INDEX
+# Example: chondro-sample1-rep1-time1-R1.fastq.xz
+input1=$(ls $input_dir/sample$sample-*)
+
+# Filename stems for fastqc output
+base1=$(basename $input1)
+stem_input1=${base1%.fastq.xz}
+printf "Processing $stem_input1 on $(hostname)...\n"
+
+# In case we're using file transfer, not NFS
+mkdir -p $output_dir
+
+# Background the first three to run 4 jobs in parallel
+set -x
+xzcat $input1 | fastqc -o Results/02-qc-raw stdin:$stem_input1

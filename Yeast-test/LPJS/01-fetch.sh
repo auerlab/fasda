@@ -1,12 +1,5 @@
 #!/bin/sh -e
 
-#lpjs jobs 1
-#lpjs processors-per-job 1
-#lpjs threads-per-process processors-per-job
-# FIXME: 
-#lpjs pmem-per-processor 412MiB
-##lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/pkg/java/openjdk17/bin:/usr/local/bin:/usr/bin:/bin
-
 ##########################################################################
 #   Description:
 #       Fetch Yeast sample data and create symlinks with descriptive names
@@ -31,6 +24,7 @@ mkdir -p $raw $raw_renamed
 # Link raw files to WT-rep or SNF-rep to indicate the biological condition
 # Link raw files to condX-repYY for easy and consistent scripting
 # I usually make cond1 the control (e.g. wild-type) or first time point
+sample_num=1
 cond_num=1
 for condition in WT SNF2; do
     # Select $replicates replicates
@@ -54,14 +48,21 @@ for condition in WT SNF2; do
 	    printf "Downloading $sample = $condition-$biorep = cond$cond_num-rep$biorep...\n"
 	    set -x
 	    # fasterq-dump --progress --force --outdir $raw $sample
-	    fastq-dump -v -split-3 --outdir $raw $sample
+	    # fasterq-dump now fails unless a directory exists with
+	    # the same name as the accession.  Docs say it's faster to
+	    # use prefetch first anyway.
+	    # https://github.com/ncbi/sra-tools/wiki/08.-prefetch-and-fasterq-dump
+	    prefetch --progress $sample
+	    fasterq-dump --progress --outdir $raw $sample
+	    rm -rf $sample  # Remove .sra files
 	    set +x
 	    printf "Compressing...\n"
 	    # Background so next download can start
 	    zstd -f $raw/$sample.fastq
 	fi
 	(cd $raw_renamed && ln -fs ../Raw/$fq $condition-$biorep.fastq.zst)
-	(cd $raw_renamed && ln -fs ../Raw/$fq cond$cond_num-rep$biorep.fastq.zst)
+	(cd $raw_renamed && ln -fs ../Raw/$fq sample$sample_num-cond$cond_num-rep$biorep.fastq.zst)
+	sample_num=$(($sample_num + 1))
     done
     rm -f $condition.tsv
     cond_num=$(($cond_num + 1))
