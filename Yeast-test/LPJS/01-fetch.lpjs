@@ -1,5 +1,12 @@
 #!/bin/sh -e
 
+#lpjs jobs 1
+#lpjs processors-per-job 1
+#lpjs threads-per-process processors-per-job
+# FIXME: 
+#lpjs pmem-per-processor 412MiB
+#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/pkg/java/openjdk17/bin:/usr/local/bin:/usr/bin:/bin
+
 ##########################################################################
 #   Description:
 #       Fetch Yeast sample data and create symlinks with descriptive names

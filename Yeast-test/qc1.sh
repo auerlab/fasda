@@ -2,14 +2,18 @@
 
 ##########################################################################
 #   Description:
-#       Run 1 file through fastqc
+#       Trim a single raw fastq file, storing results in data-dir and
+#       redirecting stdout and stderr to log-dir.  This script takes
+#       the filename last, so that it can easily be used with xargs
+#       to parallelize trimming.
 ##########################################################################
 
 usage()
 {
-    printf "Usage: $0 \n"
+    printf "Usage: $0 data-dir log-dir file\n"
     exit 1
 }
+
 
 ##########################################################################
 #   Main
@@ -18,17 +22,15 @@ usage()
 if [ $# != 3 ]; then
     usage
 fi
-report_dir=$1
+output_dir=$1
 log_dir=$2
 file=$3
 
-stem=`basename ${file%.fastq.gz}`
-report=$report_dir/${stem}_fastqc.zip
-if [ -e $report ]; then
-    printf "$report already exists.\n"
+base=`basename $file`
+output=$output_dir/$base
+if [ -e $output ]; then
+    printf "$output already exists.\n"
 else
-    printf "Generating $report...\n"
-    fastqc --outdir $report_dir $file \
-	> $log_dir/$stem.out 2> $log_dir/$stem.err
+    # Adapter discovered by fastq-scum
+    gzcat $file | fastqc -o Results/02-qc-raw stdin:$base
 fi
-

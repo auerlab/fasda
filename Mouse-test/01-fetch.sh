@@ -37,8 +37,10 @@ test)
     ;;
 
 full)
-    dump=fasterq-dump
-    dump_flags='--progress'
+    #dump=fasterq-dump
+    #dump_flags='--progress --debug'
+    dump=fastq-dump
+    dump_flags='-v --split-3'
     ;;
 
 *)

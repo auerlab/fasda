@@ -39,5 +39,5 @@ scripts=$(ls 0[1-9]-*.sh 1[0-9]-*.sh)
 for script in $scripts; do
     echo $script
     stage=${script%.*}
-    mkdir -p Results/$stage Logs/$stage
+    # mkdir -p Results/$stage Logs/$stage
 done
