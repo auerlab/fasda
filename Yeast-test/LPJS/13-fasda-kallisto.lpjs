@@ -1,0 +1,109 @@
+#!/bin/sh -e
+
+#lpjs jobs 1
+#lpjs processors-per-job 1
+#lpjs threads-per-process processors-per-job
+# From lpjs peak mem:
+#lpjs pmem-per-processor 183MiB
+##############################################################################
+# Update PATH on a chimeric cluster (multiple operating systems used for
+# compute nodes)
+#
+# The PATH used by the package manager that installed LPJS (/usr/local for
+# FreeBSD ports, usually /usr/pkg or /*/pkg for pkgsrc), is automatically
+# prepended to the default PATH.  This is overridden by "#lpjs path", so
+# if we use it, we must add all directories ourselves.
+#
+# Add the default non-priveleged pkgsrc prefix used by auto-pkgsrc-setup.
+#
+# Caution: Different versions of rsync behave differently with respect
+# to creating path components at the destination.  Newer rsync requires
+# --mkpath while older ones included with macOS and RHEL do not support
+# this flag. Set path to use pkgsrc rsync in ~/Pkgsrc/pkg or /*/pkg.
+#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/local/bin:/usr/bin:/bin
+
+##########################################################################
+#   Description:
+#       Run fasda normalize and fold-change on kallisto abundances
+##########################################################################
+
+usage()
+{
+    printf "Usage: $0 max-replicates\n"
+    exit 1
+}
+
+
+##########################################################################
+#   Function description:
+#       Pause until user presses return
+##########################################################################
+
+pause()
+{
+    local junk
+    
+    printf "Press return to continue..."
+    read junk
+}
+
+
+##########################################################################
+#   Main
+##########################################################################
+
+replicates=3
+
+# Use fasda built by cave-man-install.sh
+PATH=../../../../local/bin:$PATH
+export PATH
+
+uname -a
+fasda --version
+pwd
+
+kallisto_dir=../09-kallisto-quant
+fasda_dir=Results/13-fasda-kallisto
+log_dir=../../LPJS-logs/13-fasda-kallisto
+mkdir -p $fasda_dir
+cd $fasda_dir
+mkdir -p $log_dir
+
+# FIXME: Factor out to fasda-mw.sh?
+r0=$(printf '%02d' $replicates)
+for condition in 1 2; do
+    norm_file=cond$condition-all-norm-$r0.tsv
+    # Debug rm -f $norm_file
+    printf "Normalizing condition $condition: $replicates replicates\n"
+    files=""
+    for r in $(seq 1 $replicates); do
+	r2=$(printf "%02d" $r)
+	files="$files $kallisto_dir/sample*cond$condition-rep$r2/abundance.tsv"
+    done
+    printf "%s\n" $files
+    set -x
+    time fasda normalize --output $norm_file $files \
+	2>&1 | tee $log_dir/normalize-$condition-$r0-MW.out
+    set +x
+    printf "\nCondition $condition normalized counts:\n\n"
+    head $norm_file
+done
+pause
+
+de_file=fc-$r0.txt
+# Debug rm -f $de_file
+printf "Computing fold-change for $replicates replicates...\n"
+set -x
+time fasda fold-change \
+    --output $de_file \
+    cond1-all-norm-$r0.tsv cond2-all-norm-$r0.tsv \
+    2>&1 | tee $log_dir/fc-$condition-$r0.out
+set +x
+
+pwd
+ls
+file=fc-$r0.txt
+more $file
+printf "\n%-25s %10s %10s\n" "File" "Features" "P < 0.05"
+printf "%-25s %10s %10s\n" $file: \
+	$(cat $file | wc -l) $(awk '$8 < 0.05' $file | wc -l)

@@ -22,7 +22,9 @@ else
     printf "$transcriptome.fai already exists.\n"
 fi
 
-index=Results/05-kallisto-index/transcriptome.index
+output_dir=Results/05-kallisto-index
+mkdir $output_dir
+index=$output_dir/transcriptome.index
 if [ ! -e $index ]; then
     printf "Building kallisto index...\n"
     set -x

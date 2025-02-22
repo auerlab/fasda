@@ -14,7 +14,7 @@
 #       every program with one environment.)
 ##########################################################################
 
-#lpjs jobs 18
+#lpjs jobs 6
 #lpjs processors-per-job 4
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
@@ -52,13 +52,13 @@ pwd
 # kallisto can't handle zstd and will simply seg fault rather than
 # issue an error message.  Manually decompress the zstd files into
 # a named pipe and let kallisto read from there.
-zst1=$(echo $input_dir/*sample${LPJS_ARRAY_INDEX}-*-R1.fastq.zst)
+zst1=$(echo $input_dir/*sample${LPJS_ARRAY_INDEX}-*.fastq.zst)
 pipe1=${zst1%.zst}.fifo
 mkfifo $pipe1 $pipe2 || true
 zstdcat $zst1 > $pipe1 &
 
 # Kallisto requires an output subdirectory for each sample
-stem=$(basename ${zst1%-R1*})
+stem=$(basename ${zst1%.fastq.zst})
 my_output_dir=$output_dir/$stem
 mkdir -p $my_output_dir
 
@@ -67,5 +67,5 @@ kallisto quant \
     --single --fragment-length=190 --sd=10 \
     --threads=$LPJS_THREADS_PER_PROCESS \
     --index=$index_dir/transcriptome.index \
-    --output-dir=$output_dir $pipe1 2>&1 | tee $log
+    --output-dir=$my_output_dir $pipe1 2>&1 | tee $log
 rm -f $pipe1

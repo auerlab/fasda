@@ -97,11 +97,11 @@ mkdir -p Results/04-trim
 # kallisto can't read .zst files
 # https://github.com/pachterlab/kallisto/issues/383
 base=$(basename $input1)
-stem=${base%%-R*.fastq.xz}
+stem=${base%.fastq.zst}
 # suffix=gz
 # export GZIP=--fast  # Minimal compression to avoid CPU bottleneck
 suffix=zst
-output1=Results/04-trim/${stem}-R1.fastq.$suffix
+output1=Results/04-trim/${stem}.fastq.$suffix
 
 # This script is used for both RNA-Seq and ATAC-Seq
 adapter=AGATCGGAAGAG

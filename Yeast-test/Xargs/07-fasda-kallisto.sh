@@ -35,7 +35,9 @@ if [ $# != 1 ]; then
 fi
 replicates=$1
 
-cd Results/07-fasda-kallisto
+output_dir=Results/07-fasda-kallisto
+mkdir -p $output_dir
+cd $output_dir
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
@@ -47,6 +49,7 @@ pwd
 
 kallisto_dir=../06-kallisto-quant
 log_dir=../../Logs/07-fasda-kallisto
+mkdir -p $log_dir
 
 # FIXME: Factor out to fasda-mw.sh?
 r0=$(printf '%02d' $replicates)
