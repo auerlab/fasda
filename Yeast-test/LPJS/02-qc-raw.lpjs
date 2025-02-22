@@ -24,7 +24,6 @@
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
 #lpjs pmem-per-processor 412MiB
-#lpjs log-dir Logs/02-qc-raw
 ##############################################################################
 # Update PATH on a chimeric cluster (multiple operating systems used for
 # compute nodes)

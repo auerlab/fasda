@@ -1,13 +1,11 @@
 #!/bin/sh -e
 
 ##########################################################################
-#   Script description:
-#       Run quality checks on raw data
-#       Based on work of Dr. Andrea Rau:
-#       https://github.com/andreamrau/OpticRegen_2019
+#   Description:
+#       Build kallisto index for reference transcriptome.
 #
 #   Dependencies:
-#       Requires directory structure.  Run after *-organize.sh.
+#       Requires reference transriptome.  Run after *-reference.lpjs.
 #
 #       All necessary tools are assumed to be in PATH.  If this is not
 #       the case, add whatever code is needed here to gain access.
@@ -16,14 +14,15 @@
 #       every program with one environment.)
 ##########################################################################
 
-# Set job array to number of samples.
-# Each invocation of this script will run 2 fastqc processes, forward
-# and reverse.
-#lpjs jobs 6
-#lpjs processors-per-job 2
+# Memory requirements can only be determined by trial and error.
+# Run a sample job and monitor closely in "top" or rununder a tool that
+# reports maximum memory use.
+
+#lpjs jobs 1
+#lpjs processors-per-job 1
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
-#lpjs pmem-per-processor 412MiB
+#lpjs pmem-per-processor 2158MiB
 ##############################################################################
 # Update PATH on a chimeric cluster (multiple operating systems used for
 # compute nodes)
@@ -39,36 +38,27 @@
 # to creating path components at the destination.  Newer rsync requires
 # --mkpath while older ones included with macOS and RHEL do not support
 # this flag. Set path to use pkgsrc rsync in ~/Pkgsrc/pkg or /*/pkg.
-# /usr/pkg/java is for NetBSD
-#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/pkg/java/openjdk17/bin:/usr/local/bin:/usr/bin:/bin
-#lpjs pull-command rsync --mkpath --copy-links %h:%s/Results/04-trim/\*-sample%i-* Results/04-trim
-#lpjs push-command rsync -r Results/05-qc-trimmed %h:%s/Results
+#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/local/bin:/usr/bin:/bin
 
 # Set a default value for testing outside the LPJS environment
 : ${LPJS_ARRAY_INDEX:=1}
 
 # Document software versions used for publication
 uname -a
-hostname
+kallisto version
+samtools --version
 pwd
-which fastqc
-fastqc --version
-printenv
 
-input_dir='Results/04-trim'
-output_dir='Results/05-qc-trimmed'
-sample=$LPJS_ARRAY_INDEX
-# Example: chondro-sample1-rep1-time1-R1.fastq.xz
-input1=$(ls $input_dir/sample$sample-*)
+transcriptome=Results/07-reference/$(Reference/transcriptome-filename.sh)
+printf "Using reference $transcriptome...\n"
 
-# Filename stems for fastqc output
-base1=$(basename $input1)
-stem_input1=${base1%.fastq.zst}
-printf "Processing $stem_input1 on $(hostname)...\n"
+# Needed for kallisto --genomebam
+if [ ! -e $transcriptome.fai ]; then
+    printf "Building $transcriptome...\n"
+    samtools faidx $transcriptome
+fi
 
-# In case we're using file transfer, not NFS
-mkdir -p $output_dir
-
-# Background the first three to run 4 jobs in parallel
+printf "Building kallisto index...\n"
+mkdir -p Results/08-kallisto-index
 set -x
-zstdcat $input1 | fastqc -o Results/05-qc-trimmed stdin:$stem_input1
+kallisto index --index=Results/08-kallisto-index/transcriptome.index $transcriptome

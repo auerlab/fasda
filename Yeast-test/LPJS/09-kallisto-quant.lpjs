@@ -1,13 +1,11 @@
 #!/bin/sh -e
 
 ##########################################################################
-#   Script description:
-#       Run quality checks on raw data
-#       Based on work of Dr. Andrea Rau:
-#       https://github.com/andreamrau/OpticRegen_2019
+#   Description:
+#       Run kallisto quantification for each RNA sample.
 #
 #   Dependencies:
-#       Requires directory structure.  Run after *-organize.sh.
+#       Requires kallisto index.  Run after *-kallisto-index.lpjs.
 #
 #       All necessary tools are assumed to be in PATH.  If this is not
 #       the case, add whatever code is needed here to gain access.
@@ -16,14 +14,11 @@
 #       every program with one environment.)
 ##########################################################################
 
-# Set job array to number of samples.
-# Each invocation of this script will run 2 fastqc processes, forward
-# and reverse.
-#lpjs jobs 6
-#lpjs processors-per-job 2
+#lpjs jobs 18
+#lpjs processors-per-job 4
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
-#lpjs pmem-per-processor 412MiB
+#lpjs pmem-per-processor 327MiB
 ##############################################################################
 # Update PATH on a chimeric cluster (multiple operating systems used for
 # compute nodes)
@@ -39,36 +34,38 @@
 # to creating path components at the destination.  Newer rsync requires
 # --mkpath while older ones included with macOS and RHEL do not support
 # this flag. Set path to use pkgsrc rsync in ~/Pkgsrc/pkg or /*/pkg.
-# /usr/pkg/java is for NetBSD
-#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/pkg/java/openjdk17/bin:/usr/local/bin:/usr/bin:/bin
-#lpjs pull-command rsync --mkpath --copy-links %h:%s/Results/04-trim/\*-sample%i-* Results/04-trim
-#lpjs push-command rsync -r Results/05-qc-trimmed %h:%s/Results
+#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/local/bin:/usr/bin:/bin
+#lpjs pull-command rsync --mkpath -r %h:%s/Results/08-kallisto-index Results && rsync --mkpath %h:%s/Results/04-trim/\*sample%i-\*.zst Results/04-trim/
+#lpjs push-command rsync -r %w/Results/09-kallisto-quant %h:%s/Results
 
-# Set a default value for testing outside the LPJS environment
+input_dir='Results/04-trim'
+output_dir='Results/09-kallisto-quant'
+index_dir='Results/08-kallisto-index'
+
 : ${LPJS_ARRAY_INDEX:=1}
 
 # Document software versions used for publication
 uname -a
-hostname
+kallisto version
 pwd
-which fastqc
-fastqc --version
-printenv
 
-input_dir='Results/04-trim'
-output_dir='Results/05-qc-trimmed'
-sample=$LPJS_ARRAY_INDEX
-# Example: chondro-sample1-rep1-time1-R1.fastq.xz
-input1=$(ls $input_dir/sample$sample-*)
+# kallisto can't handle zstd and will simply seg fault rather than
+# issue an error message.  Manually decompress the zstd files into
+# a named pipe and let kallisto read from there.
+zst1=$(echo $input_dir/*sample${LPJS_ARRAY_INDEX}-*-R1.fastq.zst)
+pipe1=${zst1%.zst}.fifo
+mkfifo $pipe1 $pipe2 || true
+zstdcat $zst1 > $pipe1 &
 
-# Filename stems for fastqc output
-base1=$(basename $input1)
-stem_input1=${base1%.fastq.zst}
-printf "Processing $stem_input1 on $(hostname)...\n"
+# Kallisto requires an output subdirectory for each sample
+stem=$(basename ${zst1%-R1*})
+my_output_dir=$output_dir/$stem
+mkdir -p $my_output_dir
 
-# In case we're using file transfer, not NFS
-mkdir -p $output_dir
-
-# Background the first three to run 4 jobs in parallel
 set -x
-zstdcat $input1 | fastqc -o Results/05-qc-trimmed stdin:$stem_input1
+kallisto quant \
+    --single --fragment-length=190 --sd=10 \
+    --threads=$LPJS_THREADS_PER_PROCESS \
+    --index=$index_dir/transcriptome.index \
+    --output-dir=$output_dir $pipe1 2>&1 | tee $log
+rm -f $pipe1

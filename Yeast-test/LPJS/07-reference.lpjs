@@ -37,7 +37,7 @@ pwd
 #############################################################################
 # Choose cdna.sh or gtf2fasta.sh, or download the prebuilt kallisto
 # file mus_musculus.tar.gz, extract, and copy transcriptome.idx to
-# Results/03-kallisto-index/all-but-xy.index.
+# Results/03-kallisto-index/transcriptome.index.
 #
 # There are multiple possible transcriptome references that can be used with
 # kallisto.
