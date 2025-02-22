@@ -4,7 +4,7 @@
 #lpjs processors-per-job 1
 #lpjs threads-per-process processors-per-job
 # From lpjs peak mem:
-#lpjs pmem-per-processor 12MiB
+#lpjs pmem-per-processor 14MiB
 ##############################################################################
 # Update PATH on a chimeric cluster (multiple operating systems used for
 # compute nodes)
@@ -31,20 +31,6 @@ usage()
 {
     printf "Usage: $0 max-replicates\n"
     exit 1
-}
-
-
-##########################################################################
-#   Function description:
-#       Pause until user presses return
-##########################################################################
-
-pause()
-{
-    local junk
-    
-    printf "Press return to continue..."
-    read junk
 }
 
 
@@ -88,7 +74,6 @@ for condition in 1 2; do
     printf "\nCondition $condition normalized counts:\n\n"
     head $norm_file
 done
-pause
 
 de_file=fc-$r0.txt
 # Debug rm -f $de_file
