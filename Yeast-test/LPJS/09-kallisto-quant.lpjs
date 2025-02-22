@@ -15,7 +15,7 @@
 ##########################################################################
 
 #lpjs jobs 6
-#lpjs processors-per-job 4
+#lpjs processors-per-job 2
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
 #lpjs pmem-per-processor 58MiB
