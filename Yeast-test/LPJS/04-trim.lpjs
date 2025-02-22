@@ -32,7 +32,7 @@
 #lpjs processors-per-job 2
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
-#lpjs pmem-per-processor 66MiB
+#lpjs pmem-per-processor 33MiB
 ##############################################################################
 # Update PATH on a chimeric cluster (multiple operating systems used for
 # compute nodes)
