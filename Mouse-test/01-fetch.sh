@@ -38,7 +38,7 @@ test)
 
 full)
     dump=fasterq-dump
-    dump_flags='--progress --debug'
+    dump_flags='--progress'
     #dump=fastq-dump
     #dump_flags='-v --split-3'
     ;;
@@ -86,12 +86,12 @@ for condition in $conditions; do
 	printf "$sample = cond$cond_num-rep$biorep...\n"
 	if [ ! -e $raw/$fq1.zst ] || [ ! -e $raw/$fq2.zst ]; then
 	    if [ ! -e $raw/$fq1 ] || [ ! -e $raw/$fq2 ]; then
-		if [ $dump = fasterq-dump ]; then
-		    prefetch --progress $sample
-		fi
 		set -x
-		# fasterq-dump will fail if a directory named after the
-		# accession does not exist
+		# fasterq-dump 3.2.0 will fail if a directory named after the
+		# accession does not exist.  mkdir is sufficient, but using
+		# prefetch first can speed things up according to the docs.
+		# mkdir -p $sample
+		prefetch --progress $sample
 		$dump $dump_flags --outdir $raw $sample
 		set +x
 		rm -rf $sample
