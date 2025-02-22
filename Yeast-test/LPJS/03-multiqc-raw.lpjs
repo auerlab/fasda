@@ -40,7 +40,9 @@
 export LC_ALL=en_US.UTF-8
 
 mkdir -p Results/03-multiqc-raw
+mkdir -p LPJS-logs/03-multiqc-raw
 cd Results/03-multiqc-raw
+
 rm -rf *
-multiqc --version > ../../Logs/03-multiqc-raw/multiqc-version.txt 2>&1
+multiqc --version > ../../LPJS-logs/03-multiqc-raw/multiqc-version.txt 2>&1
 multiqc ../02-qc-raw 2>&1 | tee ../../Logs/03-multiqc-raw/multiqc.out

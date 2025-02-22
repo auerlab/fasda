@@ -40,7 +40,8 @@
 export LC_ALL=en_US.UTF-8
 
 mkdir -p Results/06-multiqc-trimmed
+mkdir -p LPJS-logs/06-multiqc-trimmed
 cd Results/06-multiqc-trimmed
 rm -rf *
-multiqc --version > ../../Logs/06-multiqc-trimmed/multiqc-version.txt 2>&1
+multiqc --version > ../../LPJS-logs/06-multiqc-trimmed/multiqc-version.txt 2>&1
 multiqc ../05-qc-trimmed 2>&1 | tee ../../Logs/06-multiqc-trimmed/multiqc.out
