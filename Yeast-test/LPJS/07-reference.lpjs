@@ -1,0 +1,137 @@
+#!/bin/sh -e
+
+#lpjs jobs 1
+#lpjs processors-per-job 1
+#lpjs threads-per-process processors-per-job
+# 
+#lpjs pmem-per-processor 183MiB
+##############################################################################
+# Update PATH on a chimeric cluster (multiple operating systems used for
+# compute nodes)
+#
+# The PATH used by the package manager that installed LPJS (/usr/local for
+# FreeBSD ports, usually /usr/pkg or /*/pkg for pkgsrc), is automatically
+# prepended to the default PATH.  This is overridden by "#lpjs path", so
+# if we use it, we must add all directories ourselves.
+#
+# Add the default non-priveleged pkgsrc prefix used by auto-pkgsrc-setup.
+#
+# Caution: Different versions of rsync behave differently with respect
+# to creating path components at the destination.  Newer rsync requires
+# --mkpath while older ones included with macOS and RHEL do not support
+# this flag. Set path to use pkgsrc rsync in ~/Pkgsrc/pkg or /*/pkg.
+#lpjs path ~/Pkgsrc/pkg/bin:/opt/pkg/bin:/usr/pkg/bin:/usr/local/bin:/usr/bin:/bin
+
+##########################################################################
+#   Description:
+#       Build reference genome and transcriptome for all aligners.
+##########################################################################
+
+# Document software versions used for publication
+uname -a
+samtools --version
+gffread --version
+blt --version
+pwd
+
+#############################################################################
+# Choose cdna.sh or gtf2fasta.sh, or download the prebuilt kallisto
+# file mus_musculus.tar.gz, extract, and copy transcriptome.idx to
+# Results/03-kallisto-index/all-but-xy.index.
+#
+# There are multiple possible transcriptome references that can be used with
+# kallisto.
+#
+# There are many gene IDs referenced in the GTF/GFF that are not in the CDNA.
+# FIXME: Document the reason for this.  Are these predicted genes?
+#
+# There are a few gene IDs in the release 98 CDNA that are not in the GFF.
+# If downstream analysis involved looking up genes in the GFF, this could
+# result in a few misses.  This caused minor problems for CNC-EMDiff, which
+# used CDNA as the reference.
+#
+# More importantly, the CDNA does not document features such as exons, UTRs,
+# etc.  If downstream analysis will examine such features, use the GFF.
+
+fetch='curl -O'
+build=$(Reference/genome-build.sh)
+release=$(Reference/genome-release.sh)
+genome=$(Reference/genome-filename.sh)
+transcriptome=$(Reference/transcriptome-filename.sh)
+gff=$(Reference/gff-filename.sh)
+
+# macOS zcat looks for .Z extension, while Linux does not have gzcat
+zcat='gunzip -c'
+
+# Chromosome files
+mkdir -p Results/07-reference
+cd Results/07-reference
+
+for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
+    file=Saccharomyces_cerevisiae.R$build.dna.chromosome.$chrom.fa.gz
+    if [ ! -e $file ]; then
+	$fetch http://ftp.ensembl.org/pub/release-$release/fasta/saccharomyces_cerevisiae/dna/$file
+    fi
+done
+
+if [ ! -e $genome ]; then
+    printf "Concatenating chromosome FASTAs...\n"
+    n=1
+    for chrom in I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
+	printf "$chrom "
+	# Convert Roman chromosome numbers to Arabic
+	$zcat Saccharomyces_cerevisiae.R$build.dna.chromosome.$chrom.fa.gz \
+	    | sed -e "s|^>$chrom|>$n|" -e "s|:$chrom|:$n|" >> $genome
+	n=$((n + 1))
+    done
+    printf "\n"
+else
+    printf "Using existing $genome...\n"
+fi
+
+if [ ! -e $genome.fai ]; then
+    printf "Creating index $genome.fai...\n"
+    samtools faidx $genome      # Speed up gffread
+fi
+
+# Building a transcriptome from GTF and genome is a bit of a pain
+# due to the sort order of the GTF.  We just use the Ensembl cDNA
+# and remove mitchoncria for simplicity, since this is just for demonstration.
+awk='awk'   # mawk is faster, but not installed on all systems
+cdna=Saccharomyces_cerevisiae.R$build.cdna.all.fa.gz
+if [ ! -e $cdna ]; then
+    $fetch ftp://ftp.ensembl.org/pub/release-$release/fasta/saccharomyces_cerevisiae/cdna/$cdna
+else
+    printf "$cdna already exists.  Remove and rerun to replace.\n"
+fi
+
+pwd
+set -x
+$zcat $cdna | $awk -F : -f ../../Reference/keep-autosomes.awk > $transcriptome
+
+rm -f $gff
+site=http://ftp.ensembl.org/pub/release-$release/gff3/saccharomyces_cerevisiae
+
+# Keep header from first GFF.
+file=Saccharomyces_cerevisiae.R64-1-1.106.chromosome.I.gff3.gz
+if [ ! -e $file ]; then
+    printf "Fetching $file...\n"
+    $fetch $site/$file
+fi
+$zcat $file | egrep '^##gff|^#!' | blt deromanize 1 > $gff
+
+# Concatenate the rest without the header
+for chrom in II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
+    file=Saccharomyces_cerevisiae.R64-1-1.106.chromosome.$chrom.gff3.gz
+    if [ ! -e $file ]; then
+	printf "Fetching $file...\n"
+	$fetch $site/$file
+    fi
+    $zcat $file | egrep -v '^##[a-z]|^#!' | blt deromanize 1 >> $gff
+done
+
+# Reference/create-chrom-sizes.sh
+chrom_lengths="chromosome-sizes.tsv"
+printf "Generating $chrom_lengths...\n"
+blt chrom-lens < $(../../Reference/genome-filename.sh) > $chrom_lengths
+cat $chrom_lengths
