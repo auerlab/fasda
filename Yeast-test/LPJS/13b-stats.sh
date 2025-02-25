@@ -7,7 +7,11 @@ else
 fi
 
 printf "Total features:\n"
-wc -l $results_dir/13-fasda-kallisto/*.txt
+for file in $results_dir/13-fasda-kallisto/*.txt; do
+    fgrep -v P-val $file > $file-no-header
+    wc -l $file-no-header
+    rm -f $file-no-header
+done
 total=$(wc -l $results_dir/13-fasda-kallisto/*.txt | awk '{ print $1 }')
 
 printf "\nFeatures with P-values < 0.05:\n"

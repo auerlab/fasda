@@ -6,7 +6,7 @@ Exact
 3 replicates:   
 
 Total features:
-    6585 Results.3//13-fasda-kallisto/fc-03.txt
+    6584 Results.3//13-fasda-kallisto/fc-03.txt
 
 Features with P-values < 0.05:
      557 (8.45%) Results.3//13-fasda-kallisto/fc-03.txt
@@ -14,43 +14,75 @@ Features with P-values < 0.05:
 4 replicates:
 
 Total features:
-    5313 Results/13-fasda-kallisto/fc-04.txt
+    6584 Results/13-fasda-kallisto/fc-04.txt-no-header
 
 Features with P-values < 0.05:
-     446 (8.39%) Results/13-fasda-kallisto/fc-04.txt
+     548 (8.32%) Results/13-fasda-kallisto/fc-04.txt
 
 Near-exact
 ----------
 5 replicates:
 
 Total features:
-    6585 Results/13-fasda-kallisto/fc-05.txt
+    6584 Results/13-fasda-kallisto/fc-05.txt-no-header
 
 Features with P-values < 0.05:
      690 (10.47%) Results/13-fasda-kallisto/fc-05.txt
 
-6 replicates: (Suspicious: check fasda code)
+6 replicates:
+
+Sudden drop from 5 replicates to 6 is suspicious.
+Something funny about the added 6th replicate in
+ERR458906.fastq.zst or ERR458535.fastq.zst?
+
+sample01-cond1-rep01.fastq.zst@ -> ../Raw/ERR458493.fastq.zst
+sample02-cond1-rep02.fastq.zst@ -> ../Raw/ERR458878.fastq.zst
+sample03-cond1-rep03.fastq.zst@ -> ../Raw/ERR458885.fastq.zst
+sample04-cond1-rep04.fastq.zst@ -> ../Raw/ERR458892.fastq.zst
+sample05-cond1-rep05.fastq.zst@ -> ../Raw/ERR458899.fastq.zst
+sample06-cond1-rep06.fastq.zst@ -> ../Raw/ERR458906.fastq.zst
+sample07-cond2-rep01.fastq.zst@ -> ../Raw/ERR458500.fastq.zst
+sample08-cond2-rep02.fastq.zst@ -> ../Raw/ERR458507.fastq.zst
+sample09-cond2-rep03.fastq.zst@ -> ../Raw/ERR458514.fastq.zst
+sample10-cond2-rep04.fastq.zst@ -> ../Raw/ERR458521.fastq.zst
+sample11-cond2-rep05.fastq.zst@ -> ../Raw/ERR458528.fastq.zst
+sample12-cond2-rep06.fastq.zst@ -> ../Raw/ERR458535.fastq.zst
 
 Total features:
-    1771 Results/13-fasda-kallisto/fc-06.txt
+    6584 Results/13-fasda-kallisto/fc-06.txt-no-header
 
 Features with P-values < 0.05:
-      70 (3.95%) Results/13-fasda-kallisto/fc-06.txt
+     293 (4.44%) Results/13-fasda-kallisto/fc-06.txt
 
+After replacing the normal 6th replicate with the 7th:
+
+sample01-cond1-rep01.fastq.zst@ -> ../Raw/ERR458493.fastq.zst
+sample02-cond1-rep02.fastq.zst@ -> ../Raw/ERR458878.fastq.zst
+sample03-cond1-rep03.fastq.zst@ -> ../Raw/ERR458885.fastq.zst
+sample04-cond1-rep04.fastq.zst@ -> ../Raw/ERR458892.fastq.zst
+sample05-cond1-rep05.fastq.zst@ -> ../Raw/ERR458899.fastq.zst
+sample06-cond1-rep06.fastq.zst@ -> ../Raw/ERR458913.fastq.zst
+sample07-cond2-rep01.fastq.zst@ -> ../Raw/ERR458500.fastq.zst
+sample08-cond2-rep02.fastq.zst@ -> ../Raw/ERR458507.fastq.zst
+sample09-cond2-rep03.fastq.zst@ -> ../Raw/ERR458514.fastq.zst
+sample10-cond2-rep04.fastq.zst@ -> ../Raw/ERR458521.fastq.zst
+sample11-cond2-rep05.fastq.zst@ -> ../Raw/ERR458528.fastq.zst
+sample12-cond2-rep06.fastq.zst@ -> ../Raw/ERR458542.fastq.zst
+
+Total features:
+    6584 Results/13-fasda-kallisto/fc-06.txt-no-header
+
+Features with P-values < 0.05:
+    1224 (18.58%) Results/13-fasda-kallisto/fc-06.txt
+     
 7 replicates:
-
-Total features:
-    1771 Results/13-fasda-kallisto/fc-07.txt
-
-Features with P-values < 0.05:
-     115 (6.49%) Results/13-fasda-kallisto/fc-07.txt
 
 Mann-Whitney (Wilcoxon) from here on
 ------------------------------------
 8 replicates:
 
 Total features:
-    6585 Results/13-fasda-kallisto/fc-08.txt
+    6584 Results/13-fasda-kallisto/fc-08.txt
 
 Features with P-values < 0.05:
      897 (13.62%) Results/13-fasda-kallisto/fc-08.txt
