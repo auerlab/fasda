@@ -420,7 +420,7 @@ double  dsv_total_counts(xt_dsv_line_t *dsv_line, double rep_counts[],
 void    usage(char *argv[])
 
 {
-    fprintf(stderr, "Usage: %s [--output file.txt]\\\n"
+    fprintf(stderr, "Usage: %s [--output file.txt] [--near-exact]\\\n"
 	    "\tabundances1.tsv[.gz|.bz2|.xz] abundances2.tsv[.gz|.bz2|.xz] \\\n"
 	    "\t[abundances3.tsv[.gz|.bz2|.xz] ...]\n",
 	    argv[0]);

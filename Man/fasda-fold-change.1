@@ -11,7 +11,7 @@ counts
 .PP
 .nf 
 .na 
-fasda fold-change [--output file.txt] \\
+fasda fold-change [--output file.txt] [--near-exact]\\
     normalized-counts1.tsv  normalized-counts2.tsv \\
     [normalized-counts3.tsv ...]
 .ad
@@ -21,6 +21,12 @@ fasda fold-change [--output file.txt] \\
 .TP
 \fB--output\fR file.txt
 Report fold-change and P-values to file.txt instead of the default stdout.
+
+.TP
+\fB--near-exact\fR
+Force calculation of near-exact P-values, rather than the default
+Mann-Whitney (Wilcoxon) for 8 or more replicates.  Be aware that this
+will take a long time.
 
 .SH "DESCRIPTION"
 
