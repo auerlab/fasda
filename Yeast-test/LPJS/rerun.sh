@@ -28,10 +28,11 @@ if [ 0"$sure" = 0y ]; then
     rm -rf Results/$base/*
 fi
 
-printf "Remove logs from Logs/$base? y/[n] "
+log_dir=LPJS-logs/$base
+printf "Remove logs from $log_dir? y/[n] "
 read sure
 if [ 0"$sure" = 0y ]; then
-    rm -rf Logs/$base/*
+    rm -rf $log_dir/*
 fi
 
 if [ ${script##*.} = sbatch ]; then

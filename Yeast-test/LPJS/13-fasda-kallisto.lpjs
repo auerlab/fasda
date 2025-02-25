@@ -38,7 +38,9 @@ usage()
 #   Main
 ##########################################################################
 
-replicates=3
+samples=$(ls Results/09-kallisto-quant | wc -l)
+replicates=$(($samples / 2))
+printf "$replicates replicates.\n"
 
 # Use fasda built by cave-man-install.sh
 PATH=../../../../local/bin:$PATH
@@ -68,8 +70,7 @@ for condition in 1 2; do
     done
     printf "%s\n" $files
     set -x
-    time fasda normalize --output $norm_file $files \
-	2>&1 | tee $log_dir/normalize-$condition-$r0-MW.out
+    time fasda normalize --output $norm_file $files
     set +x
     printf "\nCondition $condition normalized counts:\n\n"
     head $norm_file
@@ -81,8 +82,7 @@ printf "Computing fold-change for $replicates replicates...\n"
 set -x
 time fasda fold-change \
     --output $de_file \
-    cond1-all-norm-$r0.tsv cond2-all-norm-$r0.tsv \
-    2>&1 | tee $log_dir/fc-$condition-$r0.out
+    cond1-all-norm-$r0.tsv cond2-all-norm-$r0.tsv
 set +x
 
 pwd

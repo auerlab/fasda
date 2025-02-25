@@ -1,0 +1,57 @@
+
+Run multiple read mappers, then look at union or intersection of DEGs
+
+Exact
+-----
+3 replicates:   
+
+Total features:
+    6585 Results.3//13-fasda-kallisto/fc-03.txt
+
+Features with P-values < 0.05:
+     557 (8.45%) Results.3//13-fasda-kallisto/fc-03.txt
+
+4 replicates:
+
+Total features:
+    5313 Results/13-fasda-kallisto/fc-04.txt
+
+Features with P-values < 0.05:
+     446 (8.39%) Results/13-fasda-kallisto/fc-04.txt
+
+Near-exact
+----------
+5 replicates:
+
+Total features:
+    6585 Results/13-fasda-kallisto/fc-05.txt
+
+Features with P-values < 0.05:
+     690 (10.47%) Results/13-fasda-kallisto/fc-05.txt
+
+6 replicates: (Suspicious: check fasda code)
+
+Total features:
+    1771 Results/13-fasda-kallisto/fc-06.txt
+
+Features with P-values < 0.05:
+      70 (3.95%) Results/13-fasda-kallisto/fc-06.txt
+
+7 replicates:
+
+Total features:
+    1771 Results/13-fasda-kallisto/fc-07.txt
+
+Features with P-values < 0.05:
+     115 (6.49%) Results/13-fasda-kallisto/fc-07.txt
+
+Mann-Whitney (Wilcoxon) from here on
+------------------------------------
+8 replicates:
+
+Total features:
+    6585 Results/13-fasda-kallisto/fc-08.txt
+
+Features with P-values < 0.05:
+     897 (13.62%) Results/13-fasda-kallisto/fc-08.txt
+
