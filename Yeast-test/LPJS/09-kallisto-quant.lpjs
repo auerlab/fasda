@@ -14,7 +14,7 @@
 #       every program with one environment.)
 ##########################################################################
 
-#lpjs jobs 12
+#lpjs jobs 48
 #lpjs processors-per-job 2
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
@@ -55,7 +55,11 @@ pwd
 sample=$(printf "%02d" ${LPJS_ARRAY_INDEX})
 zst1=$(echo $input_dir/sample${sample}-*.fastq.zst)
 pipe1=${zst1%.zst}.fifo
-mkfifo $pipe1 $pipe2 || true
+pipe1=/tmp/$(basename $pipe1)
+echo $pipe1
+exit
+
+mkfifo $pipe1 || true
 zstdcat $zst1 > $pipe1 &
 
 # Kallisto requires an output subdirectory for each sample
