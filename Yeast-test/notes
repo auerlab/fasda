@@ -106,3 +106,11 @@ Total features:
 Features with P-values < 0.05:
     3064 (46.52%) Results/13-fasda-kallisto/fc-24.txt
 
+48 replicates:
+
+Total features:
+    6584 Results/13-fasda-kallisto/fc-48.txt-no-header
+
+Features with P-values < 0.05:
+    3717 (56.44%) Results/13-fasda-kallisto/fc-48.txt
+

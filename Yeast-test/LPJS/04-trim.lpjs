@@ -28,7 +28,7 @@
 # 2 xzcat, 2 zstd, and 1 fastq-trim, but xzcat and gzip use less than
 # half a core each
 # Set job array to number of samples.
-#lpjs jobs 48
+#lpjs jobs 96
 #lpjs processors-per-job 2
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:

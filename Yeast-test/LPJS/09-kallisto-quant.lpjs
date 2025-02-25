@@ -14,7 +14,7 @@
 #       every program with one environment.)
 ##########################################################################
 
-#lpjs jobs 48
+#lpjs jobs 96
 #lpjs processors-per-job 2
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
@@ -56,8 +56,6 @@ sample=$(printf "%02d" ${LPJS_ARRAY_INDEX})
 zst1=$(echo $input_dir/sample${sample}-*.fastq.zst)
 pipe1=${zst1%.zst}.fifo
 pipe1=/tmp/$(basename $pipe1)
-echo $pipe1
-exit
 
 mkfifo $pipe1 || true
 zstdcat $zst1 > $pipe1 &
