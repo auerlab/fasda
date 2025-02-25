@@ -13,6 +13,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <unistd.h>         // isatty()
 #include <sys/param.h>
 #include <xtend/file.h>
 #include <xtend/dsv.h>
@@ -211,8 +212,12 @@ int     fold_change(FILE *condition_streams[], int conditions,
 	    // Progress counter
 	    if ( (++count % 100 == 0) && isatty(1) )
 		fprintf(stderr, "%lu\r", count);
+	    else
+		putc('.', stderr);
 	}
     }    
+    if ( ! isatty(1) )
+	putc('\n', stderr);
     
     for (condition = 0; condition < conditions; ++condition)
 	xt_fclose(condition_streams[condition]);
