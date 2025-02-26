@@ -56,6 +56,14 @@ Total features:
 Features with P-values < 0.05:
      293 (4.44%) Results/13-fasda-kallisto/fc-06.txt
 
+Switching from tecnical replicate 1 to 7 did not help:
+
+Total features:
+    6584 Results/13-fasda-kallisto/fc-06.txt-no-header
+
+Features with P-values < 0.05:
+     293 (4.44%) Results/13-fasda-kallisto/fc-06.txt
+
 After replacing the usual 6th replicate with the 7th,
 ERR458913.fastq.zst and ERR458542.fastq.zst:
 

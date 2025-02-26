@@ -31,7 +31,7 @@
 #   Main
 ##########################################################################
 
-replicates=7
+replicates=6
 
 # Document software versions used for publication
 uname -a
@@ -48,14 +48,15 @@ mkdir -p $raw $raw_renamed
 # I usually make cond1 the control (e.g. wild-type) or first time point
 sample_num=1
 cond_num=1
+tech_rep=1
 for condition in WT SNF2; do
     # Select $replicates replicates
     # Get one technical replicate from each biological replicate
     # Col 2 (Lane) indicates technical rep, use samples where Lane = 1
     # Col 3 is SNF2 mutant or WT
     # Col 4 is biological replicate
-    awk -v replicates=$replicates -v condition=$condition \
-	'$2 == 1 && $3 == condition && $4 <= replicates' \
+    awk -v replicates=$replicates -v condition=$condition -v tech_rep=$tech_rep \
+	'$2 == tech_rep && $3 == condition && $4 <= replicates' \
 	ERP004763_sample_mapping.tsv > $condition.tsv
     printf "$condition:\n"
 
