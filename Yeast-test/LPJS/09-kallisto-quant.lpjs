@@ -14,7 +14,7 @@
 #       every program with one environment.)
 ##########################################################################
 
-#lpjs jobs 96
+#lpjs jobs 14
 #lpjs processors-per-job 2
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
