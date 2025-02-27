@@ -31,11 +31,14 @@ Features with P-values < 0.05:
 
 6 replicates:
 
-Sudden drop from 5 replicates to 6 is suspicious.
+Sharp drop in significant DEGs from 5 replicates to 6 is suspicious.
 We generally see an increase in significant DEGs with more
 replicates, due to increased statistical power.
-The added 6th replicate in ERR458906.fastq.zst and/or ERR458535.fastq.zst
-is likely an outlier or low-quality data.
+The added 6th replicate in ERR458906.fastq.zst and ERR458535.fastq.zst
+is likely an outlier or low-quality data.  At such low replicate counts,
+this can have an enormous impact.  30 replicates or more are preferred
+for many statistical analyses, but that would be prohibitively expensive
+for most DNA/RNA experiments.
 
 sample01-cond1-rep01.fastq.zst@ -> ../Raw/ERR458493.fastq.zst
 sample02-cond1-rep02.fastq.zst@ -> ../Raw/ERR458878.fastq.zst
@@ -56,7 +59,11 @@ Total features:
 Features with P-values < 0.05:
      293 (4.44%) Results/13-fasda-kallisto/fc-06.txt
 
-Switching from tecnical replicate 1 to 7 did not help:
+Switching from technical replicate 1 to 7 did not help, which
+vindicates somebody's lab technique at least for this case.
+Surprising that the count was identical, though.  There is some
+variation among technical replicates that often lead to small
+differences in results.
 
 Total features:
     6584 Results/13-fasda-kallisto/fc-06.txt-no-header
@@ -64,7 +71,7 @@ Total features:
 Features with P-values < 0.05:
      293 (4.44%) Results/13-fasda-kallisto/fc-06.txt
 
-After replacing the usual 6th replicate with the 7th,
+After replacing the usual 6th biological replicate with the 7th,
 ERR458913.fastq.zst and ERR458542.fastq.zst:
 
 sample01-cond1-rep01.fastq.zst@ -> ../Raw/ERR458493.fastq.zst
