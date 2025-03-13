@@ -251,8 +251,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	}
     }
     
-    // if ( Debug )
-    if ( 1 )
+    if ( Debug )
     {
 	fprintf(stderr, "%s(): After removing features with mean log count = -INFINITY:\n",
 		__FUNCTION__);
