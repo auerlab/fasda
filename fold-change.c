@@ -210,10 +210,13 @@ int     fold_change(FILE *condition_streams[], int conditions,
 			      rep_counts, num_repls, flags);
 	    
 	    // Progress counter
-	    if ( (++count % 100 == 0) && isatty(1) )
-		fprintf(stderr, "%lu\r", count);
-	    else
-		putc('.', stderr);
+	    if ( ++count % 100 == 0 )
+	    {
+		if ( isatty(fileno(stdout)) )
+		    fprintf(stderr, "%lu\r", count);
+		else
+		    putc('.', stderr);
+	    }
 	}
     }    
     if ( ! isatty(1) )

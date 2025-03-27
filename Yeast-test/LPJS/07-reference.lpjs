@@ -118,7 +118,7 @@ if [ ! -e $file ]; then
     printf "Fetching $file...\n"
     $fetch $site/$file
 fi
-$zcat $file | egrep '^##gff|^#!' | blt deromanize 1 > $gff
+$zcat $file | blt deromanize 1 > $gff
 
 # Concatenate the rest without the header
 for chrom in II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI; do
