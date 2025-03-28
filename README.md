@@ -93,6 +93,18 @@ prior to computing fold-changes and P-values.
 
 FASDA is currently alpha-quality.
 
+Exact P-values and Mann-Whitney (Wilcoxon rank sum) P-values should
+be correct, as the results have been carefully examined and compared
+with output from R.  The primary remaining concern is that we have
+not conclusively proven that our down-sampling method for near-exact
+P-values is not skewed.  The number of possible combinations of counts
+grows factorially with the number of replicates, so computing exact
+P-values takes a significant amount of time for more than 4 replicates.
+For 5 to 12 replicates, we down-sample the combinations in a
+not-entirely-random manner to estimate the exact P-value in far less time.
+We need more analysis of this approach to ensure that the results
+are not biased.
+
 The kallisto abundance.tsv file format is used as input for
 normalization and computing fold-change and P-values.  The "fasda abundance"
 command computes abundances from SAM/BAM/CRAM files and
