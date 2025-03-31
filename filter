@@ -1,0 +1,131 @@
+#!/bin/sh -e
+
+##########################################################################
+#   Synopsis:
+#       filter [--min-mnc N] [--max-sd N] [--min-agr N] [--min-fc N]
+#              [--max-p-val N] fc-file.txt
+#       
+#   Description:
+#       Filter output of fasda fold-change based on any of the reported
+#       statistics.  An example of such output is shown below.
+#
+#   .nf
+#   .na
+#   Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val
+#   YPL071C_mRNA            27.3    42.2    0.4    0.3    67    1.55  0.22906
+#   YLL050C_mRNA           362.4   735.8    0.4    0.3   100    2.03  0.07586
+#   YMR172W_mRNA            53.8   111.1    0.3    0.3   100    2.07  0.05911
+#   YOR185C_mRNA            47.0    74.0    0.3    0.2   100    1.57  0.06601
+#   YLL032C_mRNA            31.9    29.1    0.5    0.3    67    0.91  0.80246
+#   .ad
+#   .fi
+#       
+#   Arguments:
+#       --min-mnc N     Minimum average of MNC1 and MNC2 (default = 1)
+#       --max-sd N      Maxium average of SD/C1 and SD/C2 (default = 1.0)
+#       --min-agr N     Minimum %Agr (default = 50)
+#       --min-fc N      Minimum of FC or 1/FC (default = 1.0)
+#       --max-p-val     Maximum P-value (default = 0.05)
+#       
+#   Returns:
+#       0 on success, non-zero error codes otherwise
+#
+#   Examples:
+#       fasda filter --min-fc 2 Results/11-fasda-kallisto/fc-3-replicates.txt
+#
+#   See also:
+#       fasda-fold-change(1)
+#       
+#   History:
+#   Date        Name        Modification
+#   2025-03-31  Jason Bacon Begin
+##########################################################################
+
+usage()
+{
+    cat << EOM
+
+Usage: fasda filter [--min-mnc N] [--max-sd N] [--min-agr N] [--min-fc N] [--max-p-val N] fc-file.txt
+
+* At least one filtering flag above must be specified.
+
+* Average of MNC1 and MNC2 must be >= min-mnc       Default = 1
+* Average of SD/C1 and SD/C2 must be <= max-sd      Default = 1.0
+* %Agr must be >= min-agr                           Default = 50
+* FC or 1/FC must be >= min-fc                      Default = 1.0
+* P-val must be <= max-p-val                        Default = 0.05
+
+Example data:
+
+Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val            
+YPL071C_mRNA            27.3    42.2    0.4    0.3    67    1.55  0.22906          
+YLL050C_mRNA           362.4   735.8    0.4    0.3   100    2.03  0.07586          
+YMR172W_mRNA            53.8   111.1    0.3    0.3   100    2.07  0.05911          
+YOR185C_mRNA            47.0    74.0    0.3    0.2   100    1.57  0.06601          
+YLL032C_mRNA            31.9    29.1    0.5    0.3    67    0.91  0.80246          
+YBR225W_mRNA            56.5   102.2    0.4    0.3    67    1.81  0.13596          
+YEL041W_mRNA            13.6    32.3    0.4    0.3   100    2.37  0.07340          
+YOR237W_mRNA            13.3    28.4    0.3    0.3   100    2.14  0.07586          
+YMR027W_mRNA           159.8   278.7    0.3    0.3   100    1.74  0.06355          
+
+Example command:
+
+$0 --min-mnc 20 --max-sd 0.3 --min-agr 67 --min-fc 2.0 --max-p-val 0.05 Results/11-fasda-kallisto/fc-3-replicates.txt
+
+EOM
+    exit 64     # sysexits(3) EX_USAGE
+}
+
+
+##########################################################################
+#   Main
+##########################################################################
+
+if [ $# -lt 3 ]; then
+    usage
+fi
+
+min_mnc=1
+max_sd=1.0
+min_agr=50
+min_fc=1.0
+max_p_val=0.05
+
+while [ $(echo $1 | cut -c 1,2) = '--' ]; do
+    case $1 in
+    --min-mnc)
+	min_mnc=$2
+	;;
+    
+    --max-sd)
+	max_sd=$2
+	;;
+    
+    --min-agr)
+	min_agr=$2
+	;;
+    
+    --min-fc)
+	min_fc=$2
+	;;
+    
+    --max-p-val)
+	max_p_val=$2
+	;;
+    
+    *)
+	usage
+	;;
+    esac
+    shift
+    shift
+done
+if [ $# != 1 ]; then
+    usage
+fi
+file=$1
+
+set -x
+awk -v min_mnc=$min_mnc -v max_sd=$max_sd -v min_agr=$min_agr -v min_fc=$min_fc -v max_p_val=$max_p_val \
+    '(($2 + $3) / 2.0 >= min_mnc) && (($4 + $5) / 2.0 <= max_sd) && ($6 >= min_agr) && (($7 >= min_fc) || ($7 != 0 && 1.0/$7 >= min_fc)) && ($8 <= max_p_val) { print $0 }' \
+    $file
