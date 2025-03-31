@@ -2,9 +2,13 @@
 Generate heatmap
 
 Compute effective lengths
-    http://robpatro.com/blog/?p=235
+    https://robpatro.com/blog/?p=235
 	Also discusses TPM
-
+    Pimental: https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/
+	number of possible start sites a feature could have generated a fragment of that particular length
+	\widetilde{l}_i = l_i - \mu_{FLD} + 1
+	\mu_{FLD} is the mean of the fragment length distribution which was learned from the aligned read
+	
 Mann-Whitney for odd numbers of replicates coming out slightly higher
 than wilcox.test()
 
