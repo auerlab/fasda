@@ -92,4 +92,4 @@ rm -f $tmp1 $tmp2
 head $counts | column -t
 
 # Generate and display clustered heatmap
-/usr/local/libexec/heatmap-seaborn.py $flags $counts
+/usr/local/libexec/fasda/heatmap-seaborn.py $flags $counts
