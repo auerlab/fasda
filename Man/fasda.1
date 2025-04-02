@@ -13,7 +13,12 @@ fasda - Fast, simple differential analysis
 fasda --version
 fasda abundance features.gff3 alignment-file [alignment-file ...]
 fasda normalize [--mrn] [--output file.tsv] abundance1.tsv abundance2.tsv ...
-fasda [--output file.txt] abundance1.tsv abundance2.tsv [abudance3.tsv...]
+fasda fold-change [--output file.txt] [--near-exact] \\
+	   normalized-counts1.tsv  normalized-counts2.tsv \\
+	   [normalized-counts3.tsv ...]
+fasda filter [--min-mnc N] [--max-sd N] [--min-agr N] [--min-fc N] \\
+       [--max-p-val N] fc-file.txt
+fasda heatmap [--debug] features-file cond1-file cond2-file
 .ad
 .fi
 
@@ -25,7 +30,8 @@ is a set of fast, simple differential analysis tools written in C for
 maximum speed, portability, and easy command-line use.
 
 .SH "SEE ALSO"
-fasda-abundance(1), fasda-normalize(1), fasda-fold-change(1)
+fasda-abundance(1), fasda-normalize(1), fasda-fold-change(1),
+fasda-filter(1), fasda-heatmap(1)
 
 .SH BUGS
 Please report bugs to the author and send patches in unified diff format.
