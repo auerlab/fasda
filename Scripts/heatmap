@@ -52,7 +52,7 @@ usage()
 #   Main
 ##########################################################################
 
-if [ $1 = '--debug' ]; then
+if [ 0"$1" = 0'--debug' ]; then
     flags=--debug
     shift
 fi
@@ -68,8 +68,10 @@ cond2_file="$3"
 # and remove the 2nd occurrence of the feature name (column 5 in pasted output)
 tmp1=$(mktemp -p . -t cond1)
 tmp2=$(mktemp -p . -t cond2)
-fgrep -f $features_file "$cond1_file" > $tmp1
-fgrep -f $features_file "$cond2_file" | cut -f 2- > $tmp2
+names=$(mktemp -p . -t names)
+awk '{ print $1 }' $features_file > $names
+fgrep -f $names "$cond1_file" > $tmp1
+fgrep -f $names "$cond2_file" | cut -f 2- > $tmp2
 
 # Create counts file with header line and feature
 # counts following feature name.  Columns should be
