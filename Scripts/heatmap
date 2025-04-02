@@ -1,0 +1,95 @@
+#!/bin/sh -e
+
+##########################################################################
+#   Synopsis:
+#       fasda heatmap features-file cond1-file cond2-file
+#       
+#   Description:
+#       Generate a heatmap from a filtered FASDA fold-change list.
+#       The features file provided by the first argument is a greatly
+#       reduced list of significant DEGs (differentially expressed genes)
+#       or transcripts, one per line:
+#
+#       .na
+#       .nf
+#       YKL103C_mRNA
+#       YIR015W_mRNA
+#       YLR054C_mRNA
+#       YER011W_mRNA
+#       .fi
+#       .ad
+#
+#       The normalized counts files are the output of "fasda normalize".
+#       
+#   Arguments:
+#       features-file   Reduced feature list, one per line
+#       cond[12]-file   Full normalized counts lists output by FASDA
+#       
+#   Returns:
+#       0 on success, non-zero error codes otherwise
+#
+#   Examples:
+#       heatmap features.txt \\\\
+#           Results/11-fasda-kallisto/cond1-norm-3.tsv \\\\
+#           Results/11-fasda-kallisto/cond2-norm-3.tsv
+#
+#   See also:
+#       fasda-normalize(1), fasda-fold-change(1), fasda(1)
+#       
+#   History:
+#   Date        Name        Modification
+#   2025-03-31  Jason Bacon Begin
+##########################################################################
+
+usage()
+{
+    printf "Usage: $0 features-file cond1-file cond2-file\n"
+    exit 64     # sysexits(3) EX_USAGE
+}
+
+
+##########################################################################
+#   Main
+##########################################################################
+
+if [ $1 = '--debug' ]; then
+    flags=--debug
+    shift
+fi
+
+if [ $# != 3 ]; then
+    usage
+fi
+features_file="$1"
+cond1_file="$2"
+cond2_file="$3"
+
+# Concatenate corresponding lines from the normalized counts files
+# and remove the 2nd occurrence of the feature name (column 5 in pasted output)
+tmp1=$(mktemp -p . -t cond1)
+tmp2=$(mktemp -p . -t cond2)
+fgrep -f $features_file "$cond1_file" > $tmp1
+fgrep -f $features_file "$cond2_file" | cut -f 2- > $tmp2
+
+# Create counts file with header line and feature
+# counts following feature name.  Columns should be
+# condition1-rep1, condition1-rep2, ... condition2-rep1, ...
+#
+# Feature c1r1    c1r2    c1r3    c2r1    c2r2    c2r3
+# YKL103C_mRNA    157.915324      117.014504      171.523362      558.813838      380.590665      343.314298
+# YIR015W_mRNA    11.759652       12.317316       7.146807        21.891676       26.574909       15.902842
+counts=counts.tsv
+printf "Feature" > $counts
+replicates=$(awk 'NR == 1 { print NF }' $tmp2)
+for condition in 1 2; do
+    for replicate in $(seq 1 $replicates); do
+	printf "\tc${condition}r${replicate}" >> $counts
+    done
+done
+printf "\n" >> $counts
+paste $tmp1 $tmp2 >> $counts
+rm -f $tmp1 $tmp2
+head $counts | column -t
+
+# Generate and display clustered heatmap
+/usr/local/libexec/heatmap-seaborn.py $flags $counts

@@ -50,7 +50,6 @@
 
 BIN     = fasda
 LIBEXEC = abundance normalize fold-change pval-sim
-SCRIPTS = filter
 BINS    = ${BIN} ${LIBEXEC}
 
 ############################################################################
@@ -103,9 +102,7 @@ CFLAGS      += -DVERSION=\"`./version.sh`\"
 # Use ${CXX} to link when mixing C and C++
 # When mixing C++ and Fortran, use ${FC} and -lstdc++ or ${CXX} and -lgfortran
 LD          = ${CC}
-
 CPP         ?= cpp
-
 AR          ?= ar
 RANLIB      ?= ranlib
 
@@ -132,6 +129,8 @@ RM      ?= rm
 PRINTF  ?= printf
 INSTALL ?= install
 STRIP   ?= strip
+SED     ?= sed
+CHMOD   ?= chmod
 
 ############################################################################
 # Standard targets required by package managers
@@ -199,7 +198,10 @@ install: all
 	${MKDIR} -p ${DESTDIR}${PREFIX}/bin ${DESTDIR}${LIBEXECDIR} \
 		    ${DESTDIR}${MANDIR}/man1
 	${INSTALL} -m 0755 ${BIN} ${DESTDIR}${PREFIX}/bin
-	${INSTALL} -m 0755 ${LIBEXEC} ${SCRIPTS} ${DESTDIR}${LIBEXECDIR}
+	${INSTALL} -m 0755 ${LIBEXEC} Scripts/* ${DESTDIR}${LIBEXECDIR}
+	${SED} -e "s|/usr/local|`realpath ${PREFIX}`|g" Scripts/heatmap \
+	    > ${DESTDIR}${LIBEXECDIR}/heatmap
+	${CHMOD} 755 ${DESTDIR}${LIBEXECDIR}/heatmap
 	${INSTALL} -m 0644 Man/*.1 ${DESTDIR}${MANDIR}/man1
 
 install-strip: install
