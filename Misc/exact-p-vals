@@ -1,24 +1,58 @@
+"bc" output showing # of possible sample groupings for 3 to 8 replicates.
+This represents the search space for finding exact P-values.
+
+Example: For 3 replicates and 2 conditions, we have 6 read counts, and
+6 choose 2 = 15 possible unordered combinations. Multiply by 2 to get possible
+ordered pairs.  Then we have 30 choose 3 = 4060 possible combinations of
+ordered pairs.  This represents the number of ways the 6 counts could
+be combined as 3 ordered pairs.
+
+To get an exact P-value, we compute the fold-change for every possible
+combination of ordered pairs, and count those more extreme than the
+observed fold-change.  Note that at just 7 replicates, we have over
+a trillion fold-changes to compute to get an exact P-value.  For 5
+or more replicates, we down-sample and approximate by default, so
+P-values can be computed in a reasonable time for thousands of
+fold-changes.
+
+3 replicates
+------------
 choose(6,2)
 15.0000000000
 choose(30,3)
 4060.0000000000
+
+4 replicates
+------------
 choose(8,2)
 28.0000000000
 choose(56,4)
 367290.0000000000
+
+5 replicates
+------------
 choose(10,2)
 45.0000000000
 choose(90,5)
-43949268.0000000000
+43,949,268.0000000000
+
+6 replicates
+------------
 choose(12,2)
 66.0000000000
 choose(132,6)
-6547258432.0000000000
+6,547,258,432.0000000000
+
+7 replicates
+------------
 choose(14,2)
 91.0000000000
 choose(182,7)
-1167752750736.0000000000
+1,167,752,750,736.0000000000
+
+8 replicates
+------------
 choose(16,2)
 120.0000000000
 choose(240,8)
-242641770336810.0000000000
+242,641,770,336,810.0000000000
