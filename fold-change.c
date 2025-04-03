@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <math.h>
 #include <unistd.h>         // isatty()
+#include <stdbool.h>
 #include <sys/param.h>
 #include <xtend/file.h>
 #include <xtend/dsv.h>
@@ -22,7 +23,7 @@
 #include "fold-change.h"
 #include "exact-p-val.h"
 
-const int   Debug = 0;
+bool  Debug = false;
 
 int     main(int argc,char *argv[])
 
@@ -38,6 +39,8 @@ int     main(int argc,char *argv[])
 
     for (arg = 1; *argv[arg] == '-'; ++arg)
     {
+	if ( strcmp(argv[arg], "--debug") == 0 )
+	    Debug = true;
 	if ( strcmp(argv[arg], "--output") == 0 )
 	{
 	    if ( (diff_stream = fopen(argv[++arg], "w")) == NULL )

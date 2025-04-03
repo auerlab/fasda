@@ -138,7 +138,7 @@ gen_loop()
     
     cat << EOM
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose $k and count FCs >= observed.
@@ -236,6 +236,7 @@ cat << EOM
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "exact-p-val.h"
 
 EOM

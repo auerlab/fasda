@@ -4,10 +4,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "exact-p-val.h"
 
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 2 and count FCs >= observed.
@@ -51,7 +52,7 @@ unsigned long   extreme_fcs2(count_pair_t count_pairs[], unsigned long pair_coun
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 3 and count FCs >= observed.
@@ -98,7 +99,7 @@ unsigned long   extreme_fcs3(count_pair_t count_pairs[], unsigned long pair_coun
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 4 and count FCs >= observed.
@@ -148,7 +149,7 @@ unsigned long   extreme_fcs4(count_pair_t count_pairs[], unsigned long pair_coun
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 5 and count FCs >= observed.
@@ -201,7 +202,7 @@ unsigned long   extreme_fcs5(count_pair_t count_pairs[], unsigned long pair_coun
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 6 and count FCs >= observed.
@@ -257,7 +258,7 @@ unsigned long   extreme_fcs6(count_pair_t count_pairs[], unsigned long pair_coun
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 7 and count FCs >= observed.
@@ -316,7 +317,7 @@ unsigned long   extreme_fcs7(count_pair_t count_pairs[], unsigned long pair_coun
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 8 and count FCs >= observed.
@@ -378,7 +379,7 @@ unsigned long   extreme_fcs8(count_pair_t count_pairs[], unsigned long pair_coun
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 9 and count FCs >= observed.
@@ -443,7 +444,7 @@ unsigned long   extreme_fcs9(count_pair_t count_pairs[], unsigned long pair_coun
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 10 and count FCs >= observed.
@@ -511,7 +512,7 @@ unsigned long   extreme_fcs10(count_pair_t count_pairs[], unsigned long pair_cou
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 11 and count FCs >= observed.
@@ -582,7 +583,7 @@ unsigned long   extreme_fcs11(count_pair_t count_pairs[], unsigned long pair_cou
     return fc_ge + fc_le;
 }
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Generate all combinations n choose 12 and count FCs >= observed.

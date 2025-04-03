@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
+#include <stdbool.h>
 #include <xtend/math.h>
 #include <xtend/stdlib.h>
 #include <xtend/mem.h>
 #include "exact-p-val.h"
 
-const extern int    Debug;
+extern bool Debug;
 
 /*
  *  Find all possible means of fold-change triplets
