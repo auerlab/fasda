@@ -199,9 +199,6 @@ install: all
 		    ${DESTDIR}${MANDIR}/man1
 	${INSTALL} -m 0755 ${BIN} ${DESTDIR}${PREFIX}/bin
 	${INSTALL} -m 0755 ${LIBEXEC} Scripts/* ${DESTDIR}${LIBEXECDIR}
-	${SED} -e "s|/usr/local|`realpath ${PREFIX}`|g" Scripts/heatmap \
-	    > ${DESTDIR}${LIBEXECDIR}/heatmap
-	${CHMOD} 755 ${DESTDIR}${LIBEXECDIR}/heatmap
 	${INSTALL} -m 0644 Man/*.1 ${DESTDIR}${MANDIR}/man1
 
 install-strip: install
