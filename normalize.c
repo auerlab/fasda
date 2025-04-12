@@ -86,7 +86,7 @@ int     main(int argc, const char *argv[])
  *      -l
  *
  *  Description:
- *      Perform median ratios normalization (MRN) on a set of abundance
+ *      Perform median ratio normalization (MRN) on a set of abundance
  *      files, writing output to norm_all_stream.  MRN involves
  *      computing the average abundance of all replicates for each
  *      feature (the pseudo-reference), dividing each count for the
@@ -131,7 +131,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		*norm_sample_streams[FASDA_MAX_SAMPLES];
     char        *end, *target_id,
 		norm_sample_file[PATH_MAX + 1], *p;
-    double      read_count, sum_log_count, log_count[FASDA_MAX_SAMPLES],
+    double      est_count, sum_log_count, log_count[FASDA_MAX_SAMPLES],
 		mean_log_count, *ratios, median_ratio[FASDA_MAX_SAMPLES],
 		scaling_factor[FASDA_MAX_SAMPLES];
     
@@ -164,18 +164,24 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
     {
 	for (sample = 0, sum_log_count = 0; sample < sample_count; ++sample)
 	{
+	    // Read next entry from every abundance file
 	    if ( xt_dsv_line_read(dsv_lines[sample], abundance_streams[sample],
 				"\t") == EOF )
 	    {
+		// Check for EOF on every abundance file.  They should all
+		// come in the same iteration.
 		check_all_eof(abundance_files, abundance_streams, sample, sample_count);
 		break;  // Back to outer while loop
 	    }
 	    else
 	    {
+		// Feature name
 		target_id = xt_dsv_line_get_fields_ae(dsv_lines[sample], 0);
 		
 		// Corresponding lines in each abundance file should
 		// contain the same feature
+		// FIXME: Skip header line before loop rather than
+		// check sample > 0 in every iteration
 		if ( (sample > 0) && (strcmp(target_id,
 			xt_dsv_line_get_fields_ae(dsv_lines[sample - 1], 0)) != 0) )
 		{
@@ -201,14 +207,17 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		 *  2.  Mean of all log(counts) for feature (pseudo-reference)
 		 */
 		
-		read_count = strtof(xt_dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
+		// Field 3 is est_counts
+		est_count =
+		    strtof(xt_dsv_line_get_fields_ae(dsv_lines[sample], 3),
+		    &end);
 		if ( *end != '\0' )
 		{
 		    fprintf(stderr, "normalize: Invalid count: %s\n",
 			    xt_dsv_line_get_fields_ae(dsv_lines[sample_count],0));
 		    return EX_DATAERR;
 		}
-		log_count[sample] = log(read_count);
+		log_count[sample] = log(est_count);
 		/*
 		if ( Debug )
 		    fprintf(stderr, "%0.1f ", log_count[sample]);
@@ -219,6 +228,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 
 	/*
 	 *  3.  Remove genes with -inf as pseudo-reference
+	 *      (mean of log(counts) for feature)
 	 *  4.  Subtract pseudo-reference from each log(expression)
 	 *      This is actually computing a ratio since subtracting from
 	 *      log(v) is dividing v. We'll need to store this value and
@@ -372,7 +382,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		for (c = 0; c < xt_dsv_line_get_num_fields(dsv_lines[sample]); ++c)
 		    fprintf(norm_sample_streams[sample], "%s\t",
 			    xt_dsv_line_get_fields_ae(dsv_lines[sample], c));
-		read_count = strtof(xt_dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
+		est_count = strtof(xt_dsv_line_get_fields_ae(dsv_lines[sample], 3), &end);
 		if ( *end != '\0' )
 		{
 		    fprintf(stderr, "normalize: Invalid count: %s\n",
@@ -382,7 +392,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		
 		// Add normalized count
 		fprintf(norm_sample_streams[sample], "%f\n",
-			read_count * scaling_factor[sample]);
+			est_count * scaling_factor[sample]);
 		//fprintf(stderr, "sample %zu  nc = %f\n",
 		//        sample, count * scaling_factor[sample]);
 		//getchar();
@@ -398,7 +408,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 			    xt_dsv_line_get_fields_ae(dsv_lines[0],0));
 		
 		fprintf(norm_all_stream, "\t%f",
-			read_count * scaling_factor[sample]);
+			est_count * scaling_factor[sample]);
 	    }
 	}
 	

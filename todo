@@ -1,4 +1,7 @@
 
+Compare normalized counts to DESeq2 following example at
+    https://scienceparkstudygroup.github.io/research-data-management-lesson/median_of_ratios_manual_normalization/index.html
+
 Generate heatmap
 
 Compute effective lengths
