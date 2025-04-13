@@ -2,18 +2,14 @@
 
 ##########################################################################
 #   Script description:
-#       
-#   Arguments:
-#       
-#   Returns:
+#       Perform median of ratios normalization in R based on:
+#       https://scienceparkstudygroup.github.io/research-data-management-lesson/median_of_ratios_manual_normalization/index.html
 #       
 #   History:
 #   Date        Name        Modification
 #   2025-04-13  Jason Bacon Begin
 ##########################################################################
 
-# library()
-# load()
 library(dplyr)
 library(tibble)
 

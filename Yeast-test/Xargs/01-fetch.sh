@@ -29,8 +29,8 @@ fi
 
 # Document software versions used for publication
 uname -a
-fastq-dump --version || true
-# fasterq-dump --version || true
+# fastq-dump --version || true
+fasterq-dump --version || true
 pwd
 
 raw=Results/01-fetch/Raw
@@ -62,8 +62,9 @@ for condition in WT SNF2; do
 	    # sra-tools and pulling from coral saves a lot of bandwidth.
 	    printf "Downloading $sample = $condition-$biorep = cond$cond_num-rep$biorep...\n"
 	    set -x
-	    # fasterq-dump --progress --force --outdir $raw $sample
-	    fastq-dump -v -split-3 --outdir $raw $sample
+	    prefetch --progress $sample
+	    fasterq-dump --progress --outdir $raw $sample
+	    # fastq-dump -v -split-3 --outdir $raw $sample
 	    set +x
 	    printf "Compressing...\n"
 	    # Background so next download can start
