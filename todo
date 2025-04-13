@@ -1,4 +1,6 @@
 
+Find out why R scaling factors are slighly smaller
+
 Compare normalized counts to DESeq2 following example at
     https://scienceparkstudygroup.github.io/research-data-management-lesson/median_of_ratios_manual_normalization/index.html
 
