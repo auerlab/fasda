@@ -306,7 +306,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 
 	if ( Debug )
 	{
-	    fprintf(stderr, "Sorted %zu ratios:\n", feature_count);
+	    // fprintf(stderr, "Sorted %zu ratios:\n", feature_count);
 	    for (c = 0; c < feature_count; ++c)
 	    {
 		if ( c % 10000 == 0 )
@@ -391,8 +391,9 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 		}
 		
 		// Add normalized count
+		// Divide by scaling factor, don't multiply
 		fprintf(norm_sample_streams[sample], "%f\n",
-			est_count * scaling_factor[sample]);
+			est_count / scaling_factor[sample]);
 		//fprintf(stderr, "sample %zu  nc = %f\n",
 		//        sample, count * scaling_factor[sample]);
 		//getchar();
