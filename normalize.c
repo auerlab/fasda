@@ -324,7 +324,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 	
 	if ( Debug )
 	{
-	    fprintf(stderr, "Median ratio = %f\n", median_ratio[sample]);
+	    fprintf(stderr, "Median ratio = %f\t", median_ratio[sample]);
 	    fprintf(stderr, "Scaling factor[%zu] = %f\n",
 		    sample + 1, scaling_factor[sample]);
 	}
@@ -409,7 +409,7 @@ int     mrn(const char *abundance_files[], FILE *norm_all_stream)
 			    xt_dsv_line_get_fields_ae(dsv_lines[0],0));
 		
 		fprintf(norm_all_stream, "\t%f",
-			est_count * scaling_factor[sample]);
+			est_count / scaling_factor[sample]);
 	    }
 	}
 	
