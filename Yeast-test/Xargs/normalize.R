@@ -13,6 +13,8 @@
 library(dplyr)
 library(tibble)
 
+# row.names=1 removes "target_id" label from col 1, so it is not
+# counted as a data column.
 raw_counts = read.delim("counts.tsv", row.names=1)
 print("Raw counts:")
 head(raw_counts)
@@ -26,17 +28,16 @@ log_counts = log(raw_counts)
 head(log_counts)
 
 # Find the average log(count) for each feature (row) and add it to the
-# matrix as another column called "feature_mean".  Then we can remove
+# matrix as another column called "mean".  Then we can remove
 # entire rows (features) with -Inf in the pseudo_ref column.
 #             tibble::rownames_to_column('target_id') %>% 
-log_counts = log_counts %>% 
-	     mutate (feature_mean = rowMeans(log_counts))
+log_counts = log_counts %>% mutate (mean = rowMeans(log_counts))
 print("Log counts with means:")
 head(log_counts)
 nrow(log_counts)
 
 # Remove features (rows) with -Inf average (pseudo_reference)
-filtered_log_counts = log_counts %>% filter(feature_mean != "-Inf")
+filtered_log_counts = log_counts %>% filter(mean != "-Inf")
 print("Filtered log counts:")
 head(filtered_log_counts)
 nrow(filtered_log_counts)
@@ -47,7 +48,7 @@ nrow(filtered_log_counts)
 # 1 means operate on rows
 ratio_counts = sweep(filtered_log_counts[,1:cols], 1,
 		     filtered_log_counts[,cols+1], "-")
-print("Ratio counts:")
+print("Ratio counts (count - mean for this row):")
 head(ratio_counts)
 
 # Find median of ratios for each sample
@@ -80,12 +81,12 @@ mrn = function(raw_counts)
     # find the psuedo-references per sample by taking the geometric mean
     #             rownames_to_column('target_id') %>% 
     log_counts = log_counts %>% 
-		 mutate (feature_mean = rowMeans(log_counts))
+		 mutate (mean = rowMeans(log_counts))
     print("Log counts with means:")
     print(head(log_counts))
     
     # Remove features (rows) with -Inf average (pseudo_reference)
-    log_counts = log_counts %>% filter(feature_mean != "-Inf")
+    log_counts = log_counts %>% filter(mean != "-Inf")
     print(head(log_counts))
     print(ncol(log_counts))
     print(nrow(log_counts))
@@ -121,8 +122,32 @@ mrn = function(raw_counts)
     return(normalized)
 }
 
-# Not yet working
+# Compare function results to main
 function_normalized = mrn(raw_counts)
 head(function_normalized == manually_normalized)
 tail(function_normalized == manually_normalized)
 
+print("Normalizing with DESeq2...")
+library(DESeq2)
+
+# samples (columns names) of the data should be named
+samples = as.data.frame(colnames(raw_counts))
+print(samples)
+
+# create a DESeqDataSet object. The design can be altered based on experimental design. A design of 1 means no design. 
+head(raw_counts)
+dds = DESeqDataSetFromMatrix(countData = raw_counts, colData = samples, design = ~1)
+print(head(dds))
+exit
+
+# this function generates the size factors
+dds = estimateSizeFactors(dds)
+
+# scaling_factors were manually computed using our mor_normalization function
+# sizeFactors(dds) is used to find the scaling factors from DESeq2
+scaling_factors == sizeFactors(dds)
+
+normalized_deseq2 = counts(dds, normalized = TRUE)
+
+head(normalized_deseq2 == manually_normalized)
+tail(normalized_deseq2 == manually_normalized)
