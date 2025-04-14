@@ -2,8 +2,10 @@
 
 ##########################################################################
 #   Script description:
-#       Perform median of ratios normalization in R based on:
-#       https://scienceparkstudygroup.github.io/research-data-management-lesson/median_of_ratios_manual_normalization/index.html
+#       Perform median of ratios normalization and DESeq2 analysis based on:
+#       https://scienceparkstudygroup.github.io/\
+#           research-data-management-lesson/\
+#           median_of_ratios_manual_normalization/index.html
 #       
 #   History:
 #   Date        Name        Modification
@@ -13,13 +15,26 @@
 library(dplyr)
 library(tibble)
 
+##########################################################################
+# Input file must be TSV and look like this:
+# target_id       s1      s2      s3      s4      s5      s6
+# YPL071C_mRNA    14      32      30      51      36      36
+# YLL050C_mRNA    238     433     344     831     676     631
+# YMR172W_mRNA    42.6436 62.4375 46.8129 121.99  100.89  103.369
+#
+# Column labels are not important.
+# First 3 columns are condition 1 (control in DESeq2 design)
+# Last 3 are condition 2 (treated in DESeq2 design)
+##########################################################################
+
 # row.names=1 removes "target_id" label from col 1, so it is not
 # counted as a data column.
 raw_counts = read.delim("counts.tsv", row.names=1, header=TRUE)
 print("Raw counts:")
 head(raw_counts)
 
-# Note: Does not include feature names shown as 1st col
+# Note: Does not include feature names shown as 1st col, so should be 6
+# for the example above.
 cols = ncol(raw_counts)
 print(paste("cols = ", cols))
 
@@ -166,6 +181,8 @@ dds = estimateSizeFactors(dds)
 scaling_factors == sizeFactors(dds)
 
 normalized_deseq2 = counts(dds, normalized = TRUE)
+write.table(normalized_deseq2, file='deseq2-normalized-counts.tsv',
+	    sep = '\t', quote=F, col.names = NA)
 
 # Since we had to round the counts to integers to let DESeq2 use them,
 # they won't be quite the same as the manually normalized counts.  Rather

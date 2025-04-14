@@ -91,7 +91,7 @@ prior to computing fold-changes and P-values.
 
 ## Status
 
-FASDA is currently alpha-quality.
+FASDA is currently beta quality.
 
 Exact P-values and Mann-Whitney (Wilcoxon rank sum) P-values should
 be correct, as the results have been carefully examined and compared
@@ -104,18 +104,6 @@ For 5 to 12 replicates, we down-sample the combinations in a
 not-entirely-random manner to estimate the exact P-value in far less time.
 We need more analysis of this approach to ensure that the results
 are not biased.
-
-The kallisto abundance.tsv file format is used as input for
-normalization and computing fold-change and P-values.  The "fasda abundance"
-command computes abundances from SAM/BAM/CRAM files and
-produces a kallisto-style abundance TSV file, so that data from other
-aligners can be used.  This is currently used to support output from hisat2,
-and will support ChIP-Seq and ATAC-Seq peak data in the future.
-
-FASDA's abundance estimates are currently about 40% higher than kallisto's,
-but they are proportional, so the resulting fold-changes are the same.
-This is likely due to higher alignment rates produced by hisat2 in our
-tests.
 
 The sample output below is from 14 biological replicates of yeast RNA-Seq
 data with wild-type and SNF2 mutant conditions.  The run times included
@@ -188,6 +176,33 @@ YNR017W_mRNA           258.0   257.3    0.5    0.4    57    1.00  0.854
 YBL055C_mRNA           106.7    91.3    0.6    0.3    57    0.86  0.783
 ...
 ```
+
+Results have been compared to DESeq2 output (which uses the same
+normalization method).  The normalized counts and fold-changes have
+been confirmed to be in close agreement.  The DESeq2 P-values are
+mostly in the same ball park as our exact P-values, but occasionally
+differ significantly, e.g.
+
+```
+FASDA:
+
+Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val
+YIL170W                 13.2    17.6    0.2    0.2   100    1.33  0.05616
+
+Log2(FC) = 0.411426, very close to DESeq2 value below
+
+DESeq2:
+
+	      baseMean log2FoldChange     lfcSE      stat     pvalue      padj
+YIL170W       15.70860       0.423666  0.476531  0.889062   0.373970  0.735527
+```
+
+This is expected, as DESeq2 and other tools incorporate assumptions into
+their P-value estimates, while FASDA's exact P-values are free of
+assumptions, and do not attempt to make adjustments of any kind.
+Discrepancies are more likely to occur where counts are
+low.  It is left to the user to decide which P-value should be taken
+more seriously.  In any case, two opinions are always better than one.
 
 ## Interpreting Results
 
