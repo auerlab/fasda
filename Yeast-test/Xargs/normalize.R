@@ -129,22 +129,34 @@ tail(function_normalized == manually_normalized)
 
 ##########################################################################
 #   Compare DESeq2 normalization
+#   https://scienceparkstudygroup.github.io/research-data-management-lesson/median_of_ratios_manual_normalization/index.html
 ##########################################################################
 
 print("Normalizing with DESeq2...")
 library(DESeq2)
 
-# samples (columns names) of the data should be named
-samples = as.data.frame(colnames(raw_counts))
-head(raw_counts)
-tail(raw_counts)
-print(samples)
-
-# create a DESeqDataSet object. The design can be altered based on experimental design. A design of 1 means no design. 
 # DESeqDataSetFromMatrix() can only use integers.  Are you ****ing kidding?
 raw_counts = round(raw_counts)
-dds = DESeqDataSetFromMatrix(countData = raw_counts, colData = samples, design = ~1)
-# print(head(dds))
+head(raw_counts)
+tail(raw_counts)
+
+# samples (columns names) of the data should be named
+# For a thorough and comprehensible tutorial:
+# https://ashleyschwartz.com/posts/2023/05/deseq2-tutorial
+sample_names = c(colnames(raw_counts))
+# Must be called "condition" for DESeqDataSetFromMatrix()
+condition = c("control", "control", "control", "treated", "treated", "treated")
+meta_data = data.frame(sample_names, condition)
+meta_data <- meta_data %>% remove_rownames %>% column_to_rownames(var="sample_names")
+meta_data
+
+all(colnames(raw_counts) %in% rownames(meta_data))
+all(colnames(raw_counts) == rownames(meta_data))
+
+# create a DESeqDataSet object. The design can be altered based on experimental design. A design of 1 means no design. 
+dds = DESeqDataSetFromMatrix(countData = raw_counts, colData = meta_data,
+			     design = ~condition)
+head(dds)
 
 # this function generates the size factors
 dds = estimateSizeFactors(dds)
@@ -164,3 +176,6 @@ head(normalized_deseq2)
 tail(manually_normalized)
 tail(normalized_deseq2)
 
+dds = DESeq(dds)
+results = results(dds)
+results
