@@ -13,25 +13,31 @@
 library(dplyr)
 library(tibble)
 
-counts = read.delim("counts.tsv", row.names=1)
-head(counts)
-# Note: Does not include feature names shown as 1st col
-cols = ncol(counts)
+raw_counts = read.delim("counts.tsv", row.names=1)
+print("Raw counts:")
+head(raw_counts)
 
-log_counts = log(counts)
+# Note: Does not include feature names shown as 1st col
+cols = ncol(raw_counts)
+print(c("cols = ", cols))
+
+print("Log counts:")
+log_counts = log(raw_counts)
 head(log_counts)
 
 # Find the average log(count) for each feature (row) and add it to the
-# matrix as another column called "pseudo_reference".  Then we can remove
+# matrix as another column called "feature_mean".  Then we can remove
 # entire rows (features) with -Inf in the pseudo_ref column.
+#             tibble::rownames_to_column('target_id') %>% 
 log_counts = log_counts %>% 
-	     tibble::rownames_to_column('target_id') %>% 
-	     mutate (pseudo_reference = rowMeans(log_counts))
+	     mutate (feature_mean = rowMeans(log_counts))
+print("Log counts with means:")
 head(log_counts)
 nrow(log_counts)
 
 # Remove features (rows) with -Inf average (pseudo_reference)
-filtered_log_counts = log_counts %>% filter(pseudo_reference != "-Inf")
+filtered_log_counts = log_counts %>% filter(feature_mean != "-Inf")
+print("Filtered log counts:")
 head(filtered_log_counts)
 nrow(filtered_log_counts)
 
@@ -39,8 +45,8 @@ nrow(filtered_log_counts)
 # Note that subtracting from log(x) is the same as dividing x, hence
 # we call these ratios, not differences
 # 1 means operate on rows
-ratio_counts = sweep(filtered_log_counts[,1:cols+1], 1,
-		     filtered_log_counts[,cols+2], "-")
+ratio_counts = sweep(filtered_log_counts[,1:cols], 1,
+		     filtered_log_counts[,cols+1], "-")
 print("Ratio counts:")
 head(ratio_counts)
 
@@ -57,49 +63,66 @@ scaling_factors
 
 # Divide original counts by scaling factor for sample
 # 2 means operate on columns
-manually_normalized = sweep(counts, 2, scaling_factors, "/")
+manually_normalized = sweep(raw_counts, 2, scaling_factors, "/")
 head(manually_normalized)
 
-mrn = function(counts)
+mrn = function(raw_counts)
 {
-  print("Running mrn()...")
-  head(counts)
-  
-  # take the log
-  log_counts = log(counts) 
-  head(log_counts)
-  
-  # find the psuedo-references per sample by taking the geometric mean
-  log_counts = log_counts %>% 
-	       rownames_to_column('target_id') %>% 
-	       mutate (gene_averages = rowMeans(log_counts)) %>% 
-	       filter(gene_averages != "-Inf")
-  head(log_counts)
-  return(log_counts)
-  
-  # the last columns is the pseudo-reference column 
-  pseudo_column = ncol(log_counts)
-  print('pseudo_column = ')
-  print(pseudo_column)
-  
-  # where to stop before the pseudo column 
-  before_pseudo = pseudo_column - 1
-  
-  # find the ratio of the log counts to the pseudo-reference
-  ratios = sweep(log_counts[,2:before_pseudo], 1,
-		 log_counts[,pseudo_column], "-")
-  
-  # find the median of the ratios
-  sample_medians = apply(ratios, 2, median)
-  
-  # convert the median to a scaling factor
-  scaling_factors = exp(sample_medians)
-  
-  # use scaling factors to scale the original data
-  manually_normalized = sweep(data, 2, scaling_factors, "/")
-  return(manually_normalized)
+    print("Running mrn()...")
+    print("Raw counts")
+    print(head(raw_counts))
+    
+    # take the log
+    log_counts = log(raw_counts)
+    print("Log counts:")
+    print(head(log_counts))
+    
+    # find the psuedo-references per sample by taking the geometric mean
+    #             rownames_to_column('target_id') %>% 
+    log_counts = log_counts %>% 
+		 mutate (feature_mean = rowMeans(log_counts))
+    print("Log counts with means:")
+    print(head(log_counts))
+    
+    # Remove features (rows) with -Inf average (pseudo_reference)
+    log_counts = log_counts %>% filter(feature_mean != "-Inf")
+    print(head(log_counts))
+    print(ncol(log_counts))
+    print(nrow(log_counts))
+    
+    # the last columns is the pseudo-reference column 
+    mean_column = ncol(log_counts)
+    print(c('mean_column = ', mean_column))
+    
+    # where to stop before the mean column 
+    before_mean = mean_column - 1
+    print(c('before_mean = ', before_mean))
+    
+    print(head(log_counts[,1:before_mean]))
+    print(head(log_counts[,mean_column]))
+    # find the ratio of the log counts to the pseudo-reference
+    ratios = sweep(log_counts[,1:before_mean], 1,
+		   log_counts[,mean_column], "-")
+    print("Ratios:")
+    print(head(ratios))
+    
+    # find the median of the ratios
+    sample_medians = apply(ratios, 2, median)
+    print("Sample medians:")
+    print(head(sample_medians))
+    
+    # convert the median to a scaling factor
+    scaling_factors = exp(sample_medians)
+    print("Scaling factors:")
+    print(head(scaling_factors))
+    
+    # use scaling factors to scale the original data
+    normalized = sweep(raw_counts, 2, scaling_factors, "/")
+    return(normalized)
 }
 
 # Not yet working
-# manually_normalized == mrn(counts)
+function_normalized = mrn(raw_counts)
+head(function_normalized == manually_normalized)
+tail(function_normalized == manually_normalized)
 
