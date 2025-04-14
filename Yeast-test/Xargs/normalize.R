@@ -15,13 +15,13 @@ library(tibble)
 
 # row.names=1 removes "target_id" label from col 1, so it is not
 # counted as a data column.
-raw_counts = read.delim("counts.tsv", row.names=1)
+raw_counts = read.delim("counts.tsv", row.names=1, header=TRUE)
 print("Raw counts:")
 head(raw_counts)
 
 # Note: Does not include feature names shown as 1st col
 cols = ncol(raw_counts)
-print(c("cols = ", cols))
+print(paste("cols = ", cols))
 
 print("Log counts:")
 log_counts = log(raw_counts)
@@ -93,11 +93,11 @@ mrn = function(raw_counts)
     
     # the last columns is the pseudo-reference column 
     mean_column = ncol(log_counts)
-    print(c('mean_column = ', mean_column))
+    print(paste('mean_column = ', mean_column))
     
     # where to stop before the mean column 
     before_mean = mean_column - 1
-    print(c('before_mean = ', before_mean))
+    print(paste('before_mean = ', before_mean))
     
     print(head(log_counts[,1:before_mean]))
     print(head(log_counts[,mean_column]))
@@ -127,18 +127,24 @@ function_normalized = mrn(raw_counts)
 head(function_normalized == manually_normalized)
 tail(function_normalized == manually_normalized)
 
+##########################################################################
+#   Compare DESeq2 normalization
+##########################################################################
+
 print("Normalizing with DESeq2...")
 library(DESeq2)
 
 # samples (columns names) of the data should be named
 samples = as.data.frame(colnames(raw_counts))
+head(raw_counts)
+tail(raw_counts)
 print(samples)
 
 # create a DESeqDataSet object. The design can be altered based on experimental design. A design of 1 means no design. 
-head(raw_counts)
+# DESeqDataSetFromMatrix() can only use integers.  Are you ****ing kidding?
+raw_counts = round(raw_counts)
 dds = DESeqDataSetFromMatrix(countData = raw_counts, colData = samples, design = ~1)
-print(head(dds))
-exit
+# print(head(dds))
 
 # this function generates the size factors
 dds = estimateSizeFactors(dds)
@@ -149,5 +155,12 @@ scaling_factors == sizeFactors(dds)
 
 normalized_deseq2 = counts(dds, normalized = TRUE)
 
-head(normalized_deseq2 == manually_normalized)
-tail(normalized_deseq2 == manually_normalized)
+# Since we had to round the counts to integers to let DESeq2 use them,
+# they won't be quite the same as the manually normalized counts.  Rather
+# than compare them, which will yield mostly FALSE values, just display
+# them for visual comparison.
+head(manually_normalized)
+head(normalized_deseq2)
+tail(manually_normalized)
+tail(normalized_deseq2)
+
