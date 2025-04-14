@@ -30,11 +30,6 @@ pause()
 #   Main
 ##########################################################################
 
-if [ $# != 1 ]; then
-    usage
-fi
-replicates=$1
-
 output_dir=Results/07-fasda-kallisto
 mkdir -p $output_dir
 cd $output_dir
@@ -48,30 +43,35 @@ fasda --version
 pwd
 
 kallisto_dir=../06-kallisto-quant
+samples=$(ls $kallisto_dir | wc -l)
+replicates=$(($samples / 2))
 log_dir=../../Logs/07-fasda-kallisto
 mkdir -p $log_dir
 
 # FIXME: Factor out to fasda-mw.sh?
 r0=$(printf '%02d' $replicates)
-for condition in 1 2; do
-    norm_file=cond$condition-all-norm-$r0.tsv
-    # Debug rm -f $norm_file
-    if [ ! -e $norm_file ]; then
-	printf "Normalizing condition $condition: $replicates replicates\n"
-	files=""
-	for r in $(seq 1 $replicates); do
-	    r2=$(printf "%02d" $r)
-	    files="$files $kallisto_dir/cond$condition-rep$r2/abundance.tsv"
-	done
-	printf "%s\n" $files
-	set -x
-	time fasda normalize --output $norm_file $files \
-	    2>&1 | tee $log_dir/normalize-$condition-$r0-MW.out
-	set +x
-    fi
-    printf "\nCondition $condition normalized counts:\n\n"
-    head $norm_file
-done
+norm_file=all-norm-$r0.tsv
+# Debug rm -f $norm_file
+if [ ! -e $norm_file ]; then
+    printf "Normalizing condition $condition: $replicates replicates\n"
+    files=""
+    files="$kallisto_dir/*/abundance.tsv"
+    printf "%s\n" $files
+    set -x
+    time fasda normalize --output $norm_file $files \
+	2>&1 | tee $log_dir/normalize-$condition-$r0-MW.out
+    set +x
+fi
+printf "\nCondition $condition normalized counts:\n\n"
+head -n 5 $norm_file
+
+printf "\nCondition 1 counts:\n"
+cut -f 1-$(($replicates + 1)) $norm_file > cond1-all-norm-$r0.tsv
+head -n 5 cond1-all-norm-$r0.tsv
+
+printf "\nCondition 2 counts:\n"
+cut -f 1,$(($replicates + 2))-$(($samples + 1)) $norm_file > cond2-all-norm-$r0.tsv
+head -n 5 cond2-all-norm-$r0.tsv
 pause
 
 de_file=fc-$r0.txt

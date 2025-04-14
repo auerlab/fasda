@@ -39,8 +39,9 @@ nrow(filtered_log_counts)
 # Note that subtracting from log(x) is the same as dividing x, hence
 # we call these ratios, not differences
 # 1 means operate on rows
-ratio_counts = sweep(filtered_log_counts[,2:cols+1], 1,
+ratio_counts = sweep(filtered_log_counts[,1:cols+1], 1,
 		     filtered_log_counts[,cols+2], "-")
+print("Ratio counts:")
 head(ratio_counts)
 
 # Find median of ratios for each sample
