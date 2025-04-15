@@ -158,22 +158,19 @@ Normalizing SNF2...
 Computing fold-change...
 	0.05 real         0.05 user         0.00 sys
 
-Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val
-YPL071C_mRNA            36.1    65.2    0.6    0.7    85    1.80  0.035
-YLL050C_mRNA           486.9   705.4    0.5    0.4    78    1.45  0.048
-YMR172W_mRNA            80.3   157.4    0.6    0.8    78    1.96  0.008
-YOR185C_mRNA            61.9    70.2    0.6    0.5    71    1.13  0.198
-YLL032C_mRNA            42.4    32.8    0.7    0.3    64    0.77  0.335
-YBR225W_mRNA            67.0   122.1    0.6    0.6    85    1.82  0.022
-YEL041W_mRNA            22.6    29.5    0.6    0.4    64    1.30  0.081
-YOR237W_mRNA            17.1    46.4    0.6    0.8    92    2.72  0.000
-YMR027W_mRNA           203.8   294.6    0.5    0.4    71    1.45  0.022
-YBR182C-A_mRNA           0.1     0.2    3.5    2.4    85    3.04  0.713
-YKL103C_mRNA           195.6   388.8    0.5    0.4    92    1.99  0.001
-YOL048C_mRNA            64.0   131.8    0.7    0.4    92    2.06  0.001
-YIR015W_mRNA            13.6    25.7    0.8    0.7    85    1.88  0.009
-YNR017W_mRNA           258.0   257.3    0.5    0.4    57    1.00  0.854
-YBL055C_mRNA           106.7    91.3    0.6    0.3    57    0.86  0.783
+Feature                 MNC1    MNC2  SD/C1  SD/C2  FC 1-2 log2(FC) P-val
+YPL071C_mRNA            29.6    31.1    0.3    0.2    1.05    0.07  0.72611
+YLL050C_mRNA           399.5   543.8    0.2    0.2    1.36    0.44  0.02857
+YMR172W_mRNA            60.6    83.3    0.2    0.2    1.38    0.46  0.02167
+YOR185C_mRNA            57.1    56.1    0.3    0.2    0.98   -0.03  0.92562
+YLL032C_mRNA            33.9    21.6    0.3    0.3    0.64   -0.65  0.14138
+YBR225W_mRNA            61.4    75.4    0.2    0.2    1.23    0.30  0.11281
+YEL041W_mRNA            16.4    23.7    0.4    0.2    1.45    0.54  0.18670
+YOR237W_mRNA            15.2    21.0    0.3    0.3    1.39    0.47  0.12660
+YMR027W_mRNA           185.6   208.0    0.2    0.2    1.12    0.16  0.11773
+YBR182C-A_mRNA           0.0     0.0    0.0    0.0       *       *  1.00000
+YKL103C_mRNA           191.5   318.6    0.4    0.2    1.66    0.73  0.09655
+YOL048C_mRNA            60.5    96.6    0.3    0.2    1.60    0.67  0.04335
 ...
 ```
 
@@ -186,8 +183,8 @@ differ significantly, e.g.
 ```
 FASDA:
 
-Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val
-YIL170W                 13.2    17.6    0.2    0.2   100    1.33  0.05616
+Feature                 MNC1    MNC2  SD/C1  SD/C2  FC 1-2 log2(FC) P-val
+YIL170W                 13.2    17.6    0.2    0.2    1.33    0.42  0.05616
 
 Log2(FC) = 0.411426, very close to DESeq2 value below
 
@@ -208,8 +205,7 @@ more seriously.  In any case, two opinions are always better than one.
 
 The fasda fold-change output shows the mean normalized counts across
 replicates, the standard deviation from that mean (divided by the mean
-to show % deviation rather than absolute), the % agreement among replicates
-as to the direction of the change (up-regulated vs down or no change),
+to show % deviation rather than absolute),
 the fold-change computed from total counts across replicates,
 and the exact, near-exact, or Mann-Whitney P-value for this set of counts.
 

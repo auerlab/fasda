@@ -7,8 +7,7 @@
 .PP
 .nf 
 .na
-filter [--min-mnc N] [--max-sd N] [--min-agr N] [--min-fc N]
-[--max-p-val N] fc-file.txt
+filter [--min-mnc N] [--max-sd N] [--min-fc N] [--max-p-val N] fc-file.txt
 .ad
 .fi
 
@@ -17,7 +16,6 @@ filter [--min-mnc N] [--max-sd N] [--min-agr N] [--min-fc N]
 .na
 --min-mnc N     Minimum average of MNC1 and MNC2 (default = 1)
 --max-sd N      Maxium average of SD/C1 and SD/C2 (default = 1.0)
---min-agr N     Minimum %Agr (default = 50)
 --min-fc N      Minimum of FC or 1/FC (default = 1.0)
 --max-p-val     Maximum P-value (default = 0.05)
 .ad
@@ -30,12 +28,13 @@ statistics.  An example of such output is shown below.
 
 .nf
 .na
-Feature                 MNC1    MNC2  SD/C1  SD/C2  %Agr  FC 1-2  P-val
-YPL071C_mRNA            27.3    42.2    0.4    0.3    67    1.55  0.22906
-YLL050C_mRNA           362.4   735.8    0.4    0.3   100    2.03  0.07586
-YMR172W_mRNA            53.8   111.1    0.3    0.3   100    2.07  0.05911
-YOR185C_mRNA            47.0    74.0    0.3    0.2   100    1.57  0.06601
-YLL032C_mRNA            31.9    29.1    0.5    0.3    67    0.91  0.80246
+Feature                 MNC1    MNC2  SD/C1  SD/C2  FC 1-2 log2(FC) P-val
+YPL071C_mRNA            29.6    31.1    0.3    0.2    1.05    0.07  0.72611
+YLL050C_mRNA           399.5   543.8    0.2    0.2    1.36    0.44  0.02857
+YMR172W_mRNA            60.6    83.3    0.2    0.2    1.38    0.46  0.02167
+YOR185C_mRNA            57.1    56.1    0.3    0.2    0.98   -0.03  0.92562
+YLL032C_mRNA            33.9    21.6    0.3    0.3    0.64   -0.65  0.14138
+YBR225W_mRNA            61.4    75.4    0.2    0.2    1.23    0.30  0.11281
 .ad
 .fi
 

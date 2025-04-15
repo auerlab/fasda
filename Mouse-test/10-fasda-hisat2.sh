@@ -97,10 +97,10 @@ pause
 
 for transcript in $transcripts; do
     printf "\n=== $transcript ===\n"
-    printf "%-15s %6s %6s %4s %4s %4s %5s %4s\n" \
-	"Samples" "MNC1" "MNC2" "SD1" "SD2" "Agr" "FC" "P"
+    printf "%-15s %6s %6s %4s %4s %5s %5s %4s\n" \
+	"Samples" "MNC1" "MNC2" "SD1" "SD2" "FC" "LFC" "P"
     awk -v t=$transcript \
-	'$1 == t { printf("%-15s %6.1f %6.1f %4.1f %4.1f %4d %5.1f %4.2f\n",
+	'$1 == t { printf("%-15s %6.1f %6.1f %4.1f %4.1f %5.1f %5.1f %4.2f\n",
 	    FILENAME, $2, $3, $4, $5, $6, $7, $8); }' \
 	*.txt | sort -k 8 -n
 done

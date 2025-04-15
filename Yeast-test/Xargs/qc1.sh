@@ -32,5 +32,5 @@ if [ -e $output ]; then
     printf "$output already exists.\n"
 else
     # Adapter discovered by fastq-scum
-    gzcat $file | fastqc -o Results/02-qc-raw stdin:$base
+    gzcat $file | fastqc -o Results/03-qc stdin:$base
 fi

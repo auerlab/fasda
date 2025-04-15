@@ -39,9 +39,9 @@ if [ $replicates -lt 3 ]; then
     usage
 fi
 
-cd ..
+cd ../..
 ./cave-man-install.sh || true
-cd Yeast-test
+cd -
 
 ./00-organize.sh
 header "Fetching yeast read data..."
