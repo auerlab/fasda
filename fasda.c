@@ -75,7 +75,7 @@ int     main(int argc,char *argv[])
     }
 
     fputs("\n********************************* Note *********************************\n"
-	  "FASDA is experimental.  Be sure to verify all results by other means.\n"
+	  "FASDA is beta-quality software.  Be sure to verify all results.\n"
 	  "(This is not to imply that other DE tools should be trusted, either.)\n"
 	  "Please contribute by reporting problems and offering suggestions at\n"
 	  "https://github.com/auerlab/fasda.\n"
