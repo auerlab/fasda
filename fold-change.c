@@ -255,8 +255,8 @@ void    print_header(FILE *diff_stream, int conditions)
     for (c1 = 0; c1 < conditions; ++c1)
     {
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
-	    fprintf(diff_stream,"  %4s  FC %d-%d  %5s",
-		    "%Agr", c1 + 1, c2 + 1, "P-val");
+	    fprintf(diff_stream,"  FC %d-%d log2(FC) %5s",
+		    c1 + 1, c2 + 1, "P-val");
     }
     putc('\n', diff_stream);
 }
@@ -307,15 +307,18 @@ void    print_fold_change(FILE *diff_stream, const char *id,
 	for (c2 = c1 + 1; c2 < conditions; ++c2)
 	{
 	    // Agreement: Is fold-change up/down in all replicates?
-	    fprintf(diff_stream, "  %4u",
-		    agreement(c1, c2, num_repls, rep_counts));
+	    // FIXME: Compute agreement over all possible pairings
+	    // if we're going to do this at all
+	    // fprintf(diff_stream, "  %4u",
+	    //        agreement(c1, c2, num_repls, rep_counts));
 	    
 	    // Fold-change
 	    if ( (cond_tot_counts[c1] == 0.0) && (cond_tot_counts[c2] == 0.0) )
-		fprintf(diff_stream," %7s", "*");
+		fprintf(diff_stream," %7s %7s", "*", "*");
 	    else
-		fprintf(diff_stream," %7.2f", 
-			cond_tot_counts[c2] / cond_tot_counts[c1]);
+		fprintf(diff_stream," %7.2f %7.2f", 
+			cond_tot_counts[c2] / cond_tot_counts[c1],
+			log2(cond_tot_counts[c2] / cond_tot_counts[c1]));
 
 	    // P-value
 	    if ( flags & FC_FLAG_NEAR_EXACT )

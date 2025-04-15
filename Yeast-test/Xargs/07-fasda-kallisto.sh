@@ -30,13 +30,17 @@ pause()
 #   Main
 ##########################################################################
 
+cd ../..
+./cave-man-install.sh
+cd -
 output_dir=Results/07-fasda-kallisto
 mkdir -p $output_dir
 cd $output_dir
 
 # Use fasda built by cave-man-install.sh
-PATH=../../../../local/bin:$PATH
+PATH=../../../../../local/bin:$PATH
 export PATH
+which fasda
 
 uname -a
 fasda --version
@@ -51,17 +55,14 @@ mkdir -p $log_dir
 # FIXME: Factor out to fasda-mw.sh?
 r0=$(printf '%02d' $replicates)
 norm_file=all-norm-$r0.tsv
-# Debug rm -f $norm_file
-if [ ! -e $norm_file ]; then
-    printf "Normalizing condition $condition: $replicates replicates\n"
-    files=""
-    files="$kallisto_dir/*/abundance.tsv"
-    printf "%s\n" $files
-    set -x
-    time fasda normalize --output $norm_file $files \
-	2>&1 | tee $log_dir/normalize-$condition-$r0-MW.out
-    set +x
-fi
+printf "Normalizing condition $condition: $replicates replicates\n"
+files=""
+files="$kallisto_dir/*/abundance.tsv"
+printf "%s\n" $files
+set -x
+time fasda normalize --output $norm_file $files \
+    2>&1 | tee $log_dir/normalize-$condition-$r0-MW.out
+set +x
 printf "\nCondition $condition normalized counts:\n\n"
 head -n 5 $norm_file
 
@@ -76,15 +77,13 @@ pause
 
 de_file=fc-$r0.txt
 # Debug rm -f $de_file
-if [ ! -e $de_file ]; then
-    printf "Computing fold-change for $replicates replicates...\n"
-    set -x
-    time fasda fold-change \
-	--output $de_file \
-	cond1-all-norm-$r0.tsv cond2-all-norm-$r0.tsv \
-	2>&1 | tee $log_dir/fc-$condition-$r0.out
-    set +x
-fi
+printf "Computing fold-change for $replicates replicates...\n"
+set -x
+time fasda fold-change \
+    --output $de_file \
+    cond1-all-norm-$r0.tsv cond2-all-norm-$r0.tsv \
+    2>&1 | tee $log_dir/fc-$condition-$r0.out
+set +x
 
 pwd
 ls
