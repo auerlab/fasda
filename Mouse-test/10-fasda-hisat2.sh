@@ -13,6 +13,9 @@ pause()
     read junk
 }
 
+cd ..
+./cave-man-install.sh
+cd Mouse-test
 PATH=../../local/bin:${PATH}
 export PATH
 
@@ -20,6 +23,7 @@ export PATH
 # our tools use gff3
 gff_filename=Results/04-reference/$(Reference/gtf-filename.sh)
 ab_dir=Results/10-fasda-hisat2
+mkdir -p $ab_dir
 
 for bam in Results/09-hisat2-align/*.bam; do
     base=$(basename $bam)
@@ -35,20 +39,18 @@ done
 for first in $(seq 1 4); do
     for second in $(seq $(($first + 1)) 5); do
 	for third in $(seq $(($second + 1)) 6); do
-	    printf "==> $ab_dir/norm-$first-$second-$third.tsv...\n"
-	    wc -l \
-		$ab_dir/*-rep$first-abundance.tsv \
-		$ab_dir/*-rep$second-abundance.tsv \
-		$ab_dir/*-rep$third-abundance.tsv
+	    norm_file=$ab_dir/norm-all-$first-$second-$third.tsv
+	    printf "Generating $norm_file...\n"
 	    set -x
-	    fasda normalize --output \
-		$ab_dir/norm-$first-$second-$third.tsv \
+	    fasda normalize --output $norm_file \
 		$ab_dir/*-rep$first-abundance.tsv \
 		$ab_dir/*-rep$second-abundance.tsv \
 		$ab_dir/*-rep$third-abundance.tsv
 	    set +x
-	    more $ab_dir/norm-$first-$second-$third.tsv
+	    head $norm_file
 	    
+	    cut -f 1-4 $norm_file > $ab_dir/norm-cond1-$first-$second-$third.tsv
+	    cut -f 1,5-7 $norm_file > $ab_dir/norm-cond2-$first-$second-$third.tsv
 	    printf "Computing fold-changes for $first-$second-$third...\n"
 	    fasda fold-change --output $ab_dir/fc-$first-$second-$third.txt \
 		$ab_dir/norm-cond1-$first-$second-$third.tsv \
@@ -70,37 +72,3 @@ if [ ! -e $ab_dir/fc-all.txt ]; then
     fasda fold-change --output $ab_dir/fc-all.txt \
 	$ab_dir/norm-cond1-all.tsv $ab_dir/norm-cond2-all.tsv
 fi
-
-# Transcripts with modest to high coverage and likely significant
-# transcripts='ENSMUST00000000090 ENSMUST00000000109 ENSMUST00000029451'
-transcripts=$(sort --random-sort Results/10-fasda-hisat2/fc-1-2-3.txt \
-    | awk '$1 != "Feature" && ($2 > 100 || $3 > 100) { print $1 }' | head -n 5)
-printf "Randomly selected transcripts:\n$transcripts\n"
-
-for transcript in $transcripts; do
-    printf "\nAbundances for $transcript:\n"
-    awk -v t=$transcript '$1 == t { split(FILENAME, a, "/"); print a[3], $4 }' \
-	Results/10-fasda-hisat2/cond1-rep*
-done
-pause
-
-cd $ab_dir
-for transcript in $transcripts; do
-    printf "\n=== $transcript ===\n"
-    printf "%-20s %10s %10s %10s %10s\n" "Replicate-group" "1" "2" "3" "Mean"
-    awk -v t=$transcript \
-	'$1 == t { printf("%-20s %10.1f %10.1f %10.1f %10.1f\n", \
-		    FILENAME, $2, $3, $4, ($2 + $3 + $4) / 3.0); }' \
-	norm-cond1-1-2-3.tsv norm-cond1-4-5-6.tsv
-done
-pause
-
-for transcript in $transcripts; do
-    printf "\n=== $transcript ===\n"
-    printf "%-15s %6s %6s %4s %4s %5s %5s %4s\n" \
-	"Samples" "MNC1" "MNC2" "SD1" "SD2" "FC" "LFC" "P"
-    awk -v t=$transcript \
-	'$1 == t { printf("%-15s %6.1f %6.1f %4.1f %4.1f %5.1f %5.1f %4.2f\n",
-	    FILENAME, $2, $3, $4, $5, $6, $7, $8); }' \
-	*.txt | sort -k 8 -n
-done
