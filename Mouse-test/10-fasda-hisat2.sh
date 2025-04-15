@@ -35,25 +35,24 @@ done
 for first in $(seq 1 4); do
     for second in $(seq $(($first + 1)) 5); do
 	for third in $(seq $(($second + 1)) 6); do
-	    for cond in 1 2; do
-		# Debug
-		rm -f $ab_dir/norm-cond$cond-$first-$second-$third.tsv
-		if [ ! -e $ab_dir/norm-cond$cond-$first-$second-$third.tsv ]; then
-		    printf "==> $ab_dir/norm-cond$cond-$first-$second-$third.tsv...\n"
-		    fasda normalize --output \
-			$ab_dir/norm-cond$cond-$first-$second-$third.tsv \
-			$ab_dir/cond$cond-rep$first-abundance.tsv \
-			$ab_dir/cond$cond-rep$second-abundance.tsv \
-			$ab_dir/cond$cond-rep$third-abundance.tsv
-		fi
-	    done
+	    printf "==> $ab_dir/norm-$first-$second-$third.tsv...\n"
+	    wc -l \
+		$ab_dir/*-rep$first-abundance.tsv \
+		$ab_dir/*-rep$second-abundance.tsv \
+		$ab_dir/*-rep$third-abundance.tsv
+	    set -x
+	    fasda normalize --output \
+		$ab_dir/norm-$first-$second-$third.tsv \
+		$ab_dir/*-rep$first-abundance.tsv \
+		$ab_dir/*-rep$second-abundance.tsv \
+		$ab_dir/*-rep$third-abundance.tsv
+	    set +x
+	    more $ab_dir/norm-$first-$second-$third.tsv
 	    
-	    if [ ! -e $ab_dir/fc-$first-$second-$third.txt ]; then
-		printf "Computing fold-changes for $first-$second-$third...\n"
-		fasda fold-change --output $ab_dir/fc-$first-$second-$third.txt \
-		    $ab_dir/norm-cond1-$first-$second-$third.tsv \
-		    $ab_dir/norm-cond2-$first-$second-$third.tsv
-	    fi
+	    printf "Computing fold-changes for $first-$second-$third...\n"
+	    fasda fold-change --output $ab_dir/fc-$first-$second-$third.txt \
+		$ab_dir/norm-cond1-$first-$second-$third.tsv \
+		$ab_dir/norm-cond2-$first-$second-$third.tsv
 	done
     done
 done
