@@ -104,7 +104,7 @@ int     main(int argc,char *argv[])
 
 	// We only need GTFs for stringtie, but build the filenames
 	// here along with abundance.tsv files since the process is the same
-	gtf_files[file_count] = strdup(sam_files[file_count]);
+	gtf_files[file_count] = malloc(PATH_MAX + 1);
 	if ( gtf_files[file_count] == NULL )
 	{
 	    fprintf(stderr, "abundance: Could not strdup() gtf_files[%d]\n",
@@ -130,7 +130,7 @@ int     main(int argc,char *argv[])
 	else
 	{
 	    strlcpy(abundance_files[file_count], sam_files[file_count], PATH_MAX + 1);
-	    strlcpy(gtf_files[file_count], sam_files[file_count], strlen(gtf_files[file_count]) + 1);
+	    strlcpy(gtf_files[file_count], sam_files[file_count], PATH_MAX + 1);
 	}
 	
 	if ( (p = bl_sam_filename_extension(abundance_files[file_count])) == NULL )
