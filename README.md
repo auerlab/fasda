@@ -40,6 +40,9 @@ tools, the code is written entirely in C and built on
 analysis results were verified to match those of R tools, in addition
 to being carefully studied at the mathematical level.
 
+For a complete description of an RNA-Seq differential expression analysis
+using FASDA, see [RNA-Seq Differential Expression Analysis for Non-programmers](https://www.barnesandnoble.com/w/rna-seq-differential-expression-analysis-for-non-programmers-jason-bacon/1147330944).
+
 Starting with kallisto output, computing fold-change and associated P-values
 for two conditions can typically be completed in a few seconds with three
 simple commands, for example:
