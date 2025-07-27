@@ -19,6 +19,7 @@ release=$(Reference/genome-release.sh)
 genome=$(Reference/genome-filename.sh)
 
 # samtools sort dumps temp files in CWD
+mkdir Results/12-star-align
 cd Results/12-star-align
 pwd
 

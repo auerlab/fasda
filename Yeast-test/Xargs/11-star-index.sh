@@ -20,6 +20,7 @@ gtf=../04-reference/$(Reference/gtf-filename.sh)
 printf "Using GTF $gtf...\n"
 
 printf "Building STAR index...\n"
+mkdir Results/11-star-index
 cd Results/11-star-index
 STAR \
     --runMode genomeGenerate \
