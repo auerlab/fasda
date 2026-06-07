@@ -89,7 +89,7 @@ a new approach.  Hence, a major goal with FASDA is to fill an
 under-served niche of high-sample studies with a tool that is fast and
 produces stable results.
 
-FASDA currently uses Mean Ratios Normalization (MRN) to normalize counts
+FASDA currently uses Median Ratios Normalization (MRN) to normalize counts
 prior to computing fold-changes and P-values.
 
 ## Status
