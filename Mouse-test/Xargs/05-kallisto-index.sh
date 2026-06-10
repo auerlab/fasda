@@ -1,0 +1,1 @@
+../../Yeast-test/Xargs/05-kallisto-index.sh
