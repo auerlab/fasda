@@ -57,8 +57,10 @@ printenv
 
 input_dir='Results/01-fetch/Raw-renamed'
 output_dir='Results/02-qc-raw'
-sample=$LPJS_ARRAY_INDEX
-# Example: chondro-sample1-rep1-time1-R1.fastq.xz
+log_dir='LPJS-logs/02-qc-raw'
+mkdir -p $output_dir $log_dir
+sample=$(printf "%02d" $LPJS_ARRAY_INDEX)
+# Example: chondro-sample01-rep1-time1-R1.fastq.xz
 input1=$(ls $input_dir/sample$sample-*)
 
 # Filename stems for fastqc output
