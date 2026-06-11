@@ -31,7 +31,7 @@
 #   Main
 ##########################################################################
 
-replicates=6
+replicates=3
 
 # Document software versions used for publication
 uname -a

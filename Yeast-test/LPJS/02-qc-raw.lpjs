@@ -20,10 +20,10 @@
 # Each invocation of this script will run 2 fastqc processes, forward
 # and reverse.
 #lpjs jobs 6
-#lpjs processors-per-job 2
+#lpjs processors-per-job 1
 #lpjs threads-per-process processors-per-job
 # From lpjs peak-mem:
-#lpjs pmem-per-processor 220MiB
+#lpjs pmem-per-processor 397MiB
 ##############################################################################
 # Update PATH on a chimeric cluster (multiple operating systems used for
 # compute nodes)
@@ -57,10 +57,11 @@ printenv
 
 input_dir='Results/01-fetch/Raw-renamed'
 output_dir='Results/02-qc-raw'
+# LPJS default
 log_dir='LPJS-logs/02-qc-raw'
-mkdir -p $output_dir $log_dir
+
+# Example: sample01-cond1-rep01.fastq.zst
 sample=$(printf "%02d" $LPJS_ARRAY_INDEX)
-# Example: chondro-sample01-rep1-time1-R1.fastq.xz
 input1=$(ls $input_dir/sample$sample-*)
 
 # Filename stems for fastqc output

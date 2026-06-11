@@ -51,8 +51,8 @@ fasda --version
 pwd
 
 kallisto_dir=../09-kallisto-quant
-fasda_dir=Results/13-fasda-kallisto
-log_dir=../../LPJS-logs/13-fasda-kallisto
+fasda_dir=Results/10-fasda-kallisto
+log_dir=../../LPJS-logs/10-fasda-kallisto
 mkdir -p $fasda_dir
 cd $fasda_dir
 mkdir -p $log_dir

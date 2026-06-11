@@ -57,7 +57,7 @@ printenv
 
 input_dir='Results/04-trim'
 output_dir='Results/05-qc-trimmed'
-sample=$LPJS_ARRAY_INDEX
+sample=$(printf "%02d" $LPJS_ARRAY_INDEX)
 # Example: chondro-sample1-rep1-time1-R1.fastq.xz
 input1=$(ls $input_dir/sample$sample-*)
 

@@ -45,4 +45,4 @@ cd Results/03-multiqc-raw
 
 rm -rf *
 multiqc --version > ../../LPJS-logs/03-multiqc-raw/multiqc-version.txt 2>&1
-multiqc ../02-qc-raw 2>&1 | tee ../../Logs/03-multiqc-raw/multiqc.out
+multiqc ../02-qc-raw 2>&1 | tee ../../LPJS-logs/03-multiqc-raw/multiqc.out

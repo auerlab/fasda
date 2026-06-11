@@ -44,4 +44,4 @@ mkdir -p LPJS-logs/06-multiqc-trimmed
 cd Results/06-multiqc-trimmed
 rm -rf *
 multiqc --version > ../../LPJS-logs/06-multiqc-trimmed/multiqc-version.txt 2>&1
-multiqc ../05-qc-trimmed 2>&1 | tee ../../Logs/06-multiqc-trimmed/multiqc.out
+multiqc ../05-qc-trimmed 2>&1 | tee ../../LPJS-logs/06-multiqc-trimmed/multiqc.out
