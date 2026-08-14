@@ -189,8 +189,6 @@ FASDA:
 Feature                 MNC1    MNC2  SD/C1  SD/C2  FC 1-2 log2(FC) P-val
 YIL170W                 13.2    17.6    0.2    0.2    1.33    0.42  0.05616
 
-Log2(FC) = 0.411426, very close to DESeq2 value below
-
 DESeq2:
 
 	      baseMean log2FoldChange     lfcSE      stat     pvalue      padj
